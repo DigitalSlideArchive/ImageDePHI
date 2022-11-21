@@ -67,8 +67,9 @@ def redact_images(image_dir, output_dir):
         try:
             tiff_info = tifftools.read_tiff(child)
         except tifftools.exceptions.TifftoolsError:
-            print(f'Could not open {child} as a tiff. Skipping...')
+            print(f'Could not open {child.name} as a tiff. Skipping...')
             continue
+        print(f'Redacting {child.name}...')
         redact_one_image(tiff_info, get_output_path(child, output_dir))
 
 
@@ -97,6 +98,7 @@ def main():
         print('Output directory must be a directory')
         return
     redact_images(input_dir, output_dir)
+    print('Done!')
 
 
 if __name__ == "__main__":
