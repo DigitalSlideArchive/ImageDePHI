@@ -51,26 +51,52 @@ def redact_tiff_tags(ifds, tags_to_redact):
                 redact_tiff_tags(sub_ifds, tags_to_redact)
 
 
-def redact_one_image(image_path):
-    tiff_info = tifftools.read_tiff(image_path)
+def redact_one_image(tiff_info, output_path):
     ifds = tiff_info['ifds']
     tags_to_redact = get_tags_to_redact()
     redact_tiff_tags(ifds, tags_to_redact)
-    output_image_path = (
-        str(image_path.parent) + '/REDACTED_' + str(image_path.name)
-    )
-    tifftools.write_tiff(tiff_info, output_image_path)
+    tifftools.write_tiff(tiff_info, output_path)
+
+
+def get_output_path(file, output_dir):
+    return str(output_dir) + '/REDACTED_' + str(file.name)
+
+
+def redact_images(image_dir, output_dir):
+    for child in image_dir.iterdir():
+        try:
+            tiff_info = tifftools.read_tiff(child)
+        except tifftools.exceptions.TifftoolsError:
+            print(f'Could not open {child} as a tiff. Skipping...')
+            continue
+        redact_one_image(tiff_info, get_output_path(child, output_dir))
 
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="Image DePHI",
-        description="A CLI for redacting whole slide microscopy images",
+        prog='Image DePHI',
+        description='A CLI for redacting whole slide microscopy images',
     )
-    parser.add_argument("image", help="Path to the image file to be redacted")
+    parser.add_argument(
+        'input_dir',
+        help='Directory of images to redact',
+        type=Path,
+    )
+    parser.add_argument(
+        'output_dir',
+        help='Directory to store redacted images',
+        type=Path
+    )
     args = parser.parse_args()
-    image_path = Path(args.image).resolve()
-    redact_one_image(image_path)
+    input_dir = Path(args.input_dir).resolve()
+    output_dir = Path(args.output_dir).resolve()
+    if not input_dir.is_dir():
+        print('Input directory must be a directory')
+        return
+    if not output_dir.is_dir():
+        print('Output directory must be a directory')
+        return
+    redact_images(input_dir, output_dir)
 
 
 if __name__ == "__main__":
