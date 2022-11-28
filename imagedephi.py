@@ -1,4 +1,5 @@
 import argparse
+import sys
 from enum import Enum
 from pathlib import Path
 
@@ -38,17 +39,15 @@ def redact_tiff_tags(ifds, tags_to_redact):
                 tifftools.Tag,
                 {'datatype': Datatype[tag_info['datatype']]},
             )
-            if not tag.isIFD() and tag_info['datatype'] not in (
-                Datatype.IFD,
-                Datatype.IFD8,
-            ):
-                if tag.value in tags_to_redact.keys():
+            if not tag.isIFD():
+                if tag.value in tags_to_redact:
                     redact_one_tag(ifd, tag, tags_to_redact[tag.value])
             else:
                 sub_ifd_list.append((tag, tag_info))
-        for tag, tag_info in sub_ifd_list:
-            for sub_ifds in tag_info['ifds']:
-                redact_tiff_tags(sub_ifds, tags_to_redact)
+                # tag_info['ifds'] contains a list of lists
+                # see tifftools.read_tiff
+                for sub_ifds in tag_info['ifds']:
+                    redact_tiff_tags(sub_ifds)
 
 
 def redact_one_image(tiff_info, output_path):
@@ -58,8 +57,8 @@ def redact_one_image(tiff_info, output_path):
     tifftools.write_tiff(tiff_info, output_path)
 
 
-def get_output_path(file, output_dir):
-    return str(output_dir) + '/REDACTED_' + str(file.name)
+def get_output_path(file_path, output_dir):
+    return output_dir/f'REDACTED_{file_path.name}'
 
 
 def redact_images(image_dir, output_dir):
@@ -93,10 +92,10 @@ def main():
     output_dir = Path(args.output_dir).resolve()
     if not input_dir.is_dir():
         print('Input directory must be a directory')
-        return
+        sys.exit(1)
     if not output_dir.is_dir():
         print('Output directory must be a directory')
-        return
+        sys.exit(1)
     redact_images(input_dir, output_dir)
     print('Done!')
 
