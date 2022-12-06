@@ -50,7 +50,7 @@ def redact_tiff_tags(ifds: list[dict], tags_to_redact: dict[int, dict]) -> None:
                     redact_tiff_tags(sub_ifds, tags_to_redact)
 
 
-def redact_one_image(tiff_info: dict, output_path: Path) -> None:
+def redact_one_image(tiff_info: dict[str, list], output_path: Path) -> None:
     ifds = tiff_info['ifds']
     tags_to_redact = get_tags_to_redact()
     redact_tiff_tags(ifds, tags_to_redact)
