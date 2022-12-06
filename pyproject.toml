@@ -2,7 +2,6 @@
 line-length = 100
 skip-string-normalization = true
 target-version = ["py310"]
-exclude='\.git|\.tox'
 
 [tool.isort]
 profile = "black"
