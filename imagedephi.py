@@ -2,7 +2,6 @@ import argparse
 from enum import Enum
 from pathlib import Path
 import sys
-from typing import Dict, List
 
 import tifftools
 from tifftools import Datatype, TiffTag
@@ -13,7 +12,7 @@ class RedactMethod(Enum):
     DELETE = 2
 
 
-def get_tags_to_redact() -> Dict[int, Dict]:
+def get_tags_to_redact() -> dict[int, dict]:
     return {
         270: {
             'id': 270,
@@ -24,14 +23,14 @@ def get_tags_to_redact() -> Dict[int, Dict]:
     }
 
 
-def redact_one_tag(ifd: Dict, tag: TiffTag, redact_instructions: Dict) -> None:
+def redact_one_tag(ifd: dict, tag: TiffTag, redact_instructions: dict) -> None:
     if redact_instructions['method'] == RedactMethod.REPLACE:
         ifd['tags'][tag.value]['data'] = redact_instructions['replace_value']
     elif redact_instructions['method'] == RedactMethod.DELETE:
         del ifd['tags'][tag.value]
 
 
-def redact_tiff_tags(ifds: List[Dict], tags_to_redact: Dict[int, Dict]) -> None:
+def redact_tiff_tags(ifds: list[dict], tags_to_redact: dict[int, dict]) -> None:
     for ifd in ifds:
         sub_ifd_list = []
         for tag, tag_info in sorted(ifd['tags'].items()):
@@ -51,7 +50,7 @@ def redact_tiff_tags(ifds: List[Dict], tags_to_redact: Dict[int, Dict]) -> None:
                     redact_tiff_tags(sub_ifds, tags_to_redact)
 
 
-def redact_one_image(tiff_info: Dict, output_path: Path) -> None:
+def redact_one_image(tiff_info: dict, output_path: Path) -> None:
     ifds = tiff_info['ifds']
     tags_to_redact = get_tags_to_redact()
     redact_tiff_tags(ifds, tags_to_redact)
