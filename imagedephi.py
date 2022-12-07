@@ -1,10 +1,10 @@
 import argparse
-import sys
 from enum import Enum
 from pathlib import Path
+import sys
 
 import tifftools
-from tifftools import Datatype
+from tifftools import Datatype, TiffTag
 
 
 class RedactMethod(Enum):
@@ -12,25 +12,25 @@ class RedactMethod(Enum):
     DELETE = 2
 
 
-def get_tags_to_redact():
+def get_tags_to_redact() -> dict[int, dict]:
     return {
         270: {
             'id': 270,
             'name': 'ImageDescription',
             'method': RedactMethod.REPLACE,
-            'replace_value': 'Redacted by ImageDePHI'
+            'replace_value': 'Redacted by ImageDePHI',
         }
     }
 
 
-def redact_one_tag(ifd, tag, redact_instructions):
+def redact_one_tag(ifd: dict, tag: TiffTag, redact_instructions: dict) -> None:
     if redact_instructions['method'] == RedactMethod.REPLACE:
         ifd['tags'][tag.value]['data'] = redact_instructions['replace_value']
     elif redact_instructions['method'] == RedactMethod.DELETE:
         del ifd['tags'][tag.value]
 
 
-def redact_tiff_tags(ifds, tags_to_redact):
+def redact_tiff_tags(ifds: list[dict], tags_to_redact: dict[int, dict]) -> None:
     for ifd in ifds:
         sub_ifd_list = []
         for tag, tag_info in sorted(ifd['tags'].items()):
@@ -47,21 +47,21 @@ def redact_tiff_tags(ifds, tags_to_redact):
                 # tag_info['ifds'] contains a list of lists
                 # see tifftools.read_tiff
                 for sub_ifds in tag_info['ifds']:
-                    redact_tiff_tags(sub_ifds)
+                    redact_tiff_tags(sub_ifds, tags_to_redact)
 
 
-def redact_one_image(tiff_info, output_path):
+def redact_one_image(tiff_info: dict[str, list], output_path: Path) -> None:
     ifds = tiff_info['ifds']
     tags_to_redact = get_tags_to_redact()
     redact_tiff_tags(ifds, tags_to_redact)
     tifftools.write_tiff(tiff_info, output_path)
 
 
-def get_output_path(file_path, output_dir):
-    return output_dir/f'REDACTED_{file_path.name}'
+def get_output_path(file_path: Path, output_dir: Path) -> Path:
+    return output_dir / f'REDACTED_{file_path.name}'
 
 
-def redact_images(image_dir, output_dir):
+def redact_images(image_dir: Path, output_dir: Path) -> None:
     for child in image_dir.iterdir():
         try:
             tiff_info = tifftools.read_tiff(child)
@@ -82,11 +82,7 @@ def main():
         help='Directory of images to redact',
         type=Path,
     )
-    parser.add_argument(
-        'output_dir',
-        help='Directory to store redacted images',
-        type=Path
-    )
+    parser.add_argument('output_dir', help='Directory to store redacted images', type=Path)
     args = parser.parse_args()
     input_dir = Path(args.input_dir).resolve()
     output_dir = Path(args.output_dir).resolve()
@@ -100,5 +96,5 @@ def main():
     print('Done!')
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
