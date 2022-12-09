@@ -1,7 +1,6 @@
 import argparse
 from enum import Enum
 from pathlib import Path
-import sys
 
 import tifftools
 from tifftools import Datatype, TiffTag
@@ -72,27 +71,22 @@ def redact_images(image_dir: Path, output_dir: Path) -> None:
         redact_one_image(tiff_info, get_output_path(child, output_dir))
 
 
+def is_directory(cli_argument: str) -> Path:
+    path = Path(cli_argument).resolve()
+    if not path.is_dir():
+        raise argparse.ArgumentTypeError(f'{cli_argument} is not a directory')
+    return path
+
+
 def main():
     parser = argparse.ArgumentParser(
         prog='Image DePHI',
         description='A CLI for redacting whole slide microscopy images',
     )
-    parser.add_argument(
-        'input_dir',
-        help='Directory of images to redact',
-        type=Path,
-    )
-    parser.add_argument('output_dir', help='Directory to store redacted images', type=Path)
+    parser.add_argument('input_dir', help='Directory of images to redact', type=is_directory)
+    parser.add_argument('output_dir', help='Directory to store redacted images', type=is_directory)
     args = parser.parse_args()
-    input_dir = Path(args.input_dir).resolve()
-    output_dir = Path(args.output_dir).resolve()
-    if not input_dir.is_dir():
-        print('Input directory must be a directory')
-        sys.exit(1)
-    if not output_dir.is_dir():
-        print('Output directory must be a directory')
-        sys.exit(1)
-    redact_images(input_dir, output_dir)
+    redact_images(args.input_dir, args.output_dir)
     print('Done!')
 
 
