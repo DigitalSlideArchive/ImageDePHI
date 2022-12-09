@@ -1,2 +1,6 @@
 # Reformat code to standardize double quoted strings
+<<<<<<< HEAD
 bb0159f16a038c8689c242c575607c31a843aed7
+=======
+92c1ec85ab680851055c16f022ab9ce80c600e3c
+>>>>>>> 10af705 (Fix incorrect SHA in .git-blame-ignore-revs)
