@@ -10,7 +10,7 @@ class TiffConstant(int):
     def __getitem__(self, key: str) -> _TiffConstantAttr: ...
     def get(self, key: str, default: _TiffConstantAttr = ...) -> _TiffConstantAttr: ...
 
-_TiffConstantT = TypeVar('_TiffConstantT', bound=TiffConstant)
+_TiffConstantT = TypeVar("_TiffConstantT", bound=TiffConstant)
 
 class TiffConstantSet(Generic[_TiffConstantT]):
     def __init__(

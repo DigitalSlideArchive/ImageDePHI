@@ -10,7 +10,7 @@ class TiffInfo(TypedDict):
     header: bytes
     bigEndian: bool
     bigtiff: bool
-    endianPack: Literal['>', '<']
+    endianPack: Literal[">", "<"]
     firstifd: int
 
 class IFD(TypedDict):
