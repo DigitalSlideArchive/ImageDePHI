@@ -1,1 +1,4 @@
 tox
+fastapi
+uvicorn[standard]
+Jinja2

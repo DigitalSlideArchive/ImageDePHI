@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang ="en">
+<head>
+    <title>Select Directory</title>
+</head>
+<body>
+    <ul>
+        {% for path in directory_paths %}
+            <li>
+                <a href="/?path={{ path|urlencode }}">{{ path }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
