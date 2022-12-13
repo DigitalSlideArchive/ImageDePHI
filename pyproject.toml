@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "ImageDePHI"
 version = "0.1.0"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
     "click",
     "tifftools",
@@ -24,7 +24,7 @@ include = ["imagedephi*"]
 
 [tool.black]
 line-length = 100
-target-version = ["py310"]
+target-version = ["py311"]
 
 [tool.isort]
 profile = "black"
