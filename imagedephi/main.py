@@ -90,11 +90,6 @@ async def gui(port: int) -> None:
 
     server_config = Config()
     server_config.bind = [f"{host}:{port}"]
-    serve_coro = serve(
-        app,  # type: ignore
-        server_config,
-        shutdown_trigger=shutdown_event.wait,  # type: ignore
-    )
 
     async def announce_ready() -> None:
         # To avoid race conditions, ensure that the webserver is
@@ -104,4 +99,12 @@ async def gui(port: int) -> None:
         click.echo(f"Server is running at {url} .")
         webbrowser.open(url)
 
-    await asyncio.gather(announce_ready(), serve_coro)
+    async with asyncio.TaskGroup() as task_group:
+        task_group.create_task(announce_ready())
+        task_group.create_task(
+            serve(
+                app,  # type: ignore
+                server_config,
+                shutdown_trigger=shutdown_event.wait,  # type: ignore
+            )
+        )

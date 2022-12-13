@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import abc
 from enum import Enum
-from typing import TypeVar
+from typing import Self
 
 
 class RuleType(Enum):
@@ -46,15 +46,10 @@ class MetadataRuleMixin(Rule):
     rule_type = RuleType.METADATA
 
     @classmethod
-    def build(
-        cls: type[MetadataRuleMixinT], rule_spec: dict, rule_source: RuleSource
-    ) -> MetadataRuleMixinT:
+    def build(cls, rule_spec: dict, rule_source: RuleSource) -> Self:
         redact_method = RedactMethod[rule_spec["method"].upper()]
         for rule_class in cls.__subclasses__():
             if rule_class.redact_method == redact_method:
                 return rule_class(rule_spec, rule_source)
         else:
             raise Exception("Unknown redact_method.")
-
-
-MetadataRuleMixinT = TypeVar("MetadataRuleMixinT", bound=MetadataRuleMixin)

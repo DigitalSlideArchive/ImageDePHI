@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from os import PathLike
-from typing import BinaryIO, Literal, TypeAlias, TypedDict
+from typing import BinaryIO, Literal, NotRequired, TypeAlias, TypedDict
 
 _PathOrStream: TypeAlias = str | PathLike[str] | BinaryIO
 
@@ -24,16 +24,13 @@ class IFD(TypedDict):
     bigtiff: bool
     tagcount: int
 
-# TODO: Merge _BaseTagEntry and TagEntry, once NotRequired can be used in Python 3.11
-class _BaseTagEntry(TypedDict):
+class TagEntry(TypedDict):
     datatype: int
     count: int
     datapos: int
+    offset: NotRequired[int]
+    ifds: NotRequired[list[list[IFD]]]
     data: str | bytes | list[int | float]
-
-class TagEntry(_BaseTagEntry, total=False):
-    offset: int
-    ifds: list[list[IFD]]
 
 def read_tiff(path: _PathOrStream) -> TiffInfo: ...
 def write_tiff(
