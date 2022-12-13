@@ -1,5 +1,5 @@
 from os import PathLike
-from typing import BinaryIO, Literal, TypeAlias, TypedDict
+from typing import BinaryIO, Literal, NotRequired, TypeAlias, TypedDict
 
 _PathOrStream: TypeAlias = str | PathLike[str] | BinaryIO
 
@@ -22,12 +22,12 @@ class IFD(TypedDict):
     bigtiff: bool
     tagcount: int
 
-class TagEntry(TypedDict, total=False):
+class TagEntry(TypedDict):
     datatype: int
     count: int
     datapos: int
-    offset: int
-    ifds: list[list[IFD]]
+    offset: NotRequired[int]
+    ifds: NotRequired[list[list[IFD]]]
     data: str | bytes | list[int | float]
 
 def read_tiff(path: _PathOrStream) -> TiffInfo: ...
