@@ -9,13 +9,16 @@
     <a href="/?path=/{{ bread_crumbs[1:bread_crumbs.index(item)+1]|join('/')|urlencode }}">{{ item }}</a>/
 {% endfor %}
 </h2>
-
-    <ul>
-        {% for path in directory_paths %}
-            <li>
-                <a href="/?path={{ path|urlencode }}">{{ path.name }}</a>
-            </li>
-        {% endfor %}
-    </ul>
+    <form method="POST", action="/directory_selection/">
+        <input type="submit", value="Choose Directory">
+            <ul>
+                {% for path in directory_paths %}
+                    <li style="list-style-type:none">
+                    <input type="checkbox", id="{{ path }}", value="{{ path }}", name="directory">
+                        <a href="/?path={{ path|urlencode }}">{{ path.name }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+    </form>
 </body>
 </html>
