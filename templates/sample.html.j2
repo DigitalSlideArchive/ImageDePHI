@@ -4,10 +4,16 @@
     <title>Select Directory</title>
 </head>
 <body>
+<h2>
+{% for item in bread_crumbs[1:] %}
+    <a href="/?path=/{{ bread_crumbs[1:bread_crumbs.index(item)+1]|join('/')|urlencode }}">{{ item }}</a>/
+{% endfor %}
+</h2>
+
     <ul>
         {% for path in directory_paths %}
             <li>
-                <a href="/?path={{ path|urlencode }}">{{ path }}</a>
+                <a href="/?path={{ path|urlencode }}">{{ path.name }}</a>
             </li>
         {% endfor %}
     </ul>

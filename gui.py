@@ -19,9 +19,11 @@ def select_directory(request: Request, path:str='/'):
     # TODO: how do they select their terminal directory?
     # "list comprehension"
 
+    bread_crumbs = base_path.parts
+
     directory_paths = [
         path_element for path_element in base_path.iterdir() if path_element.is_dir()
     ]
     return templates.TemplateResponse(
-        "sample.html.j2", {"request": request, "directory_paths": directory_paths}
+        "sample.html.j2", {"request": request, "directory_paths": directory_paths, "bread_crumbs": bread_crumbs}
     )
