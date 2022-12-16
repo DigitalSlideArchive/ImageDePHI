@@ -89,7 +89,3 @@ def main() -> None:
     args = parser.parse_args()
     redact_images(args.input_dir, args.output_dir)
     print("Done!")
-
-
-if __name__ == "__main__":
-    main()
