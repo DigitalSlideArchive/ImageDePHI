@@ -1,10 +1,9 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "ImageDePHI"
-version = "0.1.0"
 requires-python = ">=3.11"
 dependencies = [
     "click",
@@ -15,12 +14,15 @@ dependencies = [
     "hypercorn",
     "pyyaml",
 ]
+dynamic = ["version"]
 
 [project.scripts]
 imagedephi = "imagedephi.main:imagedephi"
 
 [tool.setuptools.packages.find]
 include = ["imagedephi*"]
+
+[tool.setuptools_scm]
 
 [tool.djlint]
 extension = "html.j2"
