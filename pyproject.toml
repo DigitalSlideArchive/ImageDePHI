@@ -31,9 +31,10 @@ force_sort_within_sections = true
 combine_as_imports = true
 
 [tool.mypy]
-ignore_missing_imports = true
+strict = true
 show_error_codes = true
 mypy_path = "$MYPY_CONFIG_FILE_DIR/stubs"
 
 [tool.pyright]
+strict = ["imagedephi", "stubs"]
 stubPath = "stubs"
