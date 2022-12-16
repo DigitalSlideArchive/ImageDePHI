@@ -22,7 +22,6 @@ def test_e2e(data_dir: Path, tmp_path: Path, runner: CliRunner) -> None:
     assert result.exit_code == 0
     output_file = tmp_path / "REDACTED_test_image.tif"
     assert output_file.exists()
-    with output_file.open("rb") as output_file_stream:
-        output_file_bytes = output_file_stream.read()
-        assert b"large_image_converter" not in output_file_bytes
-        assert b"Redacted by ImageDePHI" in output_file_bytes
+    output_file_bytes = output_file.read_bytes()
+    assert b"large_image_converter" not in output_file_bytes
+    assert b"Redacted by ImageDePHI" in output_file_bytes
