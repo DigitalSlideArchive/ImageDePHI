@@ -1,15 +1,15 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "ImageDePHI"
-version = "0.1.0"
 requires-python = ">=3.10"
 dependencies = [
     "click",
     "tifftools",
 ]
+dynamic = ["version"]
 
 [project.scripts]
 imagedephi = "imagedephi.__main__:main"
@@ -19,6 +19,8 @@ imagedephi = "imagedephi.__main__:main"
 [tool.setuptools.packages.find]
 include = ["imagedephi*"]
 namespaces = false
+
+[tool.setuptools_scm]
 
 [tool.black]
 line-length = 100

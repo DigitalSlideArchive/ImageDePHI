@@ -1,0 +1,7 @@
+prune stubs/
+exclude .editorconfig
+exclude .git-blame-ignore-revs
+exclude .gitignore
+exclude pyoxidizer.bzl
+exclude requirements.txt
+exclude tox.ini
