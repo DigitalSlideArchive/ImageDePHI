@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any, Generator, Generic, TypeAlias, TypeVar, overload
 
 # Anything can be set as a TiffConstant attribute
