@@ -13,6 +13,12 @@ dependencies = [
 [project.scripts]
 imagedephi = "imagedephi:main"
 
+# Prevent the automatic discovery of other directories
+# https://setuptools.pypa.io/en/latest/userguide/package_discovery.html#custom-discovery
+[tool.setuptools.packages.find]
+include = ["imagedephi*"]
+namespaces = false
+
 [tool.black]
 line-length = 100
 target-version = ["py310"]
