@@ -2,6 +2,17 @@
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
+[project]
+name = "ImageDePHI"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = [
+    "tifftools",
+]
+
+[project.scripts]
+imagedephi = "imagedephi:main"
+
 [tool.black]
 line-length = 100
 target-version = ["py310"]
