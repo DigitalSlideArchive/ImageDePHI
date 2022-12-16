@@ -48,7 +48,7 @@ def redact_tiff_tags(ifds: list[IFD], tags_to_redact: dict[int, dict[str, Any]])
             else:
                 # tag_info['ifds'] contains a list of lists
                 # see tifftools.read_tiff
-                for sub_ifds in tag_info["ifds"]:
+                for sub_ifds in tag_info.get("ifds", []):
                     redact_tiff_tags(sub_ifds, tags_to_redact)
 
 

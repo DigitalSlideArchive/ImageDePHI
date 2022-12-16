@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from os import PathLike
 from typing import BinaryIO, Literal, TypeAlias, TypedDict
 
@@ -22,13 +24,16 @@ class IFD(TypedDict):
     bigtiff: bool
     tagcount: int
 
-class TagEntry(TypedDict, total=False):
+# TODO: Merge _BaseTagEntry and TagEntry, once NotRequired can be used in Python 3.11
+class _BaseTagEntry(TypedDict):
     datatype: int
     count: int
     datapos: int
+    data: str | bytes | list[int | float]
+
+class TagEntry(_BaseTagEntry, total=False):
     offset: int
     ifds: list[list[IFD]]
-    data: str | bytes | list[int | float]
 
 def read_tiff(path: _PathOrStream) -> TiffInfo: ...
 def write_tiff(
