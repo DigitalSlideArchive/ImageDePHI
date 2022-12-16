@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-import argparse
 from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+import click
 import tifftools
 import tifftools.constants
 
@@ -68,26 +68,7 @@ def redact_images(image_dir: Path, output_dir: Path) -> None:
         try:
             tiff_info: TiffInfo = tifftools.read_tiff(child)
         except tifftools.TifftoolsError:
-            print(f"Could not open {child.name} as a tiff. Skipping...")
+            click.echo(f"Could not open {child.name} as a tiff. Skipping...")
             continue
-        print(f"Redacting {child.name}...")
+        click.echo(f"Redacting {child.name}...")
         redact_one_image(tiff_info, get_output_path(child, output_dir))
-
-
-def is_directory(cli_argument: str) -> Path:
-    path = Path(cli_argument).resolve()
-    if not path.is_dir():
-        raise argparse.ArgumentTypeError(f"{cli_argument} is not a directory")
-    return path
-
-
-def main() -> None:
-    parser = argparse.ArgumentParser(
-        prog="Image DePHI",
-        description="A CLI for redacting whole slide microscopy images",
-    )
-    parser.add_argument("input_dir", help="Directory of images to redact", type=is_directory)
-    parser.add_argument("output_dir", help="Directory to store redacted images", type=is_directory)
-    args = parser.parse_args()
-    redact_images(args.input_dir, args.output_dir)
-    print("Done!")
