@@ -5,17 +5,17 @@
 </head>
 <body>
 <h2>
-{% for item in bread_crumbs[1:] %}
-    <a href="/?path={{ bread_crumbs[bread_crumbs.index(item)]|urlencode }}">{{ item.name }}</a>/
+{% for bread_crumb in bread_crumbs[1:] %}
+    <a href="/?path={{ bread_crumb|urlencode }}">{{ bread_crumb.name }}</a>/
 {% endfor %}
 </h2>
     <form method="POST", action="/directory_selection/">
         <input type="submit", value="Choose Directory">
             <ul>
-                {% for path in directories %}
+                {% for directory in directories %}
                     <li style="list-style-type:none">
-                    <input type="checkbox", id="{{ path }}", value="{{ path }}", name="directory">
-                        <a href="/?path={{ path|urlencode }}">{{ path.name }}</a>
+                    <input type="checkbox", id="{{ directory }}", value="{{ directory }}", name="directory">
+                        <a href="/?path={{ directory|urlencode }}">{{ directory.name }}</a>
                     </li>
                 {% endfor %}
             </ul>
