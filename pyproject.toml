@@ -9,6 +9,9 @@ requires-python = ">=3.10"
 dependencies = [
     "click",
     "tifftools",
+    "fastapi",
+    "uvicorn[standard]",
+    "Jinja2",
 ]
 
 [project.scripts]
