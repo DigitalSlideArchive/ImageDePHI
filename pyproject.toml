@@ -15,7 +15,7 @@ dependencies = [
 ]
 
 [project.scripts]
-imagedephi = "imagedephi.__main__:main"
+imagedephi = "imagedephi.__main__:imagedephi"
 
 # Prevent the automatic discovery of other directories
 # https://setuptools.pypa.io/en/latest/userguide/package_discovery.html#custom-discovery
