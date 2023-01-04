@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import click
+from rules import MetadataRule, MetadataRuleSet, RedactMethod
 import tifftools
 import tifftools.constants
 
@@ -12,9 +12,16 @@ if TYPE_CHECKING:
     from tifftools.tifftools import IFD, TiffInfo
 
 
-class RedactMethod(Enum):
-    REPLACE = 1
-    DELETE = 2
+def redact_tiff_metadata(tiff_info: TiffInfo, tiff_metadata_rules: list[MetadataRule]):
+    """Iterate over the IFDs of a tiff and apply metadata redaction rules."""
+
+
+def read_metadata_rules(rules_file: Path) -> MetadataRuleSet:
+    """Read in metadata redaction rules from a file."""
+
+
+def compose_metadata_rule_sets(rule_sets: list[MetadataRuleSet]) -> MetadataRuleSet:
+    """Combine multiple metadata rule sets into one ruleset."""
 
 
 def get_tags_to_redact() -> dict[int, dict[str, Any]]:
