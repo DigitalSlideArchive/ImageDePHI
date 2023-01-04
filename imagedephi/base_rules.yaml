@@ -1,0 +1,90 @@
+---
+name: Base rules
+description: These are the default rules for each potential piece of redactable material (metadata, image) to be used as a fallback if there are no user-defined rules for a piece of redactable material.
+rules:
+  # For images that strictly adhere to the tiff standards e.g. svs files
+  tiff:
+    - title: Keep NewSubfileType
+      tag: 254
+      method: keep
+      type: metadata
+    - title: Keep ImageWidth
+      tag: 256
+      method: keep
+      type: metadata
+    - title: Keep ImageLength
+      tag: 257
+      method: keep
+      type: metadata
+    - title: Keep BitsPerSample
+      tag: 258
+      method: keep
+      type: metadata
+    - title: Keep Compression
+      tag: 259
+      method: keep
+      type: metadata
+    - title: Keep Photometric
+      tag: 262
+      method: keep
+      type: metadata
+    - title: Remove ImageDescription
+      tag: 270
+      method: remove
+      type: metadata
+    - title: Keep SamplesPerPixel
+      tag: 277
+      method: keep
+      type: metadata
+    - title: Keep PlanarConfig
+      tag: 284
+      method: keep
+      type: metadata
+    - title: Keep TileWidth
+      tag: 322
+      method: keep
+      type: metadata
+    - title: Keep TileLength
+      tag: 323
+      method: keep
+      type: metadata
+    - title: Keep TileOffsets
+      tag: 324
+      method: keep
+      type: metadata
+    - title: Keep TileByteCounts
+      tag: 325
+      method: keep
+      type: metadata
+    - title: Keep JPEGTables
+      tag: 347
+      method: keep
+      type: metadata
+    - title: Keep YCbCrSubsampling
+      tag: 530
+      method: keep
+      type: metadata
+    - title: Keep ImageDepth
+      tag: 32997
+      method: keep
+      type: metadata
+    - title: Keep ICCProfile
+      tag: 34675
+      method: keep
+      type: metadata
+    - title: Keep StripOffsets
+      tag: 273
+      method: keep
+      type: metadata
+    - title: Keep RowsPerStrip
+      tag: 278
+      method: keep
+      type: metadata
+    - title: Keep StripByteCounts
+      tag: 279
+      method: keep
+      type: metadata
+    - title: Keep Predictor
+      tag: 317
+      method: keep
+      type: metadata
