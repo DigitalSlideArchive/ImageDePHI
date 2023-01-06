@@ -28,9 +28,9 @@ rules:
       tag: 262
       method: keep
       type: metadata
-    - title: Remove ImageDescription
+    - title: delete ImageDescription
       tag: 270
-      method: remove
+      method: delete
       type: metadata
     - title: Keep SamplesPerPixel
       tag: 277
