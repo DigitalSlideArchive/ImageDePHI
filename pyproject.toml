@@ -13,6 +13,7 @@ dependencies = [
     "python-multipart",
     "Jinja2",
     "hypercorn",
+    "pyyaml",
 ]
 
 [project.scripts]
@@ -38,6 +39,9 @@ combine_as_imports = true
 ignore_missing_imports = true
 show_error_codes = true
 mypy_path = "$MYPY_CONFIG_FILE_DIR/stubs"
+exclude = [
+    "build/",
+]
 
 [tool.pyright]
 stubPath = "stubs"
