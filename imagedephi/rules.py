@@ -1,17 +1,17 @@
-from abc import ABC, abstractmethod
+from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
-import re
 from typing import TYPE_CHECKING
 
 import tifftools
+
 
 if TYPE_CHECKING:
     from tifftools.tifftools import TagEntry
 
 
 @dataclass
-class TiffEntry:
+class TiffTagEntry:
     tag: tifftools.TiffTag
     entry: TagEntry
 
@@ -27,43 +27,50 @@ class RedactMethod(Enum):
     KEEP = 3
 
 
-# TODO implement ImageRules
+class RuleFormat(Enum):
+    TIFF = 1
 
 
 @dataclass
-class MetadataRule(ABC):
-    """Represents an action to take for metadata."""
-
+class Rule:
     title: str
     redact_method: RedactMethod
 
-    @abstractmethod
-    def is_match(self) -> bool:
-        """Checks if this rule matches some piece of metadata."""
-
 
 @dataclass
-class TiffTagRule(MetadataRule):
-    """Represents a rule that matches a given tiff tag, regardless of value."""
-
+class TiffMetadataRule(Rule):
     tag: tifftools.TiffTag
+    replace_value: str | bytes | list[int | float]
 
-    def is_match(self, entry: TiffEntry) -> bool:
+    def is_match(self, entry: TiffTagEntry) -> bool:
         return self.tag.value == entry.tag.value
 
 
 @dataclass
-class TiffValueRegexRule(MetadataRule):
-    """Represents a rule that checks both tiff tag and value."""
-
-    tag: tifftools.TiffTag
-    regex: str
-
-    def is_match(self, entry: TiffEntry) -> bool:
-        return self.tag.value == entry.tag.value and re.match(self.regex, entry.value) is not None
+class RuleSet:
+    name: str
+    description: str
+    rules: dict[RuleFormat, list[Rule]]
 
 
-@dataclass
-class MetadataRuleSet:
-    tiff_rules: list[MetadataRule]
-    # additional lists of rules for supported formats
+def make_tiff_metadata_rule(rule: dict) -> TiffMetadataRule:
+    """Transform a rule from schema into an object."""
+    tag = tifftools.constants.Tag[rule["tag"]]
+    return TiffMetadataRule(
+        rule["title"],
+        RedactMethod[rule["method"].upper()],
+        tag,
+        rule.get("replace_value", ''),
+    )
+
+
+rule_function_mapping = {
+    RuleFormat.TIFF: {
+        RuleType.METADATA: make_tiff_metadata_rule
+    }
+}
+
+
+def make_rule(rule_format: RuleFormat, rule_type: RuleType, rule: dict) -> Rule:
+    rule_function = rule_function_mapping[rule_format][rule_type]
+    return rule_function(rule)
