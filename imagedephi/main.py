@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from pathlib import Path
+import sys
 import webbrowser
 
 import click
@@ -11,6 +12,11 @@ from hypercorn.asyncio import serve
 from imagedephi.async_utils import run_coroutine, wait_for_port
 from imagedephi.gui import app, shutdown_event
 from imagedephi.redact import redact_images
+
+# https://github.com/indygreg/PyOxidizer/issues/307
+if sys.argv[0] is None:
+    sys.argv[0] = sys.executable
+    print(f"Patched sys.argv to {sys.argv}")
 
 
 @click.group
