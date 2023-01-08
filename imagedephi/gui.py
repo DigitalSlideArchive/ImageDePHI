@@ -1,13 +1,22 @@
 from __future__ import annotations
 
+import asyncio
 from pathlib import Path
 
-from fastapi import FastAPI, Form, HTTPException, Request
+from fastapi import BackgroundTasks, FastAPI, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
 app = FastAPI()
 templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
+
+shutdown_event = asyncio.Event()
+
+
+@app.on_event("startup")
+def reset_shutdown_event() -> None:
+    # Important for unit testing, to reset the server state
+    shutdown_event.clear()
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -50,12 +59,18 @@ def select_directory(
 
 
 @app.post("/directory_selection/")
-def selection(input_directory: Path = Form(), output_directory: Path = Form()):  # noqa: B008
+def selection(
+    background_tasks: BackgroundTasks,
+    input_directory: Path = Form(),  # noqa: B008
+    output_directory: Path = Form(),  # noqa: B008
+):
     if not input_directory.is_dir():
         raise HTTPException(status_code=404, detail="Input directory not found")
     if not output_directory.is_dir():
         raise HTTPException(status_code=404, detail="Output directory not found")
 
+    # Shutdown after the response is sent, as this is the terminal endpoint
+    background_tasks.add_task(shutdown_event.set)
     return {
         "message": "You chose this input directory: %s and this output directory: %s"
         % (input_directory, output_directory)
