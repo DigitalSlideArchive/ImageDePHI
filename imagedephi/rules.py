@@ -31,19 +31,26 @@ class RuleFormat(Enum):
     TIFF = 1
 
 
+class RuleSource(Enum):
+    BASE = 1
+    OVERRIDE = 2
+
+
 @dataclass
 class Rule:
     title: str
     redact_method: RedactMethod
+    rule_type: RuleType
 
 
 @dataclass
 class TiffMetadataRule(Rule):
     tag: tifftools.TiffTag
     replace_value: str | bytes | list[int | float]
+    rule_type = RuleType.METADATA
 
-    def is_match(self, entry: TiffTagEntry) -> bool:
-        return self.tag.value == entry.tag.value
+    def is_match(self, tag: tifftools.TiffTag) -> bool:
+        return self.tag.value == tag.value
 
 
 @dataclass
@@ -59,16 +66,13 @@ def make_tiff_metadata_rule(rule: dict) -> TiffMetadataRule:
     return TiffMetadataRule(
         rule["title"],
         RedactMethod[rule["method"].upper()],
+        RuleType.METADATA,
         tag,
-        rule.get("replace_value", ''),
+        rule.get("replace_value", ""),
     )
 
 
-rule_function_mapping = {
-    RuleFormat.TIFF: {
-        RuleType.METADATA: make_tiff_metadata_rule
-    }
-}
+rule_function_mapping = {RuleFormat.TIFF: {RuleType.METADATA: make_tiff_metadata_rule}}
 
 
 def make_rule(rule_format: RuleFormat, rule_type: RuleType, rule: dict) -> Rule:
