@@ -4,7 +4,15 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import click
-from rules import MetadataRule, MetadataRuleSet, RedactMethod
+from .rules import (
+    TiffMetadataRule,
+    RuleSet,
+    RedactMethod,
+    RuleFormat,
+    RuleType,
+    make_rule,
+    RuleSource,
+)
 import tifftools
 import tifftools.constants
 
@@ -12,16 +20,86 @@ if TYPE_CHECKING:
     from tifftools.tifftools import IFD, TiffInfo
 
 
-def redact_tiff_metadata(tiff_info: TiffInfo, tiff_metadata_rules: list[MetadataRule]):
-    """Iterate over the IFDs of a tiff and apply metadata redaction rules."""
+class TiffMetadataRedactionPlan:
+    """
+    Represents a plan of action for redacting metadata from TIFF images.
+
+    The plan can be used for reporting to end users what steps will be made to redact their TIFF
+    images, and also executing the plan.
+    """
+
+    redaction_steps: dict[tifftools.TiffTag, tuple[TiffMetadataRule, RuleSource]]
+    no_match_tags: list[tifftools.TiffTag]
+    image_data: TiffInfo
+    base_rules: list[TiffMetadataRule]
+    override_rules: list[TiffMetadataRule]
+
+    def __add_tag_to_plan(self, tag):
+        """Determine how to handle a given tag."""
+
+        for rule in self.override_rules:
+            if rule.is_match(tag):
+                self.redaction_steps[tag] = (rule, RuleSource.OVERRIDE)
+                return
+        for rule in self.base_rules:
+            if rule.is_match(tag):
+                self.redaction_steps[tag] = (rule, RuleSource.BASE)
+                return
+        self.no_match_tags.append(tag)
+
+    def __build_redaction_steps(self, ifds: list[IFD]) -> None:
+        for ifd in ifds:
+            for tag_id, tag_info in sorted(ifd["tags"].items()):
+                tag: tifftools.TiffTag = tifftools.constants.get_or_create_tag(
+                    tag_id,
+                    datatype=tifftools.Datatype[tag_info["datatype"]],
+                )
+                if not tag.isIFD():
+                    self.__add_tag_to_plan(tifftools.constants.Tag[tag_id])
+                else:
+                    # tag_info['ifds'] contains a list of lists
+                    # see tifftools.read_tiff
+                    for sub_ifds in tag_info.get("ifds", []):
+                        self.__build_redaction_steps(sub_ifds)
+
+    def __init__(self, base_rules: RuleSet, override_rules: RuleSet, tiff_info: TiffInfo):
+        self.redaction_steps = {}
+        self.no_match_tags = []
+        self.image_data = tiff_info
+        self.base_rules = [
+            rule for rule in base_rules.rules[RuleFormat.TIFF] if isinstance(rule, TiffMetadataRule)
+        ]
+        self.override_rules = [
+            rule
+            for rule in override_rules.rules[RuleFormat.TIFF]
+            if isinstance(rule, TiffMetadataRule)
+        ]
+        self.__build_redaction_steps(self.image_data["ifds"])
+
+    def report_plan(self):
+        click.echo("Tiff Metadata Redaction Plan\n")
+        for key in self.redaction_steps:
+            rule = self.redaction_steps[key][0]
+            source = "Base" if self.redaction_steps[key][1] == RuleSource.BASE else "Override"
+            click.echo(f"Tag {key.value} - {key.name}: {rule.redact_method} ({source})")
+        if len(self.no_match_tags) > 0:
+            click.echo("The following tags could not be redacted given the current set of rules.")
+            for tag in self.no_match_tags:
+                click.echo(f"{tag.value} - {tag.name}")
 
 
-def read_metadata_rules(rules_file: Path) -> MetadataRuleSet:
+def build_ruleset(rules_dict: dict) -> RuleSet:
     """Read in metadata redaction rules from a file."""
-
-
-def compose_metadata_rule_sets(rule_sets: list[MetadataRuleSet]) -> MetadataRuleSet:
-    """Combine multiple metadata rule sets into one ruleset."""
+    rule_set_rules = {}
+    for file_format in rules_dict["rules"]:
+        format_key = RuleFormat[file_format.upper()]
+        format_rules = rules_dict["rules"][file_format]
+        format_rule_objects = []
+        for rule in format_rules:
+            rule_type = RuleType[rule["type"].upper()]
+            format_rule_objects.append(make_rule(format_key, rule_type, rule))
+        rule_set_rules[format_key] = format_rule_objects
+    return RuleSet(rules_dict["name"], rules_dict["description"], rule_set_rules)
 
 
 def get_tags_to_redact() -> dict[int, dict[str, Any]]:
@@ -79,3 +157,9 @@ def redact_images(image_dir: Path, output_dir: Path) -> None:
             continue
         click.echo(f"Redacting {child.name}...")
         redact_one_image(tiff_info, get_output_path(child, output_dir))
+
+
+def show_redaction_plan(image_path: click.Path, base_rules: RuleSet, override_rules: RuleSet):
+    tiff_info = tifftools.read_tiff(image_path)
+    redaction_plan = TiffMetadataRedactionPlan(base_rules, override_rules, tiff_info)
+    redaction_plan.report_plan()
