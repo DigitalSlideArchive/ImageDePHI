@@ -12,8 +12,11 @@ templates = Jinja2Templates(directory=pathlib.Path(__file__).parent / "templates
 def select_directory(request: Request, path: str = "/"):
     base_path = pathlib.Path(path)
 
-    if not base_path.is_dir():
+    if not base_path.exists():
         raise HTTPException(status_code=404, detail="Directory not found")
+
+    if not base_path.is_dir():
+        raise HTTPException(status_code=404, detail="Not a directory")
 
     bread_crumbs = list(reversed(base_path.parents))
     bread_crumbs.append(base_path)
@@ -28,4 +31,8 @@ def select_directory(request: Request, path: str = "/"):
 
 @app.post("/directory_selection/")
 def selection(directory: str = Form()):  # noqa: B008
-    return {"message": "You chose this directory: %s" % directory}
+    selection = pathlib.Path(directory)
+    if not selection.is_dir():
+        raise HTTPException(status_code=404, detail="Directory not found")
+
+    return {"message": "You chose this directory: %s" % selection}
