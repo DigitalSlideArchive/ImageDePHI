@@ -14,7 +14,7 @@
             <ul>
                 {% for directory in directories %}
                     <li style="list-style-type:none">
-                    <input type="checkbox", id="{{ directory }}", value="{{ directory }}", name="directory">
+                    <input type="radio", id="{{ directory }}", value="{{ directory }}", name="directory">
                         <a href="/?path={{ directory|urlencode }}">{{ directory.name }}</a>
                     </li>
                 {% endfor %}
