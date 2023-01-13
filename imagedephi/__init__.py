@@ -35,7 +35,7 @@ class TiffMetadataRedactionPlan:
     base_rules: list[TiffMetadataRule]
     override_rules: list[TiffMetadataRule]
 
-    def __add_tag_to_plan(self, tag: tifftools.Tag):
+    def __add_tag_to_plan(self, tag: tifftools.TiffTag):
         """Determine how to handle a given tag."""
 
         for rule in self.override_rules:
@@ -89,8 +89,8 @@ class TiffMetadataRedactionPlan:
             for tag in self.no_match_tags:
                 click.echo(f"{tag.value} - {tag.name}")
 
-    def __redact_one_tag(self, ifd: IFD, tag: tifftools.Tag):
-        rule, _ = self.redaction_steps.get(tag.value, None)
+    def __redact_one_tag(self, ifd: IFD, tag: tifftools.TiffTag):
+        rule, _ = self.redaction_steps.get(tag.value, (None, None))
         if rule:
             rule.apply(ifd)
 
@@ -200,6 +200,6 @@ def redact_images_using_rules(
 
 
 def show_redaction_plan(image_path: click.Path, base_rules: RuleSet, override_rules: RuleSet):
-    tiff_info = tifftools.read_tiff(image_path)
+    tiff_info = tifftools.read_tiff(str(image_path))
     redaction_plan = TiffMetadataRedactionPlan(base_rules, override_rules, tiff_info)
     redaction_plan.report_plan()
