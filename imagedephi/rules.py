@@ -7,7 +7,7 @@ import tifftools
 
 
 if TYPE_CHECKING:
-    from tifftools.tifftools import TagEntry
+    from tifftools.tifftools import IFD, TagEntry
 
 
 @dataclass
@@ -52,6 +52,14 @@ class TiffMetadataRule(Rule):
     def is_match(self, tag: tifftools.TiffTag) -> bool:
         return self.tag.value == tag.value
 
+    def apply(self, ifd: IFD):
+        if self.redact_method == RedactMethod.DELETE:
+            del ifd["tags"][self.tag.value]
+        elif self.redact_method == RedactMethod.REPLACE:
+            ifd["tags"][self.tag.value]["data"] = self.replace_value
+        elif self.redact_method == RedactMethod.KEEP:
+            pass
+
 
 @dataclass
 class RuleSet:
@@ -68,7 +76,7 @@ def make_tiff_metadata_rule(rule: dict) -> TiffMetadataRule:
         RedactMethod[rule["method"].upper()],
         RuleType.METADATA,
         tag,
-        rule.get("replace_value", ""),
+        rule.get("new_value", ""),
     )
 
 
