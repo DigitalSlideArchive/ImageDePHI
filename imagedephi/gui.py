@@ -9,7 +9,7 @@ templates = Jinja2Templates(directory=pathlib.Path(__file__).parent / "templates
 
 
 @app.get("/", response_class=HTMLResponse)
-def select_directory(request: Request, path: pathlib.Path = pathlib.Path("/")):
+def select_directory(request: Request, path: pathlib.Path = pathlib.Path("/")):  # noqa: B008
 
     if not path.is_dir():
         raise HTTPException(status_code=404, detail="Not a directory")
