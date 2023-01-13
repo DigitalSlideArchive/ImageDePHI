@@ -1,15 +1,10 @@
 from imagedephi import main
 from pathlib import Path
-import yaml
 
 import click
+import yaml
 
-from . import (
-    redact_images,
-    redact_images_using_rules,
-    build_ruleset,
-    show_redaction_plan
-)
+from . import build_ruleset, redact_images, redact_images_using_rules, show_redaction_plan
 
 
 @click.group
@@ -54,11 +49,7 @@ def run_rules(
 @click.argument("image", type=click.Path())
 @click.argument("base-rules", type=click.File("r"))
 @click.argument("override-rules", type=click.File("r"))
-def redaction_plan(
-    image: click.Path,
-    base_rules: click.File,
-    override_rules: click.File
-) -> None:
+def redaction_plan(image: click.Path, base_rules: click.File, override_rules: click.File) -> None:
     """Print the redaction plan for a given image and rules."""
     base_rule_set, override_rule_set = [
         build_ruleset(yaml.safe_load(rules)) for rules in [base_rules, override_rules]

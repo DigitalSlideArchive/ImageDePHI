@@ -4,17 +4,18 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import click
-from .rules import (
-    TiffMetadataRule,
-    RuleSet,
-    RedactMethod,
-    RuleFormat,
-    RuleType,
-    make_rule,
-    RuleSource,
-)
 import tifftools
 import tifftools.constants
+
+from .rules import (
+    RedactMethod,
+    RuleFormat,
+    RuleSet,
+    RuleSource,
+    RuleType,
+    TiffMetadataRule,
+    make_rule,
+)
 
 if TYPE_CHECKING:
     from tifftools.tifftools import IFD, TiffInfo
@@ -97,8 +98,7 @@ class TiffMetadataRedactionPlan:
         for ifd in ifds:
             for tag_id, tag_info in sorted(ifd["tags"].items()):
                 tag: tifftools.TiffTag = tifftools.constants.get_or_create_tag(
-                    tag_id,
-                    datatype=tifftools.Datatype[tag_info["datatype"]]
+                    tag_id, datatype=tifftools.Datatype[tag_info["datatype"]]
                 )
                 if not tag.isIFD():
                     self.__redact_one_tag(ifd, tag)
@@ -184,10 +184,7 @@ def redact_images(image_dir: Path, output_dir: Path) -> None:
 
 
 def redact_images_using_rules(
-    image_dir: Path,
-    output_dir: Path,
-    base_rules: RuleSet,
-    override_rules: RuleSet
+    image_dir: Path, output_dir: Path, base_rules: RuleSet, override_rules: RuleSet
 ) -> None:
     for child in image_dir.iterdir():
         try:
