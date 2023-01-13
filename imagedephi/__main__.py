@@ -4,7 +4,12 @@ import yaml
 
 import click
 
-from . import redact_images, build_ruleset, show_redaction_plan
+from . import (
+    redact_images,
+    redact_images_using_rules,
+    build_ruleset,
+    show_redaction_plan
+)
 
 
 @click.group
@@ -27,14 +32,22 @@ def run(input_dir: Path, output_dir: Path) -> None:
 
 
 @imagedephi.command
+@click.argument(
+    "input-dir", type=click.Path(exists=True, file_okay=False, readable=True, path_type=Path)
+)
+@click.argument(
+    "output-dir", type=click.Path(exists=True, file_okay=False, readable=True, path_type=Path)
+)
 @click.argument("base-rules", type=click.File("r"))
-@click.argument("rules-override", type=click.File('r'))
-def print_rulesets(base_rules: click.File, rules_override: click.File) -> None:
-    """Utility to print python representation of yaml rulesets."""
+@click.argument("override-rules", type=click.File("r"))
+def run_rules(
+    input_dir: Path, output_dir: Path, base_rules: click.File, override_rules: click.File
+):
+    """Redact images in a folder according to given rule sets."""
     base_rule_set, override_rule_set = [
-        build_ruleset(yaml.safe_load(rules)) for rules in [base_rules, rules_override]
+        build_ruleset(yaml.safe_load(rules)) for rules in [base_rules, override_rules]
     ]
-    click.echo([base_rule_set, override_rule_set])
+    redact_images_using_rules(input_dir, output_dir, base_rule_set, override_rule_set)
 
 
 @imagedephi.command
