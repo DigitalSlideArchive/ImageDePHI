@@ -1,24 +1,53 @@
 <!DOCTYPE html>
-<html lang ="en">
+<html lang="en">
+
 <head>
+    <script src="https://cdn.tailwindcss.com"></script>
     <title>Select Directory</title>
 </head>
+
 <body>
-<h2>
-{% for bread_crumb in bread_crumbs[1:] %}
-    <a href="/?path={{ bread_crumb|urlencode }}">{{ bread_crumb.name }}</a>/
-{% endfor %}
-</h2>
-    <form method="POST", action="/directory_selection/">
-        <input type="submit", value="Choose Directory">
-            <ul>
-                {% for directory in directories %}
-                    <li style="list-style-type:none">
-                    <input type="radio", id="{{ directory }}", value="{{ directory }}", name="directory">
-                        <a href="/?path={{ directory|urlencode }}">{{ directory.name }}</a>
-                    </li>
-                {% endfor %}
-            </ul>
-    </form>
+    <div class="flex justify-center">
+        <form method="POST" , action="/directory_selection/" class="flex flex-col">
+            <div class="flex rounded w-screen">
+                <div class="flex-1 border-b-2 border-r p-2 w-44">
+                    <h2 class="text-lg font-semibold">Input Directory</h2>
+                    <h3>
+                        {% for bread_crumb in bread_crumbs[1:] %}
+                        <a class="text-blue-700" href="/?path={{ bread_crumb|urlencode }}">{{ bread_crumb.name }}</a>/
+                        {% endfor %}
+                    </h3>
+                    <ul>
+                        {% for directory in directories %}
+                        <li style="list-style-type:none">
+                            <input type="radio" , id="{{ directory }}" , value="{{ directory }}" , name="directory">
+                            <a class="text-blue-700" href="/?path={{ directory|urlencode }}">{{ directory.name }}</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="flex-1 border-b-2 border-l p-2 w-44">
+                    <h2 class="text-lg font-semibold">Output Directory</h2>
+                    <h3>
+                        {% for bread_crumb in bread_crumbs[1:] %}
+                        <a class="text-blue-700" href="/?path={{ bread_crumb|urlencode }}">{{ bread_crumb.name }}</a>/
+                        {% endfor %}
+                    </h3>
+                    <ul>
+                        {% for output in directories %}
+                        <li style="list-style-type:none">
+                            <input type="radio" , id="{{ output }}" , value="{{ output }}" , name="output">
+                            <a class="text-blue-700" href="/?path={{ output|urlencode }}">{{ output.name }}</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <button type="submit" , class="bg-sky-700 rounded-md text-white px-5 py-2 w-max self-end"> Choose
+                Directories
+            </button>
+        </form>
+    </div>
 </body>
+
 </html>

@@ -26,8 +26,20 @@ def select_directory(request: Request, path: pathlib.Path = pathlib.Path("/")): 
 
 
 @app.post("/directory_selection/")
+<<<<<<< HEAD
 def selection(directory: pathlib.Path = Form()):  # noqa: B008
     if not directory.is_dir():
         raise HTTPException(status_code=404, detail="Directory not found")
 
     return {"message": "You chose this directory: %s" % directory}
+=======
+def selection(directory: str = Form(), output: str = Form()):  # noqa: B008
+    outputSelection = pathlib.Path(output)
+    selection = pathlib.Path(directory)
+    if not selection.is_dir():
+        raise HTTPException(status_code=404, detail="Directory not found")
+
+    return {
+        "message": "You chose this directory: %s and this output: %s" % (selection, outputSelection)
+    }
+>>>>>>> Update styling using tailwind
