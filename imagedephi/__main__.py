@@ -1,5 +1,6 @@
 from imagedephi import main
 from pathlib import Path
+from typing import TextIO
 
 import click
 import yaml
@@ -35,9 +36,7 @@ def run(input_dir: Path, output_dir: Path) -> None:
 )
 @click.argument("base-rules", type=click.File("r"))
 @click.argument("override-rules", type=click.File("r"))
-def run_rules(
-    input_dir: Path, output_dir: Path, base_rules: click.File, override_rules: click.File
-):
+def run_rules(input_dir: Path, output_dir: Path, base_rules: TextIO, override_rules: TextIO):
     """Redact images in a folder according to given rule sets."""
     base_rule_set, override_rule_set = [
         build_ruleset(yaml.safe_load(rules)) for rules in [base_rules, override_rules]
@@ -49,7 +48,7 @@ def run_rules(
 @click.argument("image", type=click.Path())
 @click.argument("base-rules", type=click.File("r"))
 @click.argument("override-rules", type=click.File("r"))
-def redaction_plan(image: click.Path, base_rules: click.File, override_rules: click.File) -> None:
+def redaction_plan(image: click.Path, base_rules: TextIO, override_rules: TextIO) -> None:
     """Print the redaction plan for a given image and rules."""
     base_rule_set, override_rule_set = [
         build_ruleset(yaml.safe_load(rules)) for rules in [base_rules, override_rules]
