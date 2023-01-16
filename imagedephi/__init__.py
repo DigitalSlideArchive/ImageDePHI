@@ -37,7 +37,6 @@ class TiffMetadataRedactionPlan:
 
     def __add_tag_to_plan(self, tag: tifftools.TiffTag):
         """Determine how to handle a given tag."""
-
         for rule in self.override_rules:
             if rule.is_match(tag):
                 self.redaction_steps[tag.value] = (rule, RuleSource.OVERRIDE)
