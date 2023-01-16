@@ -77,6 +77,14 @@ class TiffMetadataRedactionPlan:
         ]
         self.__build_redaction_steps(self.image_data["ifds"])
 
+    def report_missing_rules(self):
+        if len(self.no_match_tags) == 0:
+            click.echo("This redaction plan is comprehensive.")
+        else:
+            click.echo("The following tags could not be redacted given the current set of rules.")
+            for tag in self.no_match_tags:
+                click.echo(f"{tag.value} - {tag.name}")
+
     def report_plan(self):
         click.echo("Tiff Metadata Redaction Plan\n")
         for key in self.redaction_steps:
@@ -84,10 +92,7 @@ class TiffMetadataRedactionPlan:
             source = "Base" if self.redaction_steps[key][1] == RuleSource.BASE else "Override"
             tag = tifftools.constants.Tag[key]
             click.echo(f"Tag {tag.value} - {tag.name}: {rule.redact_method} ({source})")
-        if len(self.no_match_tags) > 0:
-            click.echo("The following tags could not be redacted given the current set of rules.")
-            for tag in self.no_match_tags:
-                click.echo(f"{tag.value} - {tag.name}")
+        self.report_missing_rules()
 
     def __redact_one_tag(self, ifd: IFD, tag: tifftools.TiffTag):
         rule, _ = self.redaction_steps.get(tag.value, (None, None))
