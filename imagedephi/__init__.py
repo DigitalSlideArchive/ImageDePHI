@@ -199,9 +199,13 @@ def redact_images_using_rules(
             continue
         click.echo(f"Redacting {child.name}...")
         redaction_plan = TiffMetadataRedactionPlan(base_rules, override_rules, tiff_info)
-        redaction_plan.execute_plan()
-        output_path = get_output_path(child, output_dir)
-        tifftools.write_tiff(tiff_info, output_path)
+        if len(redaction_plan.no_match_tags):
+            click.echo(f"Redaction could not be performed for {child.name}.")
+            redaction_plan.report_missing_rules()
+        else:
+            redaction_plan.execute_plan()
+            output_path = get_output_path(child, output_dir)
+            tifftools.write_tiff(tiff_info, output_path)
 
 
 def show_redaction_plan(image_path: click.Path, base_rules: RuleSet, override_rules: RuleSet):
