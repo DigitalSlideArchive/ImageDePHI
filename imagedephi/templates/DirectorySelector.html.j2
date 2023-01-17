@@ -13,15 +13,20 @@
                 <div class="flex-1 border-b-2 border-r p-2 w-44">
                     <h2 class="text-lg font-semibold">Input Directory</h2>
                     <h3>
-                        {% for bread_crumb in bread_crumbs[1:] %}
-                        <a class="text-blue-700" href="/?path={{ bread_crumb|urlencode }}">{{ bread_crumb.name }}</a>/
+                        {% for bread_crumb in input_bread_crumbs[1:] %}
+                        <a class="text-blue-700"
+                            href="/?input_directory={{ bread_crumb|urlencode }}/?output_directory={{ current_output|urlencode }}">{{
+                            bread_crumb.name }}</a>/
                         {% endfor %}
                     </h3>
                     <ul>
-                        {% for directory in directories %}
+                        {% for input in input_directories %}
                         <li style="list-style-type:none">
-                            <input type="radio" , id="{{ directory }}" , value="{{ directory }}" , name="directory">
-                            <a class="text-blue-700" href="/?path={{ directory|urlencode }}">{{ directory.name }}</a>
+                            <input type="radio" , id="{{ input_directory }}" , value="{{ input }}" ,
+                                name="input_directory">
+                            <a class="text-blue-700"
+                                href="/?input_directory={{ input|urlencode }}/&output_directory={{ current_output|urlencode }}">{{
+                                input.name }}</a>
                         </li>
                         {% endfor %}
                     </ul>
@@ -29,15 +34,21 @@
                 <div class="flex-1 border-b-2 border-l p-2 w-44">
                     <h2 class="text-lg font-semibold">Output Directory</h2>
                     <h3>
-                        {% for bread_crumb in bread_crumbs[1:] %}
-                        <a class="text-blue-700" href="/?path={{ bread_crumb|urlencode }}">{{ bread_crumb.name }}</a>/
+                        {% for bread_crumb in output_bread_crumbs[1:] %}
+                        <a class="text-blue-700"
+                            href="/?input_directory={{ current_input|urlencode }}/&output_directory={{ bread_crumb|urlencode }}">{{
+                            bread_crumb.name }}</a>/
                         {% endfor %}
                     </h3>
                     <ul>
-                        {% for output in directories %}
+                        {% for output in output_directories %}
                         <li style="list-style-type:none">
-                            <input type="radio" , id="{{ output }}" , value="{{ output }}" , name="output">
-                            <a class="text-blue-700" href="/?path={{ output|urlencode }}">{{ output.name }}</a>
+                            <input type="radio" , id="{{ output_directory }}" , value="{{ output }}" ,
+                                name="output_directory">
+                            <a class="text-blue-700"
+                                href="/?input_directory={{ current_input|urlencode }}/&output_directory={{ output|urlencode }}">{{
+                                output.name
+                                }}</a>
                         </li>
                         {% endfor %}
                     </ul>
