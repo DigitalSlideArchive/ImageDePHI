@@ -15,7 +15,7 @@
                     <h3>
                         {% for bread_crumb in input_bread_crumbs[1:] %}
                         <a class="text-blue-700"
-                            href="/?input_directory={{ bread_crumb|urlencode }}/?output_directory={{ current_output|urlencode }}">{{
+                            href="/?input_directory={{ bread_crumb|urlencode }}/&output_directory={{ current_output|urlencode }}">{{
                             bread_crumb.name }}</a>/
                         {% endfor %}
                     </h3>
