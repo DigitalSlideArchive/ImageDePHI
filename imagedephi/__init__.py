@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
+from collections.abc import Generator
 
 import click
 import tifftools
@@ -35,7 +36,24 @@ class TiffMetadataRedactionPlan:
     base_rules: list[TiffMetadataRule]
     override_rules: list[TiffMetadataRule]
 
-    def __add_tag_to_plan(self, tag: tifftools.TiffTag):
+    @staticmethod
+    def _iter_tiff_tag_entries(ifds: list[IFD]) -> Generator[
+        tuple[tifftools.TiffTag, IFD], None, None
+    ]:
+        for ifd in ifds:
+            for tag_id, entry in sorted(ifd["tags"].items()):
+                tag: tifftools.TiffTag = tifftools.constants.get_or_create_tag(
+                    tag_id, datatype=tifftools.Datatype[entry["datatype"]]
+                )
+                if not tag.isIFD():
+                    yield tag, ifd
+                else:
+                    # entry['ifds'] contains a list of lists
+                    # see tifftools.read_tiff
+                    for sub_ifds in entry.get("ifds", []):
+                        yield from TiffMetadataRedactionPlan._iter_tiff_tag_entries(sub_ifds)
+
+    def _add_tag_to_plan(self, tag: tifftools.TiffTag) -> None:
         """Determine how to handle a given tag."""
         for rule in self.override_rules:
             if rule.is_match(tag):
@@ -47,22 +65,11 @@ class TiffMetadataRedactionPlan:
                 return
         self.no_match_tags.append(tag)
 
-    def __build_redaction_steps(self, ifds: list[IFD]) -> None:
-        for ifd in ifds:
-            for tag_id, tag_info in sorted(ifd["tags"].items()):
-                tag: tifftools.TiffTag = tifftools.constants.get_or_create_tag(
-                    tag_id,
-                    datatype=tifftools.Datatype[tag_info["datatype"]],
-                )
-                if not tag.isIFD():
-                    self.__add_tag_to_plan(tifftools.constants.Tag[tag_id])
-                else:
-                    # tag_info['ifds'] contains a list of lists
-                    # see tifftools.read_tiff
-                    for sub_ifds in tag_info.get("ifds", []):
-                        self.__build_redaction_steps(sub_ifds)
+    def _build_redaction_steps(self, ifds: list[IFD]) -> None:
+        for tag, _ in self._iter_tiff_tag_entries(ifds):
+            self._add_tag_to_plan(tag)
 
-    def __init__(self, base_rules: RuleSet, override_rules: RuleSet, tiff_info: TiffInfo):
+    def __init__(self, base_rules: RuleSet, override_rules: RuleSet, tiff_info: TiffInfo) -> None:
         self.redaction_steps = {}
         self.no_match_tags = []
         self.image_data = tiff_info
@@ -74,9 +81,9 @@ class TiffMetadataRedactionPlan:
             for rule in override_rules.rules[RuleFormat.TIFF]
             if isinstance(rule, TiffMetadataRule)
         ]
-        self.__build_redaction_steps(self.image_data["ifds"])
+        self._build_redaction_steps(self.image_data["ifds"])
 
-    def report_missing_rules(self):
+    def report_missing_rules(self) -> None:
         if len(self.no_match_tags) == 0:
             click.echo("This redaction plan is comprehensive.")
         else:
@@ -84,36 +91,29 @@ class TiffMetadataRedactionPlan:
             for tag in self.no_match_tags:
                 click.echo(f"{tag.value} - {tag.name}")
 
-    def report_plan(self):
+    def report_plan(self) -> None:
         click.echo("Tiff Metadata Redaction Plan\n")
-        for key in self.redaction_steps:
-            rule = self.redaction_steps[key][0]
-            source = "Base" if self.redaction_steps[key][1] == RuleSource.BASE else "Override"
+        for key, (rule, rule_source) in self.redaction_steps.items():
+            source = "Base" if rule_source == RuleSource.BASE else "Override"
+            # What if tifftools can't find the tag
             tag = tifftools.constants.Tag[key]
+            # Use rule title if it exists
             click.echo(f"Tag {tag.value} - {tag.name}: {rule.redact_method} ({source})")
         self.report_missing_rules()
 
-    def __redact_one_tag(self, ifd: IFD, tag: tifftools.TiffTag):
-        rule, _ = self.redaction_steps.get(tag.value, (None, None))
-        if rule:
+    def _redact_one_tag(self, ifd: IFD, tag: tifftools.TiffTag) -> None:
+        if tag.value in self.redaction_steps:
+            rule = self.redaction_steps[tag.value][0]
             rule.apply(ifd)
 
-    def __redact_image(self, ifds: list[IFD]):
-        for ifd in ifds:
-            for tag_id, tag_info in sorted(ifd["tags"].items()):
-                tag: tifftools.TiffTag = tifftools.constants.get_or_create_tag(
-                    tag_id, datatype=tifftools.Datatype[tag_info["datatype"]]
-                )
-                if not tag.isIFD():
-                    self.__redact_one_tag(ifd, tag)
-                else:
-                    for sub_ifds in tag_info.get("ifds", []):
-                        self.__redact_image(sub_ifds)
+    def _redact_image(self, ifds: list[IFD]) -> None:
+        for tag, ifd in self._iter_tiff_tag_entries(ifds):
+            self._redact_one_tag(ifd, tag)
 
-    def execute_plan(self):
+    def execute_plan(self) -> None:
         """Modify the image data according to the redaction rules."""
         ifds = self.image_data["ifds"]
-        self.__redact_image(ifds)
+        self._redact_image(ifds)
 
 
 def build_ruleset(rules_dict: dict) -> RuleSet:
