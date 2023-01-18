@@ -2,63 +2,69 @@
 <html lang="en">
 
 <head>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <title>Select Directory</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@2.47.0/dist/full.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Select Directory</title>
 </head>
 
-<body>
-    <div class="flex justify-center">
-        <form method="POST" , action="/directory_selection/" class="flex flex-col">
-            <div class="flex rounded w-screen">
-                <div class="flex-1 border-b-2 border-r p-2 w-44">
-                    <h2 class="text-lg font-semibold">Input Directory</h2>
-                    <h3>
-                        {% for bread_crumb in input_bread_crumbs[1:] %}
-                        <a class="text-blue-700"
-                            href="/?input_directory={{ bread_crumb|urlencode }}/&output_directory={{ current_output|urlencode }}">{{
-                            bread_crumb.name }}</a>/
-                        {% endfor %}
-                    </h3>
-                    <ul>
-                        {% for input in input_directories %}
-                        <li style="list-style-type:none">
-                            <input type="radio" , id="{{ input_directory }}" , value="{{ input }}" ,
-                                name="input_directory">
-                            <a class="text-blue-700"
-                                href="/?input_directory={{ input|urlencode }}/&output_directory={{ current_output|urlencode }}">{{
-                                input.name }}</a>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                <div class="flex-1 border-b-2 border-l p-2 w-44">
-                    <h2 class="text-lg font-semibold">Output Directory</h2>
-                    <h3>
-                        {% for bread_crumb in output_bread_crumbs[1:] %}
-                        <a class="text-blue-700"
-                            href="/?input_directory={{ current_input|urlencode }}/&output_directory={{ bread_crumb|urlencode }}">{{
-                            bread_crumb.name }}</a>/
-                        {% endfor %}
-                    </h3>
-                    <ul>
-                        {% for output in output_directories %}
-                        <li style="list-style-type:none">
-                            <input type="radio" , id="{{ output_directory }}" , value="{{ output }}" ,
-                                name="output_directory">
-                            <a class="text-blue-700"
-                                href="/?input_directory={{ current_input|urlencode }}/&output_directory={{ output|urlencode }}">{{
-                                output.name
-                                }}</a>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            </div>
-            <button type="submit" , class="bg-sky-700 rounded-md text-white px-5 py-2 w-max self-end"> Choose
-                Directories
-            </button>
-        </form>
+<body class="bg-base-300 flex justify-center min-h-screen">
+  <form method="POST" , action="/directory_selection/" class="card bg-base-200 w-2/5 m-8">
+    <div class="card-body">
+      <div class="card-title flex justify-between">
+        <span>Directory Selector</span>
+        <button type="submit" class="btn btn-primary btn-active">
+          Choose Directories
+        </button>
+      </div>
+      <div class="grow flex">
+        <div class="grow border-r border-black p-2 w-1/2">
+          <h2 class="text-lg font-semibold">Input Directory</h2>
+          <h3 class="mb-4">
+            {% for bread_crumb in input_bread_crumbs %}
+            <a class="text-blue-700"
+              href="/?input_directory={{ bread_crumb|urlencode }}/&output_directory={{ current_output|urlencode }}">
+              {{ bread_crumb.name }}/
+            </a>
+            {% endfor %}
+          </h3>
+          <ul>
+            {% for input in input_directories %}
+            <li>
+              <input type="radio" , id="{{ input_directory }}" , value="{{ input }}" , name="input_directory">
+              <a class="text-blue-700"
+                href="/?input_directory={{ input|urlencode }}/&output_directory={{ current_output|urlencode }}">
+                {{ input.name }}/
+              </a>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+        <div class="grow pl-6 w-1/2">
+          <h2 class="text-lg font-semibold">Output Directory</h2>
+          <h3 class="mb-4">
+            {% for bread_crumb in output_bread_crumbs %}
+            <a class="text-blue-700"
+              href="/?input_directory={{ current_input|urlencode }}/&output_directory={{ bread_crumb|urlencode }}">
+              {{ bread_crumb.name }}/
+            </a>
+            {% endfor %}
+          </h3>
+          <ul>
+            {% for output in output_directories %}
+            <li>
+              <input type="radio" , id="{{ output_directory }}" , value="{{ output }}" , name="output_directory">
+              <a class="text-blue-700"
+                href="/?input_directory={{ current_input|urlencode }}/&output_directory={{ output|urlencode }}">
+                {{ output.name }}/
+              </a>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
     </div>
+  </form>
 </body>
 
 </html>
