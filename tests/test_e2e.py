@@ -3,7 +3,7 @@ from pathlib import Path
 from click.testing import CliRunner
 import pytest
 
-from imagedephi.__main__ import imagedephi
+from imagedephi import main
 
 
 @pytest.fixture
@@ -11,13 +11,8 @@ def runner() -> CliRunner:
     return CliRunner()
 
 
-@pytest.fixture
-def data_dir() -> Path:
-    return Path(__file__).parent / "data"
-
-
-def test_e2e(data_dir: Path, tmp_path: Path, runner: CliRunner) -> None:
-    result = runner.invoke(imagedephi, ["run", str(data_dir / "input"), str(tmp_path)])
+def test_e2e_run(data_dir: Path, tmp_path: Path, runner: CliRunner) -> None:
+    result = runner.invoke(main.imagedephi, ["run", str(data_dir / "input"), str(tmp_path)])
 
     assert result.exit_code == 0
     output_file = tmp_path / "REDACTED_test_image.tif"
