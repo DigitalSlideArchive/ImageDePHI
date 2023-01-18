@@ -1,18 +1,20 @@
-import pathlib
+from __future__ import annotations
+
+from pathlib import Path
 
 from fastapi import FastAPI, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
 app = FastAPI()
-templates = Jinja2Templates(directory=pathlib.Path(__file__).parent / "templates")
+templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
 
 
 @app.get("/", response_class=HTMLResponse)
 def select_directory(
     request: Request,
-    input_directory: pathlib.Path = pathlib.Path("/"),  # noqa: B008
-    output_directory: pathlib.Path = pathlib.Path("/"),  # noqa: B008
+    input_directory: Path = Path("/"),  # noqa: B008
+    output_directory: Path = Path("/"),  # noqa: B008
 ):
 
     if not input_directory.is_dir():
@@ -48,9 +50,7 @@ def select_directory(
 
 
 @app.post("/directory_selection/")
-def selection(
-    input_directory: pathlib.Path = Form(), output_directory: pathlib.Path = Form()  # noqa: B008
-):
+def selection(input_directory: Path = Form(), output_directory: Path = Form()):  # noqa: B008
     if not input_directory.is_dir():
         raise HTTPException(status_code=404, detail="Input directory not found")
     if not output_directory.is_dir():
