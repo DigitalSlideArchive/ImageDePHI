@@ -22,36 +22,70 @@ def test_gui_navigate_success(
     client: TestClient,
     tmp_path: Path,
 ):
-    response = client.get("/", params={"path": str(tmp_path)})
+    response = client.get(
+        "/", params={"input_directory": str(tmp_path), "output_directory": str(tmp_path)}
+    )
 
     assert response.status_code == 200
 
 
-def test_gui_navigate_not_found(
+def test_gui_navigate_input_not_found(
     client: TestClient,
     tmp_path: Path,
 ):
-    response = client.get("/", params={"path": str(tmp_path / "fake")})
+    response = client.get("/", params={"input_directory": str(tmp_path / "fake")})
 
     assert response.status_code == 404
-    assert response.json() == {"detail": "Not a directory"}
+    assert response.json() == {"detail": "Input directory not a directory"}
+
+
+def test_gui_navigate_output_not_found(
+    client: TestClient,
+    tmp_path: Path,
+):
+    response = client.get("/", params={"output_directory": str(tmp_path / "fake")})
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Output directory not a directory"}
 
 
 def test_gui_directory_selection(
     client: TestClient,
     tmp_path: Path,
 ):
-    response = client.post("/directory_selection/", data={"directory": str(tmp_path)})
+    response = client.post(
+        "/directory_selection/",
+        data={"input_directory": str(tmp_path), "output_directory": str(tmp_path)},
+    )
 
     assert response.status_code == 200
-    assert response.json() == {"message": "You chose this directory: %s" % tmp_path}
+    assert response.json() == {
+        "message": "You chose this input directory: %s and this output directory: %s"
+        % (tmp_path, tmp_path)
+    }
 
 
-def test_gui_directory_selection_failure(
+def test_gui_directory_selection_input_failure(
     client: TestClient,
     tmp_path: Path,
 ):
-    response = client.post("/directory_selection/", data={"directory": str(tmp_path / "fake")})
+    response = client.post(
+        "/directory_selection/",
+        data={"input_directory": str(tmp_path / "fake"), "output_directory": str(tmp_path)},
+    )
 
     assert response.status_code == 404
-    assert response.json() == {"detail": "Directory not found"}
+    assert response.json() == {"detail": "Input directory not found"}
+
+
+def test_gui_directory_selection_output_failure(
+    client: TestClient,
+    tmp_path: Path,
+):
+    response = client.post(
+        "/directory_selection/",
+        data={"input_directory": str(tmp_path), "output_directory": str(tmp_path / "fake")},
+    )
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Output directory not found"}
