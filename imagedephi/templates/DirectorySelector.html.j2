@@ -17,12 +17,12 @@
           Choose Directories
         </button>
       </div>
-      <div class="grow flex">
-        <div class="basis-1/2 flex-none  border-r border-black p-2 ">
+      <div class="grow flex divide-x-2">
+        <div class="basis-1/2 flex-none pr-8">
           <h2 class="text-lg font-semibold">Input Directory</h2>
-          <h3 class="mb-4">
+          <h3 class="mb-4 border-b-2">
             {% for bread_crumb in input_bread_crumbs %}
-            <a class="text-blue-700"
+            <a class="text-blue-700 mr-1"
               href="/?input_directory={{ bread_crumb|urlencode }}/&output_directory={{ current_output|urlencode }}">
               {{ bread_crumb.name }}/
             </a>
@@ -40,11 +40,11 @@
             {% endfor %}
           </ul>
         </div>
-        <div class="basis-1/2 flex-none pl-6 ">
+        <div class="basis-1/2 flex-none pl-8 ">
           <h2 class="text-lg font-semibold">Output Directory</h2>
-          <h3 class="mb-4">
+          <h3 class="mb-4 border-b-2">
             {% for bread_crumb in output_bread_crumbs %}
-            <a class="text-blue-700"
+            <a class="text-blue-700 mr-1"
               href="/?input_directory={{ current_input|urlencode }}/&output_directory={{ bread_crumb|urlencode }}">
               {{ bread_crumb.name }}/
             </a>
