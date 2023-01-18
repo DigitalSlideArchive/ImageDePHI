@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 import tifftools
 
@@ -42,12 +42,19 @@ class Rule:
     redact_method: RedactMethod
     rule_type: RuleType
 
+    # Consider factory class fn here
+    # def make(...):
+
+    def get_title(self) -> str:
+        """Generate a title for the rule."""
+        return self.title
+
 
 @dataclass
 class TiffMetadataRule(Rule):
     tag: tifftools.TiffTag
     replace_value: str | bytes | list[int | float]
-    rule_type = RuleType.METADATA
+    rule_type: Literal[RuleType.METADATA] = RuleType.METADATA
 
     def is_match(self, tag: tifftools.TiffTag) -> bool:
         return self.tag.value == tag.value
@@ -68,21 +75,21 @@ class RuleSet:
     rules: dict[RuleFormat, list[Rule]]
 
 
-def make_tiff_metadata_rule(rule: dict) -> TiffMetadataRule:
+def _make_tiff_metadata_rule(rule: dict) -> TiffMetadataRule:
     """Transform a rule from schema into an object."""
     tag = tifftools.constants.Tag[rule["tag"]]
     return TiffMetadataRule(
-        rule["title"],
-        RedactMethod[rule["method"].upper()],
-        RuleType.METADATA,
-        tag,
-        rule.get("new_value", ""),
+        title=rule["title"],
+        redact_method=RedactMethod[rule["method"].upper()],
+        rule_type=RuleType.METADATA,
+        tag=tag,
+        replace_value=rule.get("new_value", ""),
     )
 
 
-rule_function_mapping = {RuleFormat.TIFF: {RuleType.METADATA: make_tiff_metadata_rule}}
+_rule_function_mapping = {RuleFormat.TIFF: {RuleType.METADATA: _make_tiff_metadata_rule}}
 
 
 def make_rule(rule_format: RuleFormat, rule_type: RuleType, rule: dict) -> Rule:
-    rule_function = rule_function_mapping[rule_format][rule_type]
+    rule_function = _rule_function_mapping[rule_format][rule_type]
     return rule_function(rule)
