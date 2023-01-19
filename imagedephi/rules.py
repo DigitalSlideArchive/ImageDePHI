@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING
 
 import tifftools
 
@@ -54,7 +54,6 @@ class Rule:
 class TiffMetadataRule(Rule):
     tag: tifftools.TiffTag
     replace_value: str | bytes | list[int | float]
-    rule_type: Literal[RuleType.METADATA] = RuleType.METADATA
 
     def is_match(self, tag: tifftools.TiffTag) -> bool:
         return self.tag.value == tag.value
