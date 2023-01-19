@@ -60,8 +60,9 @@ def test_gui_directory_selection(
 
     assert response.status_code == 200
     assert response.json() == {
-        "message": "You chose this input directory: %s and this output directory: %s"
-        % (tmp_path, tmp_path)
+        "message": (
+            f"You chose this input directory: {tmp_path} and this output directory: {tmp_path}"
+        )
     }
 
 

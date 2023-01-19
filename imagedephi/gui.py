@@ -72,6 +72,8 @@ def selection(
     # Shutdown after the response is sent, as this is the terminal endpoint
     background_tasks.add_task(shutdown_event.set)
     return {
-        "message": "You chose this input directory: %s and this output directory: %s"
-        % (input_directory, output_directory)
+        "message": (
+            f"You chose this input directory: {input_directory} "
+            f"and this output directory: {output_directory}"
+        )
     }
