@@ -11,7 +11,7 @@ def client() -> TestClient:
     return TestClient(app)
 
 
-def test_gui_home(client: TestClient):
+def test_gui_home(client: TestClient) -> None:
     response = client.get("/")
 
     assert response.status_code == 200
@@ -21,7 +21,7 @@ def test_gui_home(client: TestClient):
 def test_gui_navigate_success(
     client: TestClient,
     tmp_path: Path,
-):
+) -> None:
     response = client.get(
         "/", params={"input_directory": str(tmp_path), "output_directory": str(tmp_path)}
     )
@@ -32,7 +32,7 @@ def test_gui_navigate_success(
 def test_gui_navigate_input_not_found(
     client: TestClient,
     tmp_path: Path,
-):
+) -> None:
     response = client.get("/", params={"input_directory": str(tmp_path / "fake")})
 
     assert response.status_code == 404
@@ -42,7 +42,7 @@ def test_gui_navigate_input_not_found(
 def test_gui_navigate_output_not_found(
     client: TestClient,
     tmp_path: Path,
-):
+) -> None:
     response = client.get("/", params={"output_directory": str(tmp_path / "fake")})
 
     assert response.status_code == 404
@@ -52,7 +52,7 @@ def test_gui_navigate_output_not_found(
 def test_gui_directory_selection(
     client: TestClient,
     tmp_path: Path,
-):
+) -> None:
     response = client.post(
         "/directory_selection/",
         data={"input_directory": str(tmp_path), "output_directory": str(tmp_path)},
@@ -68,7 +68,7 @@ def test_gui_directory_selection(
 def test_gui_directory_selection_input_failure(
     client: TestClient,
     tmp_path: Path,
-):
+) -> None:
     response = client.post(
         "/directory_selection/",
         data={"input_directory": str(tmp_path / "fake"), "output_directory": str(tmp_path)},
@@ -81,7 +81,7 @@ def test_gui_directory_selection_input_failure(
 def test_gui_directory_selection_output_failure(
     client: TestClient,
     tmp_path: Path,
-):
+) -> None:
     response = client.post(
         "/directory_selection/",
         data={"input_directory": str(tmp_path), "output_directory": str(tmp_path / "fake")},

@@ -14,7 +14,7 @@ from imagedephi.redact import redact_images
 
 
 @click.group
-def imagedephi():
+def imagedephi() -> None:
     """Redact microscopy whole slide images."""
     pass
 
