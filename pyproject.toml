@@ -11,12 +11,12 @@ dependencies = [
     "tifftools",
     "fastapi",
     "python-multipart",
-    "uvicorn[standard]",
     "Jinja2",
+    "hypercorn",
 ]
 
 [project.scripts]
-imagedephi = "imagedephi.__main__:imagedephi"
+imagedephi = "imagedephi.main:imagedephi"
 
 # Prevent the automatic discovery of other directories
 # https://setuptools.pypa.io/en/latest/userguide/package_discovery.html#custom-discovery
