@@ -8,6 +8,8 @@ P = ParamSpec("P")
 
 
 def run_coroutine(f: Callable[P, Coroutine[None, None, T]]) -> Callable[P, T]:
+    """Decorate an async function to be run in a new event loop."""
+
     @wraps(f)
     def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
         return asyncio.run(f(*args, **kwargs))
