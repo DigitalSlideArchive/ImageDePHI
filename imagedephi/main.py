@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 from pathlib import Path
 import pkgutil
-from typing import TextIO
+from typing import Optional, TextIO
 import webbrowser
 
 import click
@@ -13,12 +13,7 @@ import yaml
 
 from imagedephi.async_utils import run_coroutine, wait_for_port
 from imagedephi.gui import app, shutdown_event
-from imagedephi.redact import (
-    build_ruleset,
-    redact_images,
-    redact_images_using_rules,
-    show_redaction_plan,
-)
+from imagedephi.redact import build_ruleset, redact_images, show_redaction_plan
 
 
 @click.group
@@ -32,36 +27,23 @@ def imagedephi() -> None:
     "input-dir", type=click.Path(exists=True, file_okay=False, readable=True, path_type=Path)
 )
 @click.argument(
-    "output-dir", type=click.Path(exists=True, file_okay=False, writable=True, path_type=Path)
-)
-def run(input_dir: Path, output_dir: Path) -> None:
-    """Run in CLI-only mode."""
-    redact_images(input_dir, output_dir)
-    click.echo("Done!")
-
-
-@imagedephi.command
-@click.argument(
-    "input-dir", type=click.Path(exists=True, file_okay=False, readable=True, path_type=Path)
-)
-@click.argument(
     "output-dir", type=click.Path(exists=True, file_okay=False, readable=True, path_type=Path)
 )
 @click.argument("override-rules", type=click.File("r"), required=False)
-def run_rules(input_dir: Path, output_dir: Path, override_rules: TextIO):
+def run(input_dir: Path, output_dir: Path, override_rules: Optional[TextIO]):
     """Redact images in a folder according to given rule sets."""
     base_rules_bytes = pkgutil.get_data("imagedephi", "base_rules.yaml")
     if base_rules_bytes is None:
         raise click.ClickException("There was an error with finding the base rules.")
     base_rule_set = build_ruleset(yaml.safe_load(base_rules_bytes))
     override_rule_set = build_ruleset(yaml.safe_load(override_rules)) if override_rules else None
-    redact_images_using_rules(input_dir, output_dir, base_rule_set, override_rule_set)
+    redact_images(input_dir, output_dir, base_rule_set, override_rule_set)
 
 
 @imagedephi.command
 @click.argument("image", type=click.Path())
 @click.argument("override-rules", type=click.File("r"), required=False)
-def redaction_plan(image: click.Path, override_rules: TextIO) -> None:
+def redaction_plan(image: click.Path, override_rules: Optional[TextIO]) -> None:
     """Print the redaction plan for a given image and rules."""
     click.echo(override_rules)
     base_rules_bytes = pkgutil.get_data("imagedephi", "base_rules.yaml")
