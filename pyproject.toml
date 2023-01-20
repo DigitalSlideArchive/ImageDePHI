@@ -25,6 +25,12 @@ imagedephi = "imagedephi.main:imagedephi"
 include = ["imagedephi*"]
 namespaces = false
 
+# Include the base set of rules in the distribution
+# https://setuptools.pypa.io/en/stable/userguide/datafiles.html#package-data
+[tool.setuptools.package-data]
+imagedephi = ["base_rules.yaml"]
+
+
 [tool.black]
 line-length = 100
 target-version = ["py310"]
