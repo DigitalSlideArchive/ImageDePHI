@@ -32,12 +32,28 @@ rules:
       tag: 270
       method: delete
       type: metadata
+    - title: Keep Orientation
+      tag: 274
+      method: keep
+      type: metadata
     - title: Keep SamplesPerPixel
       tag: 277
       method: keep
       type: metadata
+    - title: Keep XResolution
+      tag: 282
+      method: keep
+      type: metadata
+    - title: Keep YResolution
+      tag: 283
+      method: keep
+      type: metadata
     - title: Keep PlanarConfig
       tag: 284
+      method: keep
+      type: metadata
+    - title: Keep ResolutionUnit
+      tag: 296
       method: keep
       type: metadata
     - title: Keep TileWidth
@@ -54,6 +70,10 @@ rules:
       type: metadata
     - title: Keep TileByteCounts
       tag: 325
+      method: keep
+      type: metadata
+    - title: Keep SampleFormat
+      tag: 339
       method: keep
       type: metadata
     - title: Keep JPEGTables
