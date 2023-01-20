@@ -47,27 +47,28 @@ def run(input_dir: Path, output_dir: Path) -> None:
 @click.argument(
     "output-dir", type=click.Path(exists=True, file_okay=False, readable=True, path_type=Path)
 )
-@click.argument("override-rules", type=click.File("r"))
+@click.argument("override-rules", type=click.File("r"), required=False)
 def run_rules(input_dir: Path, output_dir: Path, override_rules: TextIO):
     """Redact images in a folder according to given rule sets."""
     base_rules_bytes = pkgutil.get_data("imagedephi", "base_rules.yaml")
     if base_rules_bytes is None:
         raise click.ClickException("There was an error with finding the base rules.")
     base_rule_set = build_ruleset(yaml.safe_load(base_rules_bytes))
-    override_rule_set = build_ruleset(yaml.safe_load(override_rules))
+    override_rule_set = build_ruleset(yaml.safe_load(override_rules)) if override_rules else None
     redact_images_using_rules(input_dir, output_dir, base_rule_set, override_rule_set)
 
 
 @imagedephi.command
 @click.argument("image", type=click.Path())
-@click.argument("override-rules", type=click.File("r"))
+@click.argument("override-rules", type=click.File("r"), required=False)
 def redaction_plan(image: click.Path, override_rules: TextIO) -> None:
     """Print the redaction plan for a given image and rules."""
+    click.echo(override_rules)
     base_rules_bytes = pkgutil.get_data("imagedephi", "base_rules.yaml")
     if base_rules_bytes is None:
         raise click.ClickException("There was an error with finding the base rules.")
     base_rule_set = build_ruleset(yaml.safe_load(base_rules_bytes))
-    override_rule_set = build_ruleset(yaml.safe_load(override_rules))
+    override_rule_set = build_ruleset(yaml.safe_load(override_rules)) if override_rules else None
     show_redaction_plan(image, base_rule_set, override_rule_set)
 
 
