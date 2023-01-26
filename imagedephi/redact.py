@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 from collections.abc import Generator
+import importlib.resources
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 import click
 import tifftools
 import tifftools.constants
+import yaml
 
 from imagedephi.rules import RuleFormat, RuleSet, RuleSource, RuleType, TiffMetadataRule, make_rule
 
@@ -131,9 +133,15 @@ def _get_output_path(file_path: Path, output_dir: Path) -> Path:
     return output_dir / f"REDACTED_{file_path.name}"
 
 
-def redact_images(
-    image_dir: Path, output_dir: Path, base_rules: RuleSet, override_rules: RuleSet | None
-) -> None:
+def get_base_rules():
+    base_rules_path = importlib.resources.files("imagedephi") / "base_rules.yaml"
+    with base_rules_path.open() as base_rules_stream:
+        base_rule_set = build_ruleset(yaml.safe_load(base_rules_stream))
+        return base_rule_set
+
+
+def redact_images(image_dir: Path, output_dir: Path, override_rules: RuleSet | None = None) -> None:
+    base_rules = get_base_rules()
     for child in image_dir.iterdir():
         try:
             tiff_info: TiffInfo = tifftools.read_tiff(child)
@@ -151,9 +159,8 @@ def redact_images(
             tifftools.write_tiff(tiff_info, output_path)
 
 
-def show_redaction_plan(
-    image_path: click.Path, base_rules: RuleSet, override_rules: RuleSet | None
-):
+def show_redaction_plan(image_path: click.Path, override_rules: RuleSet | None = None):
+    base_rules = get_base_rules()
     tiff_info = tifftools.read_tiff(str(image_path))
     redaction_plan = TiffMetadataRedactionPlan(tiff_info, base_rules, override_rules)
     redaction_plan.report_plan()
