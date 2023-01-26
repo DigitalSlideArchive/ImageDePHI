@@ -30,7 +30,12 @@ def imagedephi() -> None:
     "output-dir",
     type=click.Path(exists=True, file_okay=False, readable=True, writable=True, path_type=Path),
 )
-@click.argument("override-rules", type=click.File("r"), required=False)
+@click.option(
+    "-r",
+    "--override-rules",
+    type=click.File("r"),
+    help="Specify user-defined rules to override defaults",
+)
 def run(input_dir: Path, output_dir: Path, override_rules: TextIO | None):
     """Redact images in a folder according to given rule sets."""
     base_rules_bytes = pkgutil.get_data("imagedephi", "base_rules.yaml")
