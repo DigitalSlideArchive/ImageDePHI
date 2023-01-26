@@ -17,23 +17,23 @@ class TiffTagEntry:
 
 
 class RuleType(Enum):
-    METADATA = 1
-    IMAGE = 2
+    METADATA = "metadata"
+    IMAGE = "image"
 
 
 class RedactMethod(Enum):
-    REPLACE = 1
-    DELETE = 2
-    KEEP = 3
+    REPLACE = "replace"
+    DELETE = "delete"
+    KEEP = "keep"
 
 
 class RuleFormat(Enum):
-    TIFF = 1
+    TIFF = "tiff"
 
 
 class RuleSource(Enum):
-    BASE = 1
-    OVERRIDE = 2
+    BASE = "base"
+    OVERRIDE = "override"
 
 
 @dataclass
