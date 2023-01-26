@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Generator
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 import click
 import tifftools
@@ -62,7 +62,7 @@ class TiffMetadataRedactionPlan:
             self._add_tag_to_plan(tag)
 
     def __init__(
-        self, tiff_info: TiffInfo, base_rules: RuleSet, override_rules: Optional[RuleSet]
+        self, tiff_info: TiffInfo, base_rules: RuleSet, override_rules: RuleSet | None
     ) -> None:
         self.redaction_steps = {}
         self.no_match_tags = []
@@ -132,7 +132,7 @@ def _get_output_path(file_path: Path, output_dir: Path) -> Path:
 
 
 def redact_images(
-    image_dir: Path, output_dir: Path, base_rules: RuleSet, override_rules: Optional[RuleSet]
+    image_dir: Path, output_dir: Path, base_rules: RuleSet, override_rules: RuleSet | None
 ) -> None:
     for child in image_dir.iterdir():
         try:
@@ -152,7 +152,7 @@ def redact_images(
 
 
 def show_redaction_plan(
-    image_path: click.Path, base_rules: RuleSet, override_rules: Optional[RuleSet]
+    image_path: click.Path, base_rules: RuleSet, override_rules: RuleSet | None
 ):
     tiff_info = tifftools.read_tiff(str(image_path))
     redaction_plan = TiffMetadataRedactionPlan(tiff_info, base_rules, override_rules)

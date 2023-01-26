@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 from pathlib import Path
 import pkgutil
-from typing import Optional, TextIO
+from typing import TextIO
 import webbrowser
 
 import click
@@ -30,7 +30,7 @@ def imagedephi() -> None:
     "output-dir", type=click.Path(exists=True, file_okay=False, readable=True, path_type=Path)
 )
 @click.argument("override-rules", type=click.File("r"), required=False)
-def run(input_dir: Path, output_dir: Path, override_rules: Optional[TextIO]):
+def run(input_dir: Path, output_dir: Path, override_rules: TextIO | None):
     """Redact images in a folder according to given rule sets."""
     base_rules_bytes = pkgutil.get_data("imagedephi", "base_rules.yaml")
     if base_rules_bytes is None:
@@ -43,7 +43,7 @@ def run(input_dir: Path, output_dir: Path, override_rules: Optional[TextIO]):
 @imagedephi.command
 @click.argument("image", type=click.Path())
 @click.argument("override-rules", type=click.File("r"), required=False)
-def redaction_plan(image: click.Path, override_rules: Optional[TextIO]) -> None:
+def redaction_plan(image: click.Path, override_rules: TextIO | None) -> None:
     """Print the redaction plan for a given image and rules."""
     click.echo(override_rules)
     base_rules_bytes = pkgutil.get_data("imagedephi", "base_rules.yaml")
