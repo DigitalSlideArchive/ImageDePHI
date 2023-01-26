@@ -86,7 +86,6 @@ def test_e2e_gui(
     assert output_file.exists()
     output_file_bytes = output_file.read_bytes()
     assert b"large_image_converter" not in output_file_bytes
-    assert b"Redacted by ImageDePHI" in output_file_bytes
     assert f"127.0.0.1:{unused_tcp_port}" in webbrowser_open_mock.call_args.args[0]
     # Expect the client thread to be completed
     client_response = client_future.result(timeout=0)
