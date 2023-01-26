@@ -7,6 +7,8 @@ from fastapi import BackgroundTasks, FastAPI, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
+from imagedephi.redact import redact_images
+
 app = FastAPI()
 templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
 
@@ -68,6 +70,8 @@ def selection(
         raise HTTPException(status_code=404, detail="Input directory not found")
     if not output_directory.is_dir():
         raise HTTPException(status_code=404, detail="Output directory not found")
+
+    redact_images(input_directory, output_directory)
 
     # Shutdown after the response is sent, as this is the terminal endpoint
     background_tasks.add_task(shutdown_event.set)
