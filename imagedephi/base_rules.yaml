@@ -4,81 +4,81 @@ description: These are the default rules for each potential piece of redactable 
 rules:
   # For images that strictly adhere to the tiff standards e.g. svs files
   tiff:
-    - tag: 254
+    - tag_name: NewSubfileType
       method: keep
       type: metadata
-    - tag: 256
+    - tag_name: ImageWidth
       method: keep
       type: metadata
-    - tag: 257
+    - tag_name: ImageLength
       method: keep
       type: metadata
-    - tag: 258
+    - tag_name: BitsPerSample
       method: keep
       type: metadata
-    - tag: 259
+    - tag_name: Compression
       method: keep
       type: metadata
-    - tag: 262
+    - tag_name: Photometric
       method: keep
       type: metadata
-    - tag: 270
+    - tag_name: ImageDescription
       method: delete
       type: metadata
-    - tag: 274
+    - tag_name: Orientation
       method: keep
       type: metadata
-    - tag: 277
+    - tag_name: SamplesPerPixel
       method: keep
       type: metadata
-    - tag: 282
+    - tag_name: XResolution
       method: keep
       type: metadata
-    - tag: 283
+    - tag_name: YResolution
       method: keep
       type: metadata
-    - tag: 284
+    - tag_name: PlanarConfig
       method: keep
       type: metadata
-    - tag: 296
+    - tag_name: ResolutionUnit
       method: keep
       type: metadata
-    - tag: 322
+    - tag_name: TileWidth
       method: keep
       type: metadata
-    - tag: 323
+    - tag_name: TileHeight
       method: keep
       type: metadata
-    - tag: 324
+    - tag_name: TileOffsets
       method: keep
       type: metadata
-    - tag: 325
+    - tag_name: TileByteCounts
       method: keep
       type: metadata
-    - tag: 339
+    - tag_name: SampleFormat
       method: keep
       type: metadata
-    - tag: 347
+    - tag_name: JPEGTables
       method: keep
       type: metadata
-    - tag: 530
+    - tag_name: YCbCrSubsampling
       method: keep
       type: metadata
-    - tag: 32997
+    - tag_name: ImageDepth
       method: keep
       type: metadata
-    - tag: 34675
+    - tag_name: ICCProfile
       method: keep
       type: metadata
-    - tag: 273
+    - tag_name: StripOffsets
       method: keep
       type: metadata
-    - tag: 278
+    - tag_name: RowsPerStrip
       method: keep
       type: metadata
-    - tag: 279
+    - tag_name: StripByteCounts
       method: keep
       type: metadata
-    - tag: 317
+    - tag_name: Predictor
       method: keep
       type: metadata

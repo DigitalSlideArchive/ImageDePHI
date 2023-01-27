@@ -53,7 +53,7 @@ class TiffMetadataRule(Rule):
     @classmethod
     def build(cls, rule_dict: dict, source: RuleSource) -> TiffMetadataRule:
         """Transform a rule from schema into an object."""
-        tag = tifftools.constants.Tag[rule_dict["tag"]]
+        tag = tifftools.constants.Tag[rule_dict["tag_name"]]
         redact_method = RedactMethod[rule_dict["method"].upper()]
         return TiffMetadataRule(
             description=rule_dict.get("description", None),  # this is optional
