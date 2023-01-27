@@ -10,7 +10,7 @@ import tifftools
 import tifftools.constants
 import yaml
 
-from imagedephi.rules import FileFormat, RuleSet, RuleSource, TiffMetadataRule, build_ruleset
+from imagedephi.rules import RuleSet, RuleSource, TiffMetadataRule, build_ruleset
 
 if TYPE_CHECKING:
     from tifftools.tifftools import IFD, TiffInfo
@@ -64,22 +64,16 @@ class TiffMetadataRedactionPlan:
             self._add_tag_to_plan(tag)
 
     def __init__(
-        self, tiff_info: TiffInfo, base_rules: RuleSet, override_rules: RuleSet | None
+        self,
+        tiff_info: TiffInfo,
+        base_rules: list[TiffMetadataRule],
+        override_rules: list[TiffMetadataRule],
     ) -> None:
         self.redaction_steps = {}
         self.no_match_tags = []
         self.image_data = tiff_info
-        self.base_rules = [
-            rule for rule in base_rules.rules[FileFormat.TIFF] if isinstance(rule, TiffMetadataRule)
-        ]
-        if override_rules is None:
-            self.override_rules = []
-        else:
-            self.override_rules = [
-                rule
-                for rule in override_rules.rules[FileFormat.TIFF]
-                if isinstance(rule, TiffMetadataRule)
-            ]
+        self.base_rules = base_rules
+        self.override_rules = override_rules
         self._build_redaction_steps(self.image_data["ifds"])
 
     def report_missing_rules(self) -> None:
@@ -134,7 +128,11 @@ def redact_images(image_dir: Path, output_dir: Path, override_rules: RuleSet | N
             click.echo(f"Could not open {child.name} as a tiff. Skipping...")
             continue
         click.echo(f"Redacting {child.name}...")
-        redaction_plan = TiffMetadataRedactionPlan(tiff_info, base_rules, override_rules)
+        redaction_plan = TiffMetadataRedactionPlan(
+            tiff_info,
+            base_rules.get_tiff_metadata_rules(),
+            override_rules.get_tiff_metadata_rules() if override_rules else [],
+        )
         if len(redaction_plan.no_match_tags):
             click.echo(f"Redaction could not be performed for {child.name}.")
             redaction_plan.report_missing_rules()
@@ -147,5 +145,9 @@ def redact_images(image_dir: Path, output_dir: Path, override_rules: RuleSet | N
 def show_redaction_plan(image_path: click.Path, override_rules: RuleSet | None = None):
     base_rules = get_base_rules()
     tiff_info = tifftools.read_tiff(str(image_path))
-    redaction_plan = TiffMetadataRedactionPlan(tiff_info, base_rules, override_rules)
+    redaction_plan = TiffMetadataRedactionPlan(
+        tiff_info,
+        base_rules.get_tiff_metadata_rules(),
+        override_rules.get_tiff_metadata_rules() if override_rules else [],
+    )
     redaction_plan.report_plan()

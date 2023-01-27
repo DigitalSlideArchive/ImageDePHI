@@ -86,7 +86,14 @@ class TiffMetadataRule(Rule):
 class RuleSet:
     name: str
     description: str
-    rules: dict[FileFormat, list[Rule]]
+    rules: dict[FileFormat, dict[RuleType, list[Rule]]]
+
+    def get_tiff_metadata_rules(self) -> list[TiffMetadataRule]:
+        return [
+            rule
+            for rule in self.rules[FileFormat.TIFF][RuleType.METADATA]
+            if isinstance(rule, TiffMetadataRule)
+        ]
 
 
 def _build_rule(
@@ -104,11 +111,14 @@ def build_ruleset(rules_dict: dict, rule_source: RuleSource) -> RuleSet:
     for file_format in rules_dict["rules"]:
         format_key = FileFormat[file_format.upper()]
         format_rules = rules_dict["rules"][file_format]
-        format_rule_objects = []
+        format_rule_objects: dict[RuleType, list[Rule]] = {
+            RuleType.IMAGE: [],
+            RuleType.METADATA: [],
+        }
         for rule in format_rules:
             rule_type = RuleType[rule["type"].upper()]
             rule = _build_rule(format_key, rule_type, rule, rule_source)
             if rule:
-                format_rule_objects.append(rule)
+                format_rule_objects[rule_type].append(rule)
         rule_set_rules[format_key] = format_rule_objects
     return RuleSet(rules_dict["name"], rules_dict["description"], rule_set_rules)
