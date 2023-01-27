@@ -24,7 +24,7 @@ class TiffMetadataRedactionPlan:
     images, and also executing the plan.
     """
 
-    redaction_steps: dict[int, tuple[TiffMetadataRule, RuleSource]]
+    redaction_steps: dict[int, TiffMetadataRule]
     no_match_tags: list[tifftools.TiffTag]
     image_data: TiffInfo
     base_rules: list[TiffMetadataRule]
@@ -51,11 +51,11 @@ class TiffMetadataRedactionPlan:
         """Determine how to handle a given tag."""
         for rule in self.override_rules:
             if rule.is_match(tag):
-                self.redaction_steps[tag.value] = (rule, RuleSource.OVERRIDE)
+                self.redaction_steps[tag.value] = rule
                 return
         for rule in self.base_rules:
             if rule.is_match(tag):
-                self.redaction_steps[tag.value] = (rule, RuleSource.BASE)
+                self.redaction_steps[tag.value] = rule
                 return
         self.no_match_tags.append(tag)
 
@@ -92,17 +92,16 @@ class TiffMetadataRedactionPlan:
 
     def report_plan(self) -> None:
         click.echo("Tiff Metadata Redaction Plan\n")
-        for key, (rule, rule_source) in self.redaction_steps.items():
-            source = "Base" if rule_source == RuleSource.BASE else "Override"
+        for key, rule in self.redaction_steps.items():
             # What if tifftools can't find the tag
             tag = tifftools.constants.Tag[key]
             # Use rule title if it exists
-            click.echo(f"Tag {tag.value} - {tag.name}: {rule.redact_method} ({source})")
+            click.echo(f"Tag {tag.value} - {tag.name}: {rule.redact_method} ({rule.rule_source})")
         self.report_missing_rules()
 
     def _redact_one_tag(self, ifd: IFD, tag: tifftools.TiffTag) -> None:
         if tag.value in self.redaction_steps:
-            rule = self.redaction_steps[tag.value][0]
+            rule = self.redaction_steps[tag.value]
             rule.apply(ifd)
 
     def _redact_image(self, ifds: list[IFD]) -> None:
@@ -115,7 +114,7 @@ class TiffMetadataRedactionPlan:
         self._redact_image(ifds)
 
 
-def build_ruleset(rules_dict: dict) -> RuleSet:
+def build_ruleset(rules_dict: dict, rule_source: RuleSource) -> RuleSet:
     """Read in metadata redaction rules from a file."""
     rule_set_rules = {}
     for file_format in rules_dict["rules"]:
@@ -124,7 +123,7 @@ def build_ruleset(rules_dict: dict) -> RuleSet:
         format_rule_objects = []
         for rule in format_rules:
             rule_type = RuleType[rule["type"].upper()]
-            format_rule_objects.append(make_rule(format_key, rule_type, rule))
+            format_rule_objects.append(make_rule(format_key, rule_type, rule, rule_source))
         rule_set_rules[format_key] = format_rule_objects
     return RuleSet(rules_dict["name"], rules_dict["description"], rule_set_rules)
 
@@ -136,7 +135,7 @@ def _get_output_path(file_path: Path, output_dir: Path) -> Path:
 def get_base_rules():
     base_rules_path = importlib.resources.files("imagedephi") / "base_rules.yaml"
     with base_rules_path.open() as base_rules_stream:
-        base_rule_set = build_ruleset(yaml.safe_load(base_rules_stream))
+        base_rule_set = build_ruleset(yaml.safe_load(base_rules_stream), RuleSource.BASE)
         return base_rule_set
 
 

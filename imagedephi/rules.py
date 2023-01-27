@@ -35,6 +35,7 @@ class Rule:
     title: str
     redact_method: RedactMethod
     rule_type: RuleType
+    rule_source: RuleSource
 
     # Consider factory class fn here
     # def make(...):
@@ -68,13 +69,14 @@ class RuleSet:
     rules: dict[RuleFormat, list[Rule]]
 
 
-def _make_tiff_metadata_rule(rule: dict) -> TiffMetadataRule:
+def _make_tiff_metadata_rule(rule: dict, source: RuleSource) -> TiffMetadataRule:
     """Transform a rule from schema into an object."""
     tag = tifftools.constants.Tag[rule["tag"]]
     return TiffMetadataRule(
         title=rule["title"],
         redact_method=RedactMethod[rule["method"].upper()],
         rule_type=RuleType.METADATA,
+        rule_source=source,
         tag=tag,
         replace_value=rule.get("new_value", ""),
     )
@@ -83,6 +85,6 @@ def _make_tiff_metadata_rule(rule: dict) -> TiffMetadataRule:
 _rule_function_mapping = {RuleFormat.TIFF: {RuleType.METADATA: _make_tiff_metadata_rule}}
 
 
-def make_rule(rule_format: RuleFormat, rule_type: RuleType, rule: dict) -> Rule:
+def make_rule(rule_format: RuleFormat, rule_type: RuleType, rule: dict, source: RuleSource) -> Rule:
     rule_function = _rule_function_mapping[rule_format][rule_type]
-    return rule_function(rule)
+    return rule_function(rule, source)
