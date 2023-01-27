@@ -48,7 +48,7 @@ class Rule:
 @dataclass
 class TiffMetadataRule(Rule):
     tag: tifftools.TiffTag
-    replace_value: str | bytes | list[int | float]
+    replace_value: str | bytes | list[int | float] | None
 
     def is_match(self, tag: tifftools.TiffTag) -> bool:
         return self.tag.value == tag.value
@@ -57,6 +57,12 @@ class TiffMetadataRule(Rule):
         if self.redact_method == RedactMethod.DELETE:
             del ifd["tags"][self.tag.value]
         elif self.redact_method == RedactMethod.REPLACE:
+            # If rules are constructed via make_rule, this should not be an issue
+            if self.replace_value is None:
+                raise RuntimeError(
+                    f"A rule with redaction method {self.redact_method} "
+                    "must have a valid replacement value."
+                )
             ifd["tags"][self.tag.value]["data"] = self.replace_value
         elif self.redact_method == RedactMethod.KEEP:
             pass
@@ -72,13 +78,14 @@ class RuleSet:
 def _make_tiff_metadata_rule(rule: dict, source: RuleSource) -> TiffMetadataRule:
     """Transform a rule from schema into an object."""
     tag = tifftools.constants.Tag[rule["tag"]]
+    redact_method = RedactMethod[rule["method"].upper()]
     return TiffMetadataRule(
         title=rule["title"],
-        redact_method=RedactMethod[rule["method"].upper()],
+        redact_method=redact_method,
         rule_type=RuleType.METADATA,
         rule_source=source,
         tag=tag,
-        replace_value=rule.get("new_value", ""),
+        replace_value=rule["new_value"] if redact_method == RedactMethod.REPLACE else None,
     )
 
 
