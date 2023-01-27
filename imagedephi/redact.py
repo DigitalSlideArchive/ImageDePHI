@@ -84,11 +84,8 @@ class TiffMetadataRedactionPlan:
 
     def report_plan(self) -> None:
         click.echo("Tiff Metadata Redaction Plan\n")
-        for key, rule in self.redaction_steps.items():
-            # What if tifftools can't find the tag
-            tag = tifftools.constants.Tag[key]
-            # Use rule title if it exists
-            click.echo(f"Tag {tag.value} - {tag.name}: {rule.redact_method} ({rule.rule_source})")
+        for _key, rule in self.redaction_steps.items():
+            click.echo(rule.get_description())
         self.report_missing_rules()
 
     def _redact_one_tag(self, ifd: IFD, tag: tifftools.TiffTag) -> None:

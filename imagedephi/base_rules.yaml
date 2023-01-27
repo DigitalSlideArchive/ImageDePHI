@@ -4,107 +4,81 @@ description: These are the default rules for each potential piece of redactable 
 rules:
   # For images that strictly adhere to the tiff standards e.g. svs files
   tiff:
-    - title: Keep NewSubfileType
-      tag: 254
+    - tag: 254
       method: keep
       type: metadata
-    - title: Keep ImageWidth
-      tag: 256
+    - tag: 256
       method: keep
       type: metadata
-    - title: Keep ImageLength
-      tag: 257
+    - tag: 257
       method: keep
       type: metadata
-    - title: Keep BitsPerSample
-      tag: 258
+    - tag: 258
       method: keep
       type: metadata
-    - title: Keep Compression
-      tag: 259
+    - tag: 259
       method: keep
       type: metadata
-    - title: Keep Photometric
-      tag: 262
+    - tag: 262
       method: keep
       type: metadata
-    - title: delete ImageDescription
-      tag: 270
+    - tag: 270
       method: delete
       type: metadata
-    - title: Keep Orientation
-      tag: 274
+    - tag: 274
       method: keep
       type: metadata
-    - title: Keep SamplesPerPixel
-      tag: 277
+    - tag: 277
       method: keep
       type: metadata
-    - title: Keep XResolution
-      tag: 282
+    - tag: 282
       method: keep
       type: metadata
-    - title: Keep YResolution
-      tag: 283
+    - tag: 283
       method: keep
       type: metadata
-    - title: Keep PlanarConfig
-      tag: 284
+    - tag: 284
       method: keep
       type: metadata
-    - title: Keep ResolutionUnit
-      tag: 296
+    - tag: 296
       method: keep
       type: metadata
-    - title: Keep TileWidth
-      tag: 322
+    - tag: 322
       method: keep
       type: metadata
-    - title: Keep TileLength
-      tag: 323
+    - tag: 323
       method: keep
       type: metadata
-    - title: Keep TileOffsets
-      tag: 324
+    - tag: 324
       method: keep
       type: metadata
-    - title: Keep TileByteCounts
-      tag: 325
+    - tag: 325
       method: keep
       type: metadata
-    - title: Keep SampleFormat
-      tag: 339
+    - tag: 339
       method: keep
       type: metadata
-    - title: Keep JPEGTables
-      tag: 347
+    - tag: 347
       method: keep
       type: metadata
-    - title: Keep YCbCrSubsampling
-      tag: 530
+    - tag: 530
       method: keep
       type: metadata
-    - title: Keep ImageDepth
-      tag: 32997
+    - tag: 32997
       method: keep
       type: metadata
-    - title: Keep ICCProfile
-      tag: 34675
+    - tag: 34675
       method: keep
       type: metadata
-    - title: Keep StripOffsets
-      tag: 273
+    - tag: 273
       method: keep
       type: metadata
-    - title: Keep RowsPerStrip
-      tag: 278
+    - tag: 278
       method: keep
       type: metadata
-    - title: Keep StripByteCounts
-      tag: 279
+    - tag: 279
       method: keep
       type: metadata
-    - title: Keep Predictor
-      tag: 317
+    - tag: 317
       method: keep
       type: metadata

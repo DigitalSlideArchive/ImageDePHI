@@ -32,7 +32,7 @@ class RuleSource(Enum):
 
 @dataclass
 class Rule:
-    title: str
+    description: str | None
     redact_method: RedactMethod
     rule_type: RuleType
     rule_source: RuleSource
@@ -40,9 +40,9 @@ class Rule:
     # Consider factory class fn here
     # def make(...):
 
-    def get_title(self) -> str:
+    def get_description(self) -> str:
         """Generate a title for the rule."""
-        return self.title
+        return self.description if self.description else ""
 
 
 @dataclass
@@ -56,7 +56,7 @@ class TiffMetadataRule(Rule):
         tag = tifftools.constants.Tag[rule_dict["tag"]]
         redact_method = RedactMethod[rule_dict["method"].upper()]
         return TiffMetadataRule(
-            title=rule_dict["title"],
+            description=rule_dict.get("description", None),  # this is optional
             redact_method=redact_method,
             rule_type=RuleType.METADATA,
             rule_source=source,
@@ -80,6 +80,11 @@ class TiffMetadataRule(Rule):
             ifd["tags"][self.tag.value]["data"] = self.replace_value
         elif self.redact_method == RedactMethod.KEEP:
             pass
+
+    def get_description(self) -> str:
+        if self.description:
+            return self.description
+        return f"Tag {self.tag.value} - {self.tag.name}: {self.redact_method} ({self.rule_source})"
 
 
 @dataclass
