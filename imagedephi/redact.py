@@ -59,10 +59,6 @@ class TiffMetadataRedactionPlan:
                 return
         self.no_match_tags.append(tag)
 
-    def _build_redaction_steps(self, ifds: list[IFD]) -> None:
-        for tag, _ in self._iter_tiff_tag_entries(ifds):
-            self._add_tag_to_plan(tag)
-
     def __init__(
         self,
         tiff_info: TiffInfo,
@@ -74,7 +70,9 @@ class TiffMetadataRedactionPlan:
         self.image_data = tiff_info
         self.base_rules = base_rules
         self.override_rules = override_rules
-        self._build_redaction_steps(self.image_data["ifds"])
+        ifds = self.image_data["ifds"]
+        for tag, _ in self._iter_tiff_tag_entries(ifds):
+            self._add_tag_to_plan(tag)
 
     def report_missing_rules(self) -> None:
         if len(self.no_match_tags) == 0:
@@ -98,14 +96,11 @@ class TiffMetadataRedactionPlan:
             rule = self.redaction_steps[tag.value]
             rule.apply(ifd)
 
-    def _redact_image(self, ifds: list[IFD]) -> None:
-        for tag, ifd in self._iter_tiff_tag_entries(ifds):
-            self._redact_one_tag(ifd, tag)
-
     def execute_plan(self) -> None:
         """Modify the image data according to the redaction rules."""
         ifds = self.image_data["ifds"]
-        self._redact_image(ifds)
+        for tag, ifd in self._iter_tiff_tag_entries(ifds):
+            self._redact_one_tag(ifd, tag)
 
 
 def _get_output_path(file_path: Path, output_dir: Path) -> Path:
