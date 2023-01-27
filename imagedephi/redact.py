@@ -10,7 +10,7 @@ import tifftools
 import tifftools.constants
 import yaml
 
-from imagedephi.rules import FileFormat, RuleSet, RuleSource, RuleType, TiffMetadataRule, make_rule
+from imagedephi.rules import FileFormat, RuleSet, RuleSource, TiffMetadataRule, build_ruleset
 
 if TYPE_CHECKING:
     from tifftools.tifftools import IFD, TiffInfo
@@ -112,20 +112,6 @@ class TiffMetadataRedactionPlan:
         """Modify the image data according to the redaction rules."""
         ifds = self.image_data["ifds"]
         self._redact_image(ifds)
-
-
-def build_ruleset(rules_dict: dict, rule_source: RuleSource) -> RuleSet:
-    """Read in metadata redaction rules from a file."""
-    rule_set_rules = {}
-    for file_format in rules_dict["rules"]:
-        format_key = FileFormat[file_format.upper()]
-        format_rules = rules_dict["rules"][file_format]
-        format_rule_objects = []
-        for rule in format_rules:
-            rule_type = RuleType[rule["type"].upper()]
-            format_rule_objects.append(make_rule(format_key, rule_type, rule, rule_source))
-        rule_set_rules[format_key] = format_rule_objects
-    return RuleSet(rules_dict["name"], rules_dict["description"], rule_set_rules)
 
 
 def _get_output_path(file_path: Path, output_dir: Path) -> Path:

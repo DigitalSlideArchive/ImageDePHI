@@ -50,6 +50,20 @@ class TiffMetadataRule(Rule):
     tag: tifftools.TiffTag
     replace_value: str | bytes | list[int | float] | None
 
+    @classmethod
+    def build(cls, rule_dict: dict, source: RuleSource) -> TiffMetadataRule:
+        """Transform a rule from schema into an object."""
+        tag = tifftools.constants.Tag[rule_dict["tag"]]
+        redact_method = RedactMethod[rule_dict["method"].upper()]
+        return TiffMetadataRule(
+            title=rule_dict["title"],
+            redact_method=redact_method,
+            rule_type=RuleType.METADATA,
+            rule_source=source,
+            tag=tag,
+            replace_value=rule_dict["new_value"] if redact_method == RedactMethod.REPLACE else None,
+        )
+
     def is_match(self, tag: tifftools.TiffTag) -> bool:
         return self.tag.value == tag.value
 
@@ -75,23 +89,26 @@ class RuleSet:
     rules: dict[FileFormat, list[Rule]]
 
 
-def _make_tiff_metadata_rule(rule: dict, source: RuleSource) -> TiffMetadataRule:
-    """Transform a rule from schema into an object."""
-    tag = tifftools.constants.Tag[rule["tag"]]
-    redact_method = RedactMethod[rule["method"].upper()]
-    return TiffMetadataRule(
-        title=rule["title"],
-        redact_method=redact_method,
-        rule_type=RuleType.METADATA,
-        rule_source=source,
-        tag=tag,
-        replace_value=rule["new_value"] if redact_method == RedactMethod.REPLACE else None,
-    )
+def _build_rule(
+    file_format: FileFormat, rule_type: RuleType, rule_dict: dict, source: RuleSource
+) -> Rule | None:
+    if file_format == FileFormat.TIFF:
+        if rule_type == RuleType.METADATA:
+            return TiffMetadataRule.build(rule_dict, source)
+    return None
 
 
-_rule_function_mapping = {FileFormat.TIFF: {RuleType.METADATA: _make_tiff_metadata_rule}}
-
-
-def make_rule(file_format: FileFormat, rule_type: RuleType, rule: dict, source: RuleSource) -> Rule:
-    rule_function = _rule_function_mapping[file_format][rule_type]
-    return rule_function(rule, source)
+def build_ruleset(rules_dict: dict, rule_source: RuleSource) -> RuleSet:
+    """Read in metadata redaction rules from a file."""
+    rule_set_rules = {}
+    for file_format in rules_dict["rules"]:
+        format_key = FileFormat[file_format.upper()]
+        format_rules = rules_dict["rules"][file_format]
+        format_rule_objects = []
+        for rule in format_rules:
+            rule_type = RuleType[rule["type"].upper()]
+            rule = _build_rule(format_key, rule_type, rule, rule_source)
+            if rule:
+                format_rule_objects.append(rule)
+        rule_set_rules[format_key] = format_rule_objects
+    return RuleSet(rules_dict["name"], rules_dict["description"], rule_set_rules)
