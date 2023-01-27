@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Generator
 import importlib.resources
+from itertools import chain
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -10,7 +11,7 @@ import tifftools
 import tifftools.constants
 import yaml
 
-from imagedephi.rules import RuleSet, RuleSource, TiffMetadataRule, build_ruleset
+from imagedephi.rules import MetadataTiffRule, RuleSet, RuleSource, build_ruleset
 
 if TYPE_CHECKING:
     from tifftools.tifftools import IFD, TiffInfo
@@ -24,11 +25,9 @@ class TiffMetadataRedactionPlan:
     images, and also executing the plan.
     """
 
-    redaction_steps: dict[int, TiffMetadataRule]
+    tiff_info: TiffInfo
+    redaction_steps: dict[int, MetadataTiffRule]
     no_match_tags: list[tifftools.TiffTag]
-    image_data: TiffInfo
-    base_rules: list[TiffMetadataRule]
-    override_rules: list[TiffMetadataRule]
 
     @staticmethod
     def _iter_tiff_tag_entries(
@@ -47,57 +46,48 @@ class TiffMetadataRedactionPlan:
                     for sub_ifds in entry.get("ifds", []):
                         yield from TiffMetadataRedactionPlan._iter_tiff_tag_entries(sub_ifds)
 
-    def _add_tag_to_plan(self, tag: tifftools.TiffTag) -> None:
-        """Determine how to handle a given tag."""
-        for rule in self.override_rules:
-            if rule.is_match(tag):
-                self.redaction_steps[tag.value] = rule
-                return
-        for rule in self.base_rules:
-            if rule.is_match(tag):
-                self.redaction_steps[tag.value] = rule
-                return
-        self.no_match_tags.append(tag)
-
     def __init__(
         self,
         tiff_info: TiffInfo,
-        base_rules: list[TiffMetadataRule],
-        override_rules: list[TiffMetadataRule],
+        base_rules: list[MetadataTiffRule],
+        override_rules: list[MetadataTiffRule],
     ) -> None:
+        self.tiff_info = tiff_info
+
         self.redaction_steps = {}
         self.no_match_tags = []
-        self.image_data = tiff_info
-        self.base_rules = base_rules
-        self.override_rules = override_rules
-        ifds = self.image_data["ifds"]
+        ifds = self.tiff_info["ifds"]
         for tag, _ in self._iter_tiff_tag_entries(ifds):
-            self._add_tag_to_plan(tag)
+            # First iterate through overrides, then base
+            for rule in chain(override_rules, base_rules):
+                if rule.is_match(tag):
+                    self.redaction_steps[tag.value] = rule
+                    break
+            else:
+                # End of iteration, without "break"; no matching rule found anywhere
+                self.no_match_tags.append(tag)
 
     def report_missing_rules(self) -> None:
-        if len(self.no_match_tags) == 0:
-            click.echo("This redaction plan is comprehensive.")
-        else:
+        if self.no_match_tags:
             click.echo("The following tags could not be redacted given the current set of rules.")
             for tag in self.no_match_tags:
                 click.echo(f"{tag.value} - {tag.name}")
+        else:
+            click.echo("This redaction plan is comprehensive.")
 
     def report_plan(self) -> None:
         click.echo("Tiff Metadata Redaction Plan\n")
-        for _key, rule in self.redaction_steps.items():
+        for rule in self.redaction_steps.values():
             click.echo(rule.get_description())
         self.report_missing_rules()
 
-    def _redact_one_tag(self, ifd: IFD, tag: tifftools.TiffTag) -> None:
-        if tag.value in self.redaction_steps:
-            rule = self.redaction_steps[tag.value]
-            rule.apply(ifd)
-
     def execute_plan(self) -> None:
         """Modify the image data according to the redaction rules."""
-        ifds = self.image_data["ifds"]
+        ifds = self.tiff_info["ifds"]
         for tag, ifd in self._iter_tiff_tag_entries(ifds):
-            self._redact_one_tag(ifd, tag)
+            rule = self.redaction_steps.get(tag.value)
+            if rule is not None:
+                rule.apply(ifd)
 
 
 def _get_output_path(file_path: Path, output_dir: Path) -> Path:
@@ -122,10 +112,10 @@ def redact_images(image_dir: Path, output_dir: Path, override_rules: RuleSet | N
         click.echo(f"Redacting {child.name}...")
         redaction_plan = TiffMetadataRedactionPlan(
             tiff_info,
-            base_rules.get_tiff_metadata_rules(),
-            override_rules.get_tiff_metadata_rules() if override_rules else [],
+            base_rules.get_metadata_tiff_rules(),
+            override_rules.get_metadata_tiff_rules() if override_rules else [],
         )
-        if len(redaction_plan.no_match_tags):
+        if redaction_plan.no_match_tags:
             click.echo(f"Redaction could not be performed for {child.name}.")
             redaction_plan.report_missing_rules()
         else:
@@ -139,7 +129,7 @@ def show_redaction_plan(image_path: click.Path, override_rules: RuleSet | None =
     tiff_info = tifftools.read_tiff(str(image_path))
     redaction_plan = TiffMetadataRedactionPlan(
         tiff_info,
-        base_rules.get_tiff_metadata_rules(),
-        override_rules.get_tiff_metadata_rules() if override_rules else [],
+        base_rules.get_metadata_tiff_rules(),
+        override_rules.get_metadata_tiff_rules() if override_rules else [],
     )
     redaction_plan.report_plan()

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import abc
 from dataclasses import dataclass
 from enum import Enum
 from typing import TYPE_CHECKING
@@ -30,100 +31,108 @@ class RuleSource(Enum):
     OVERRIDE = "override"
 
 
-@dataclass
-class Rule:
+class Rule(abc.ABC):
     description: str | None
     redact_method: RedactMethod
     rule_type: RuleType
     rule_source: RuleSource
-
-    # Consider factory class fn here
-    # def make(...):
 
     def get_description(self) -> str:
         """Generate a title for the rule."""
         return self.description if self.description else ""
 
 
-@dataclass
-class TiffMetadataRule(Rule):
-    tag: tifftools.TiffTag
-    replace_value: str | bytes | list[int | float] | None
+class TiffRule(Rule):
+    @abc.abstractmethod
+    def apply(self, ifd: IFD):
+        ...
 
-    @classmethod
-    def build(cls, rule_dict: dict, source: RuleSource) -> TiffMetadataRule:
+
+class MetadataTiffRule(TiffRule):
+    tag: tifftools.TiffTag
+    rule_type = RuleType.METADATA
+
+    def __init__(self, rule_spec: dict, rule_source: RuleSource) -> None:
         """Transform a rule from schema into an object."""
-        tag = tifftools.constants.Tag[rule_dict["tag_name"]]
-        redact_method = RedactMethod[rule_dict["method"].upper()]
-        return TiffMetadataRule(
-            description=rule_dict.get("description", None),  # this is optional
-            redact_method=redact_method,
-            rule_type=RuleType.METADATA,
-            rule_source=source,
-            tag=tag,
-            replace_value=rule_dict["new_value"] if redact_method == RedactMethod.REPLACE else None,
-        )
+        self.description = rule_spec.get("description", None)  # this is optional
+        self.redact_method = RedactMethod[rule_spec["method"].upper()]
+        self.rule_source = rule_source
+        self.tag = tifftools.constants.Tag[rule_spec["tag_name"]]
 
     def is_match(self, tag: tifftools.TiffTag) -> bool:
         return self.tag.value == tag.value
 
+    @abc.abstractmethod
     def apply(self, ifd: IFD):
-        if self.redact_method == RedactMethod.DELETE:
-            del ifd["tags"][self.tag.value]
-        elif self.redact_method == RedactMethod.REPLACE:
-            # If rules are constructed via make_rule, this should not be an issue
-            if self.replace_value is None:
-                raise RuntimeError(
-                    f"A rule with redaction method {self.redact_method} "
-                    "must have a valid replacement value."
-                )
-            ifd["tags"][self.tag.value]["data"] = self.replace_value
-        elif self.redact_method == RedactMethod.KEEP:
-            pass
+        ...
 
     def get_description(self) -> str:
         if self.description:
             return self.description
         return f"Tag {self.tag.value} - {self.tag.name}: {self.redact_method} ({self.rule_source})"
 
+    @classmethod
+    def build(cls, rule_spec: dict, rule_source: RuleSource) -> MetadataTiffRule:
+        # TODO: some input validation here, in case an invalid "method" is provided
+        redact_method = RedactMethod[rule_spec["method"].upper()]
+        for rule_class in cls.__subclasses__():
+            if rule_class.redact_method == redact_method:
+                return rule_class(rule_spec, rule_source)
+        else:
+            raise Exception("Unknown redact_method.")
+
+
+class ReplaceMetadataTiffRule(MetadataTiffRule):
+    redact_method = RedactMethod.REPLACE
+    replace_value: str | bytes | list[int | float]
+
+    def __init__(self, rule_spec: dict, source: RuleSource) -> None:
+        super().__init__(rule_spec, source)
+        self.replace_value = rule_spec["new_value"]
+
+    def apply(self, ifd: IFD):
+        ifd["tags"][self.tag.value]["data"] = self.replace_value
+
+
+class DeleteMetadataTiffRule(MetadataTiffRule):
+    redact_method = RedactMethod.DELETE
+
+    def apply(self, ifd: IFD):
+        del ifd["tags"][self.tag.value]
+
+
+class KeepMetadataTiffRule(MetadataTiffRule):
+    redact_method = RedactMethod.KEEP
+
+    def apply(self, ifd: IFD):
+        pass
+
 
 @dataclass
 class RuleSet:
     name: str
     description: str
-    rules: dict[FileFormat, dict[RuleType, list[Rule]]]
+    rules: dict[FileFormat, list[Rule]]
 
-    def get_tiff_metadata_rules(self) -> list[TiffMetadataRule]:
-        return [
-            rule
-            for rule in self.rules[FileFormat.TIFF][RuleType.METADATA]
-            if isinstance(rule, TiffMetadataRule)
-        ]
+    def get_metadata_tiff_rules(self) -> list[MetadataTiffRule]:
+        return [rule for rule in self.rules[FileFormat.TIFF] if isinstance(rule, MetadataTiffRule)]
 
 
-def _build_rule(
-    file_format: FileFormat, rule_type: RuleType, rule_dict: dict, source: RuleSource
-) -> Rule | None:
+def _build_rule(file_format: FileFormat, rule_spec: dict, rule_source: RuleSource) -> Rule:
+    rule_type = RuleType[rule_spec["type"].upper()]
     if file_format == FileFormat.TIFF:
         if rule_type == RuleType.METADATA:
-            return TiffMetadataRule.build(rule_dict, source)
-    return None
+            return MetadataTiffRule.build(rule_spec, rule_source)
+
+    raise Exception("Unsupported rule.")
 
 
-def build_ruleset(rules_dict: dict, rule_source: RuleSource) -> RuleSet:
+def build_ruleset(ruleset_spec: dict, rule_source: RuleSource) -> RuleSet:
     """Read in metadata redaction rules from a file."""
     rule_set_rules = {}
-    for file_format in rules_dict["rules"]:
-        format_key = FileFormat[file_format.upper()]
-        format_rules = rules_dict["rules"][file_format]
-        format_rule_objects: dict[RuleType, list[Rule]] = {
-            RuleType.IMAGE: [],
-            RuleType.METADATA: [],
-        }
-        for rule in format_rules:
-            rule_type = RuleType[rule["type"].upper()]
-            rule = _build_rule(format_key, rule_type, rule, rule_source)
-            if rule:
-                format_rule_objects[rule_type].append(rule)
-        rule_set_rules[format_key] = format_rule_objects
-    return RuleSet(rules_dict["name"], rules_dict["description"], rule_set_rules)
+    for file_format_key, rule_specs in ruleset_spec["rules"].items():
+        file_format = FileFormat[file_format_key.upper()]
+        rule_set_rules[file_format] = [
+            _build_rule(file_format, rule_spec, rule_source) for rule_spec in rule_specs
+        ]
+    return RuleSet(ruleset_spec["name"], ruleset_spec["description"], rule_set_rules)
