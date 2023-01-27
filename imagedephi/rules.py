@@ -7,13 +7,7 @@ from typing import TYPE_CHECKING
 import tifftools
 
 if TYPE_CHECKING:
-    from tifftools.tifftools import IFD, TagEntry
-
-
-@dataclass
-class TiffTagEntry:
-    tag: tifftools.TiffTag
-    entry: TagEntry
+    from tifftools.tifftools import IFD
 
 
 class RuleType(Enum):
