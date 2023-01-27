@@ -29,11 +29,11 @@ def test_e2e_run(runner: CliRunner, data_dir: Path, tmp_path: Path) -> None:
     result = runner.invoke(
         main.imagedephi,
         [
+            "--override-rules",
+            str(data_dir / "rules" / "example_user_rules.yml"),
             "run",
             str(data_dir / "input"),
             str(tmp_path),
-            "-r",
-            str(data_dir / "rules" / "example_user_rules.yml"),
         ],
     )
     assert result.exit_code == 0
@@ -42,6 +42,21 @@ def test_e2e_run(runner: CliRunner, data_dir: Path, tmp_path: Path) -> None:
     output_file_bytes = output_file.read_bytes()
     assert b"large_image_converter" not in output_file_bytes
     assert b"Redacted by ImageDePHI" in output_file_bytes
+
+
+@pytest.mark.timeout(5)
+def test_e2e_plan(runner: CliRunner, data_dir: Path, tmp_path: Path) -> None:
+    result = runner.invoke(
+        main.imagedephi,
+        [
+            "--override-rules",
+            str(data_dir / "rules" / "example_user_rules.yml"),
+            "plan",
+            str(data_dir / "input" / "test_image.tif"),
+        ],
+    )
+    assert result.exit_code == 0
+    assert "Replace ImageDescription" in result.stdout
 
 
 @pytest.mark.timeout(5)
