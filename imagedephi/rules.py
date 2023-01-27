@@ -21,7 +21,7 @@ class RedactMethod(Enum):
     KEEP = "keep"
 
 
-class RuleFormat(Enum):
+class FileFormat(Enum):
     TIFF = "tiff"
 
 
@@ -72,7 +72,7 @@ class TiffMetadataRule(Rule):
 class RuleSet:
     name: str
     description: str
-    rules: dict[RuleFormat, list[Rule]]
+    rules: dict[FileFormat, list[Rule]]
 
 
 def _make_tiff_metadata_rule(rule: dict, source: RuleSource) -> TiffMetadataRule:
@@ -89,9 +89,9 @@ def _make_tiff_metadata_rule(rule: dict, source: RuleSource) -> TiffMetadataRule
     )
 
 
-_rule_function_mapping = {RuleFormat.TIFF: {RuleType.METADATA: _make_tiff_metadata_rule}}
+_rule_function_mapping = {FileFormat.TIFF: {RuleType.METADATA: _make_tiff_metadata_rule}}
 
 
-def make_rule(rule_format: RuleFormat, rule_type: RuleType, rule: dict, source: RuleSource) -> Rule:
-    rule_function = _rule_function_mapping[rule_format][rule_type]
+def make_rule(file_format: FileFormat, rule_type: RuleType, rule: dict, source: RuleSource) -> Rule:
+    rule_function = _rule_function_mapping[file_format][rule_type]
     return rule_function(rule, source)
