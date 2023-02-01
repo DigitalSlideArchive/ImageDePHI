@@ -82,3 +82,79 @@ rules:
     - tag_name: Predictor
       method: keep
       type: metadata
+  svs:
+    - key_name: AppMag
+      method: keep
+      type: metadata
+    - key_name: MPP
+      method: keep
+      type: metadata
+    - key_name: mpp
+      method: keep
+      type: metadata
+    - key_name: StripeWidth
+      method: delete
+      type: metadata
+    - key_name: ScanScope ID
+      method: delete
+      type: metadata
+    - key_name: Filename
+      method: delete
+      type: metadata
+    - key_name: Date
+      method: delete
+      type: metadata
+    - key_name: Time
+      method: delete
+      type: metadata
+    - key_name: Time Zone
+      method: delete
+      type: metadata
+    - key_name: User
+      method: delete
+      type: metadata
+    - key_name: Left
+      method: delete
+      type: metadata
+    - key_name: Top
+      method: delete
+      type: metadata
+    - key_name: LineCameraSkew
+      method: delete
+      type: metadata
+    - key_name: LineAreaXOffset
+      method: delete
+      type: metadata
+    - key_name: LineAreaYOffset
+      method: delete
+      type: metadata
+    - key_name: Focus Offset
+      method: delete
+      type: metadata
+    - key_name: DSR ID
+      method: delete
+      type: metadata
+    - key_name: ImageID
+      method: delete
+      type: metadata
+    - key_name: Exposure Time
+      method: delete
+      type: metadata
+    - key_name: Exposure Scale
+      method: delete
+      type: metadata
+    - key_name: DisplayColor
+      method: delete
+      type: metadata
+    - key_name: SessonMode
+      method: delete
+      type: metadata
+    - key_name: OriginalWidth
+      method: delete
+      type: metadata
+    - key_name: OriginalHeight
+      method: delete
+      type: metadata
+    - key_name: ICC Profile
+      method: delete
+      type: metadata
