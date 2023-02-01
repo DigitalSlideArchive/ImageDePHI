@@ -13,6 +13,7 @@ dependencies = [
     "python-multipart",
     "Jinja2",
     "hypercorn",
+    "pyyaml",
 ]
 
 [project.scripts]
@@ -23,6 +24,12 @@ imagedephi = "imagedephi.main:imagedephi"
 [tool.setuptools.packages.find]
 include = ["imagedephi*"]
 namespaces = false
+
+# Include the base set of rules in the distribution
+# https://setuptools.pypa.io/en/stable/userguide/datafiles.html#package-data
+[tool.setuptools.package-data]
+imagedephi = ["base_rules.yaml"]
+
 
 [tool.black]
 line-length = 100
@@ -38,6 +45,9 @@ combine_as_imports = true
 ignore_missing_imports = true
 show_error_codes = true
 mypy_path = "$MYPY_CONFIG_FILE_DIR/stubs"
+exclude = [
+    "build/",
+]
 
 [tool.pyright]
 stubPath = "stubs"

@@ -1,0 +1,84 @@
+---
+name: Base rules
+description: These are the default rules for each potential piece of redactable material (metadata, image) to be used as a fallback if there are no user-defined rules for a piece of redactable material.
+rules:
+  # For images that strictly adhere to the tiff standards e.g. svs files
+  tiff:
+    - tag_name: NewSubfileType
+      method: keep
+      type: metadata
+    - tag_name: ImageWidth
+      method: keep
+      type: metadata
+    - tag_name: ImageLength
+      method: keep
+      type: metadata
+    - tag_name: BitsPerSample
+      method: keep
+      type: metadata
+    - tag_name: Compression
+      method: keep
+      type: metadata
+    - tag_name: Photometric
+      method: keep
+      type: metadata
+    - tag_name: ImageDescription
+      method: delete
+      type: metadata
+    - tag_name: Orientation
+      method: keep
+      type: metadata
+    - tag_name: SamplesPerPixel
+      method: keep
+      type: metadata
+    - tag_name: XResolution
+      method: keep
+      type: metadata
+    - tag_name: YResolution
+      method: keep
+      type: metadata
+    - tag_name: PlanarConfig
+      method: keep
+      type: metadata
+    - tag_name: ResolutionUnit
+      method: keep
+      type: metadata
+    - tag_name: TileWidth
+      method: keep
+      type: metadata
+    - tag_name: TileHeight
+      method: keep
+      type: metadata
+    - tag_name: TileOffsets
+      method: keep
+      type: metadata
+    - tag_name: TileByteCounts
+      method: keep
+      type: metadata
+    - tag_name: SampleFormat
+      method: keep
+      type: metadata
+    - tag_name: JPEGTables
+      method: keep
+      type: metadata
+    - tag_name: YCbCrSubsampling
+      method: keep
+      type: metadata
+    - tag_name: ImageDepth
+      method: keep
+      type: metadata
+    - tag_name: ICCProfile
+      method: keep
+      type: metadata
+    - tag_name: StripOffsets
+      method: keep
+      type: metadata
+    - tag_name: RowsPerStrip
+      method: keep
+      type: metadata
+    - tag_name: StripByteCounts
+      method: keep
+      type: metadata
+    - tag_name: Predictor
+      method: keep
+      type: metadata
