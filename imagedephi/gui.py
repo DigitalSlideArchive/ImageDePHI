@@ -27,7 +27,6 @@ def select_directory(
     input_directory: Path = Path("/"),  # noqa: B008
     output_directory: Path = Path("/"),  # noqa: B008
 ):
-
     if not input_directory.is_dir():
         raise HTTPException(status_code=404, detail="Input directory not a directory")
     if not output_directory.is_dir():
