@@ -95,15 +95,16 @@ def _get_output_path(file_path: Path, output_dir: Path) -> Path:
 
 
 def _save_redacted_tiff(tiff_info: TiffInfo, output_path: Path, input_path: Path, overwrite: bool):
-    if overwrite or not output_path.exists():
-        if output_path.exists():
+    if output_path.exists():
+        if overwrite:
             click.echo(f"Found existing redaction for {input_path.name}. Overwriting...")
-        tifftools.write_tiff(tiff_info, output_path, allowExisting=True)
-    else:
-        click.echo(
-            f"Could not redact {input_path.name}, existing redacted file in output directory. "
-            "Use the --overwrite-existing-output flag to overwrite previously redacted files."
-        )
+        else:
+           click.echo(
+               f"Could not redact {input_path.name}, existing redacted file in output directory. "
+               "Use the --overwrite-existing-output flag to overwrite previously redacted files."
+           )
+           return
+    tifftools.write_tiff(tiff_info, output_path, allowExisting=True)
 
 
 def get_base_rules():
