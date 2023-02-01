@@ -94,6 +94,19 @@ def _get_output_path(file_path: Path, output_dir: Path) -> Path:
     return output_dir / f"REDACTED_{file_path.name}"
 
 
+def _save_redacted_tiff(tiff_info: TiffInfo, output_path: Path, input_path: Path, overwrite: bool):
+    if output_path.exists():
+        if overwrite:
+            click.echo(f"Found existing redaction for {input_path.name}. Overwriting...")
+        else:
+            click.echo(
+                f"Could not redact {input_path.name}, existing redacted file in output directory. "
+                "Use the --overwrite-existing-output flag to overwrite previously redacted files."
+            )
+            return
+    tifftools.write_tiff(tiff_info, output_path, allowExisting=True)
+
+
 def get_base_rules():
     base_rules_path = importlib.resources.files("imagedephi") / "base_rules.yaml"
     with base_rules_path.open() as base_rules_stream:
@@ -101,7 +114,12 @@ def get_base_rules():
         return base_rule_set
 
 
-def redact_images(image_dir: Path, output_dir: Path, override_rules: RuleSet | None = None) -> None:
+def redact_images(
+    image_dir: Path,
+    output_dir: Path,
+    override_rules: RuleSet | None = None,
+    overwrite: bool = False,
+) -> None:
     base_rules = get_base_rules()
     for child in image_dir.iterdir():
         try:
@@ -121,7 +139,7 @@ def redact_images(image_dir: Path, output_dir: Path, override_rules: RuleSet | N
         else:
             redaction_plan.execute_plan()
             output_path = _get_output_path(child, output_dir)
-            tifftools.write_tiff(tiff_info, output_path)
+            _save_redacted_tiff(tiff_info, output_path, child, overwrite)
 
 
 def show_redaction_plan(image_path: click.Path, override_rules: RuleSet | None = None):

@@ -48,10 +48,17 @@ def imagedephi(ctx: click.Context, override_rules: TextIO | None) -> None:
     "output-dir",
     type=click.Path(exists=True, file_okay=False, readable=True, writable=True, path_type=Path),
 )
+@click.option(
+    "-o",
+    "--overwrite-existing-output",
+    is_flag=True,
+    default=False,
+    help="Overwrite previous output for input images",
+)
 @click.pass_obj
-def run(obj: ImagedephiContext, input_dir: Path, output_dir: Path):
+def run(obj: ImagedephiContext, input_dir: Path, output_dir: Path, overwrite_existing_output: bool):
     """Redact images in a folder according to given rule sets."""
-    redact_images(input_dir, output_dir, obj.override_rule_set)
+    redact_images(input_dir, output_dir, obj.override_rule_set, overwrite_existing_output)
 
 
 @imagedephi.command
