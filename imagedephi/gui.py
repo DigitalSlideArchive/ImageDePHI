@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import asyncio
+from dataclasses import dataclass
 from pathlib import Path
+from typing import List
 
 from fastapi import BackgroundTasks, FastAPI, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse
@@ -13,6 +15,28 @@ app = FastAPI()
 templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
 
 shutdown_event = asyncio.Event()
+
+
+@dataclass
+class DirectoryData:
+    directory_path: Path
+    images: List[Path]
+
+
+def _create_directory_list(path: Path) -> List[DirectoryData]:
+    directory_list: List[DirectoryData] = []
+    for directory in path.iterdir():
+        if directory.is_dir():
+            children: List[Path] = []
+            try:
+                for child in directory.iterdir():
+                    if child.suffix == ".tif" or child.suffix == ".svs":
+                        children.append(child)
+            except PermissionError:
+                pass
+            directory_list.append({"directory_path": directory, "images": children})
+
+    return directory_list
 
 
 @app.on_event("startup")
@@ -38,36 +62,12 @@ def select_directory(
     output_bread_crumbs = list(reversed(output_directory.parents))
     output_bread_crumbs.append(output_directory)
 
-    # input_directories = [
-    #     path_element for path_element in input_directory.iterdir() if path_element.is_dir()
-    # ]
-    # output_directories = [
-    #     path_element for path_element in output_directory.iterdir() if path_element.is_dir()
-    # ]
-
-    def createDirectoryList(path):
-        directory_list = []
-        for directory in path.iterdir():
-            if directory.is_dir():
-                children = []
-                if directory.is_dir():
-
-                    try:
-                        for child in directory.iterdir():
-                            if child.suffix == ".tif" or child.suffix == ".svs":
-                                children.append(child)
-                    except PermissionError:
-                        pass
-                directory_list.append({"directory_path": directory, "images": children})
-
-        return directory_list
-
     return templates.TemplateResponse(
         "DirectorySelector.html.j2",
         {
             "request": request,
-            "input_directories": createDirectoryList(input_directory),
-            "output_directories": createDirectoryList(output_directory),
+            "input_directories": _create_directory_list(input_directory),
+            "output_directories": _create_directory_list(output_directory),
             "input_bread_crumbs": input_bread_crumbs,
             "output_bread_crumbs": output_bread_crumbs,
             "current_input": input_directory,
