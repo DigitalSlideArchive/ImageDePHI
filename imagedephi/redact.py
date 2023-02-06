@@ -11,7 +11,14 @@ import tifftools
 import tifftools.constants
 import yaml
 
-from imagedephi.rules import MetadataTiffRule, RuleSet, RuleSource, build_ruleset
+from imagedephi.rules import (
+    MetadataSvsRule,
+    MetadataTiffRule,
+    RuleSet,
+    RuleSource,
+    SvsDescription,
+    build_ruleset,
+)
 
 if TYPE_CHECKING:
     from tifftools.tifftools import IFD, TiffInfo
@@ -88,6 +95,38 @@ class TiffMetadataRedactionPlan:
             rule = self.redaction_steps.get(tag.value)
             if rule is not None:
                 rule.apply(ifd)
+
+
+class SvsMetadataRedactionPlan(TiffMetadataRedactionPlan):
+    description_redaction_steps: dict[str, MetadataSvsRule]
+    no_match_description_keys: list[str]
+
+    def __init__(
+        self,
+        tiff_info: TiffInfo,
+        base_rules_tiff: list[MetadataTiffRule],
+        base_rules_svs: list[MetadataSvsRule],
+        override_rules_tiff: list[MetadataTiffRule],
+        override_rules_svs: list[MetadataSvsRule],
+    ):
+        super().__init__(tiff_info, base_rules_tiff, override_rules_tiff)
+
+        image_description_tag = tifftools.constants.Tag["ImageDescription"]
+        del self.redaction_steps[image_description_tag.value]
+
+        ifds = self.tiff_info["ifds"]
+        for tag, ifd in self._iter_tiff_tag_entries(ifds):
+            if tag.value != image_description_tag.value:
+                continue
+
+            svs_description = SvsDescription(str(ifd["tags"][tag.value]["data"]))
+            for key in svs_description.metadata.keys():
+                for rule in chain(override_rules_svs, base_rules_svs):
+                    if rule.is_match(key):
+                        self.description_redaction_steps["key"] = rule
+                        break
+                else:
+                    self.no_match_description_keys.append(key)
 
 
 def _get_output_path(file_path: Path, output_dir: Path) -> Path:

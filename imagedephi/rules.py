@@ -146,7 +146,7 @@ class MetadataSvsRule(SvsRule):
     def is_match(self, key: str) -> bool:
         return self.key == key
 
-    @abs.abstractmethod
+    @abc.abstractmethod
     def apply(self, svs_description: SvsDescription):
         ...
 
