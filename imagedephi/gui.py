@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
+from dataclasses import dataclass
+import errno
 import importlib.resources
+import io
 from pathlib import Path
 
 from fastapi import BackgroundTasks, FastAPI, Form, HTTPException, Request
@@ -78,19 +82,36 @@ def redact(
     background_tasks: BackgroundTasks,
     input_directory: Path = Form(),  # noqa: B008
     output_directory: Path = Form(),  # noqa: B008
+    overwrite: bool = Form(),
 ):
     if not input_directory.is_dir():
         raise HTTPException(status_code=404, detail="Input directory not found")
     if not output_directory.is_dir():
         raise HTTPException(status_code=404, detail="Output directory not found")
 
-    redact_images(input_directory, output_directory)
+    if overwrite:
+        redact_images(input_directory, output_directory, overwrite=True)
+        # I think this goes here too
+        background_tasks.add_task(shutdown_event.set)
+        return {"message": "Image(s) successfully overwritten"}
 
-    # Shutdown after the response is sent, as this is the terminal endpoint
-    background_tasks.add_task(shutdown_event.set)
-    return {
-        "message": (
-            f"You chose this input directory: {input_directory} "
-            f"and this output directory: {output_directory}"
+    # Should we handle other failures?
+    elif redact_images(input_directory, output_directory) == errno.EEXIST:
+        return templates.TemplateResponse(
+            "SelectedDirectory.html.j2",
+            {
+                "request": request,
+                "input_directory": input_directory,
+                "output_directory": output_directory,
+            },
         )
-    }
+
+    else:
+        # Shutdown after the response is sent, as this is the terminal endpoint
+        background_tasks.add_task(shutdown_event.set)
+        return {
+            "message": (
+                f"You chose this input directory: {input_directory} "
+                f"and this output directory: {output_directory}"
+            )
+        }

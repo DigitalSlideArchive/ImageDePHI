@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@2.47.0/dist/full.css" rel="stylesheet" type="text/css" />
+  <title>Selected Directory</title>
+</head>
+
+<body class="bg-base-300 flex justify-center min-h-screen">
+  <form method="POST" , action="/directory_selection/" class="card bg-base-200 w-2/5 m-8">
+    <div class="card-body">
+      <div class="card-title">
+        <span>Redacted image already exists in the output directory. Would you like to overwrite the image?</span>
+      </div>
+      <div class="flex justify-evenly">
+        <input type="hidden" , id="{{ input_directory }}" , value="{{ input_directory }}" , name="input_directory" />
+        <input type="hidden" , id="{{ output_directory }}" , value="{{ output_directory }}" , name="output_directory" />
+        <input type="hidden" , id="{{ overwrite }}" , value="True" , name="overwrite" />
+        <button type="submit" , class="btn bg-gray-800">
+          Yes
+        </button>
+        <a href=" /?input_directory={{ input_directory.parent|urlencode }}/&output_directory={{
+      output_directory.parent|urlencode }}">
+          <button type="button" class="btn bg-gray-800">
+            No
+          </button>
+        </a>
+      </div>
+    </div>
+  </form>
+</body>
+
+</html>
