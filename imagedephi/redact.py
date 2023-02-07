@@ -128,6 +128,29 @@ class SvsMetadataRedactionPlan(TiffMetadataRedactionPlan):
                 else:
                     self.no_match_description_keys.append(key)
 
+    def report_missing_rules(self) -> None:
+        is_comprehensive = True
+        if self.no_match_tags:
+            is_comprehensive = False
+            click.echo("The following tags could not be redacted given the current set of rules.")
+            for tag in self.no_match_tags:
+                click.echo(f"{tag.value} - {tag.name}")
+        if self.no_match_description_keys:
+            is_comprehensive = False
+            click.echo(
+                "The following keys were found in Aperio ImageDescription strings "
+                "and could not be redacted given the current set of rules."
+            )
+            for key in self.no_match_description_keys:
+                click.echo(key)
+        if is_comprehensive:
+            click.echo("The redaction plan is comprehensive.")
+
+    def report_plan(self) -> None:
+        click.echo("Aperio (.svs) Metadata Redaction Plan\n")
+        for rule in chain(self.redaction_steps.values(), self.description_redaction_steps.values()):
+            click.echo(rule.get_description())
+
 
 def _get_output_path(file_path: Path, output_dir: Path) -> Path:
     return output_dir / f"REDACTED_{file_path.name}"
