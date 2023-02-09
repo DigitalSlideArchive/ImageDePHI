@@ -161,8 +161,8 @@ class MetadataSvsRule(SvsRule):
         for rule_class in cls.__subclasses__():
             if rule_class.redact_method == redact_method:
                 return rule_class(rule_spec, rule_source)
-            else:
-                raise Exception("Unknown redact_method.")
+        else:
+            raise Exception("Unknown redact_method.")
 
 
 class ReplaceMetadataSvsRule(MetadataSvsRule):
