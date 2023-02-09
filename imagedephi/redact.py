@@ -150,6 +150,7 @@ class SvsMetadataRedactionPlan(TiffMetadataRedactionPlan):
         click.echo("Aperio (.svs) Metadata Redaction Plan\n")
         for rule in chain(self.redaction_steps.values(), self.description_redaction_steps.values()):
             click.echo(rule.get_description())
+        self.report_missing_rules()
 
 
 def _get_output_path(file_path: Path, output_dir: Path) -> Path:
