@@ -62,9 +62,9 @@ def run(obj: ImagedephiContext, input_dir: Path, output_dir: Path, overwrite_exi
 
 
 @imagedephi.command
-@click.argument("image", type=click.Path())
+@click.argument("image", type=click.Path(path_type=Path))
 @click.pass_obj
-def plan(obj: ImagedephiContext, image: click.Path) -> None:
+def plan(obj: ImagedephiContext, image: Path) -> None:
     """Print the redaction plan for a given image and rules."""
     show_redaction_plan(image, obj.override_rule_set)
 
