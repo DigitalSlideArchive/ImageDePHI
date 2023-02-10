@@ -158,3 +158,12 @@ rules:
     - key_name: ICC Profile
       method: delete
       type: metadata
+    - key_name: Title
+      method: delete
+      type: metadata
+    - key_name: Originalheight
+      method: delete
+      type: metadata
+    - key_name: Filtered
+      method: delete
+      type: metadata
