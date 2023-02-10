@@ -208,6 +208,25 @@ class SvsMetadataRedactionPlan(TiffMetadataRedactionPlan):
             click.echo(rule.get_description())
         self.report_missing_rules()
 
+    def _redact_svs_image_description(self, ifd: IFD):
+        image_description_tag = tifftools.constants.Tag["ImageDescription"]
+        image_description = SvsDescription(str(ifd["tags"][image_description_tag.value]["data"]))
+        for key in image_description.metadata.keys():
+            rule = self.description_redaction_steps.get(key)
+            if rule is not None:
+                rule.apply(image_description)
+        ifd["tags"][image_description_tag.value]["data"] = str(image_description)
+
+    def execute_plan(self) -> None:
+        ifds = self.tiff_info["ifds"]
+        image_description_tag = tifftools.constants.Tag["ImageDescription"]
+        for tag, ifd in self._iter_tiff_tag_entries(ifds):
+            rule = self.redaction_steps.get(tag.value)
+            if rule is not None:
+                rule.apply(ifd)
+            elif tag.value == image_description_tag.value:
+                self._redact_svs_image_description(ifd)
+
 
 def _get_output_path(file_path: Path, output_dir: Path) -> Path:
     return output_dir / f"REDACTED_{file_path.name}"
