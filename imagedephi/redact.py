@@ -30,16 +30,20 @@ class RedactionPlan:
     file_format: FileFormat
 
     @abc.abstractmethod
-    def report_plan(self):
+    def report_plan(self) -> None:
         ...
 
     @abc.abstractmethod
-    def execute_plan(self):
+    def execute_plan(self) -> None:
         ...
 
     @abc.abstractmethod
     def is_comprehensive(self) -> bool:
         """Return whether the plan redacts all metadata and/or images needed."""
+        ...
+
+    @abc.abstractmethod
+    def report_missing_rules(self) -> None:
         ...
 
 
@@ -170,7 +174,7 @@ class SvsMetadataRedactionPlan(TiffMetadataRedactionPlan):
         base_rules_svs: list[MetadataSvsRule],
         override_rules_tiff: list[MetadataTiffRule],
         override_rules_svs: list[MetadataSvsRule],
-    ):
+    ) -> None:
         super().__init__(tiff_info, base_rules_tiff, override_rules_tiff)
 
         image_description_tag = tifftools.constants.Tag["ImageDescription"]
@@ -219,7 +223,7 @@ class SvsMetadataRedactionPlan(TiffMetadataRedactionPlan):
             click.echo(rule.get_description())
         self.report_missing_rules()
 
-    def _redact_svs_image_description(self, ifd: IFD):
+    def _redact_svs_image_description(self, ifd: IFD) -> None:
         image_description_tag = tifftools.constants.Tag["ImageDescription"]
         image_description = SvsDescription(str(ifd["tags"][image_description_tag.value]["data"]))
         for key in image_description.metadata.keys():
@@ -277,12 +281,8 @@ def redact_images(
             click.echo(f"Could not open {child.name} as a tiff. Skipping...")
             continue
         click.echo(f"Redacting {child.name}...")
-        redaction_plan = TiffMetadataRedactionPlan(
-            tiff_info,
-            base_rules.get_metadata_tiff_rules(),
-            override_rules.get_metadata_tiff_rules() if override_rules else [],
-        )
-        if redaction_plan.no_match_tags:
+        redaction_plan = MetadataRedactionPlan.build(child, base_rules, override_rules)
+        if not redaction_plan.is_comprehensive():
             click.echo(f"Redaction could not be performed for {child.name}.")
             redaction_plan.report_missing_rules()
         else:
