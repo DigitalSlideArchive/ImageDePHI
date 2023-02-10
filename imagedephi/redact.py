@@ -168,6 +168,8 @@ class SvsMetadataRedactionPlan(TiffMetadataRedactionPlan):
         image_description_tag = tifftools.constants.Tag["ImageDescription"]
         del self.redaction_steps[image_description_tag.value]
 
+        self.description_redaction_steps = {}
+        self.no_match_description_keys = []
         ifds = self.tiff_info["ifds"]
         for tag, ifd in self._iter_tiff_tag_entries(ifds):
             if tag.value != image_description_tag.value:
@@ -177,7 +179,7 @@ class SvsMetadataRedactionPlan(TiffMetadataRedactionPlan):
             for key in svs_description.metadata.keys():
                 for rule in chain(override_rules_svs, base_rules_svs):
                     if rule.is_match(key):
-                        self.description_redaction_steps["key"] = rule
+                        self.description_redaction_steps[key] = rule
                         break
                 else:
                     self.no_match_description_keys.append(key)
