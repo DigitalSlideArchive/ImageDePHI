@@ -153,7 +153,7 @@ class SvsMetadataRedactionPlan(TiffMetadataRedactionPlan):
 
     file_format = FileFormat.SVS
     description_redaction_steps: dict[str, MetadataSvsRule]
-    no_match_description_keys: list[str]
+    no_match_description_keys: set[str]
 
     def __init__(
         self,
@@ -169,7 +169,7 @@ class SvsMetadataRedactionPlan(TiffMetadataRedactionPlan):
         del self.redaction_steps[image_description_tag.value]
 
         self.description_redaction_steps = {}
-        self.no_match_description_keys = []
+        self.no_match_description_keys = set({})
         ifds = self.tiff_info["ifds"]
         for tag, ifd in self._iter_tiff_tag_entries(ifds):
             if tag.value != image_description_tag.value:
@@ -182,7 +182,7 @@ class SvsMetadataRedactionPlan(TiffMetadataRedactionPlan):
                         self.description_redaction_steps[key] = rule
                         break
                 else:
-                    self.no_match_description_keys.append(key)
+                    self.no_match_description_keys.add(key)
 
     def report_missing_rules(self) -> None:
         is_comprehensive = True
