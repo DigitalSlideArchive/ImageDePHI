@@ -37,6 +37,11 @@ class RedactionPlan:
     def execute_plan(self):
         ...
 
+    @abc.abstractmethod
+    def is_comprehensive(self) -> bool:
+        """Return whether the plan redacts all metadata and/or images needed."""
+        ...
+
 
 class MetadataRedactionPlan(RedactionPlan):
     @classmethod
@@ -119,8 +124,11 @@ class TiffMetadataRedactionPlan(MetadataRedactionPlan):
                 # End of iteration, without "break"; no matching rule found anywhere
                 self.no_match_tags.append(tag)
 
+    def is_comprehensive(self) -> bool:
+        return len(self.no_match_tags) == 0
+
     def report_missing_rules(self) -> None:
-        if self.no_match_tags:
+        if self.is_comprehensive():
             click.echo("The following tags could not be redacted given the current set of rules.")
             for tag in self.no_match_tags:
                 click.echo(f"{tag.value} - {tag.name}")
@@ -184,23 +192,26 @@ class SvsMetadataRedactionPlan(TiffMetadataRedactionPlan):
                 else:
                     self.no_match_description_keys.add(key)
 
+    def is_comprehensive(self) -> bool:
+        return super().is_comprehensive() and len(self.no_match_description_keys) == 0
+
     def report_missing_rules(self) -> None:
-        is_comprehensive = True
-        if self.no_match_tags:
-            is_comprehensive = False
-            click.echo("The following tags could not be redacted given the current set of rules.")
-            for tag in self.no_match_tags:
-                click.echo(f"{tag.value} - {tag.name}")
-        if self.no_match_description_keys:
-            is_comprehensive = False
-            click.echo(
-                "The following keys were found in Aperio ImageDescription strings "
-                "and could not be redacted given the current set of rules."
-            )
-            for key in self.no_match_description_keys:
-                click.echo(key)
-        if is_comprehensive:
+        if self.is_comprehensive():
             click.echo("The redaction plan is comprehensive.")
+        else:
+            if self.no_match_tags:
+                click.echo(
+                    "The following tags could not be redacted given the current set of rules."
+                )
+                for tag in self.no_match_tags:
+                    click.echo(f"{tag.value} - {tag.name}")
+            if self.no_match_description_keys:
+                click.echo(
+                    "The following keys were found in Aperio ImageDescription strings "
+                    "and could not be redacted given the current set of rules."
+                )
+                for key in self.no_match_description_keys:
+                    click.echo(key)
 
     def report_plan(self) -> None:
         click.echo("Aperio (.svs) Metadata Redaction Plan\n")
