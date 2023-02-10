@@ -116,6 +116,8 @@ class SvsDescription:
     def __init__(self, svs_description_string: str):
         description_components = svs_description_string.split("|")
         self.prefix = description_components[0]
+
+        self.metadata = {}
         for metadata_component in description_components[1:]:
             key, value = [token.strip() for token in metadata_component.split("=")]
             self.metadata[key] = value
