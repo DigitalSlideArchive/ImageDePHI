@@ -26,6 +26,13 @@ if TYPE_CHECKING:
     from tifftools.tifftools import IFD, TiffInfo
 
 
+FILE_EXTENSION_MAP: dict[str, FileFormat] = {
+    ".tif": FileFormat.TIFF,
+    ".tiff": FileFormat.TIFF,
+    ".svs": FileFormat.SVS,
+}
+
+
 class RedactionPlan:
     file_format: FileFormat
 
@@ -55,19 +62,14 @@ class TiffBasedMetadataRedactionPlan(RedactionPlan):
         cls, image_path: Path, base_rules: RuleSet, override_rules: RuleSet | None = None
     ) -> TiffBasedMetadataRedactionPlan:
         file_extension = image_path.suffix
-        file_extension_map: dict[str, FileFormat] = {
-            ".tif": FileFormat.TIFF,
-            ".tiff": FileFormat.TIFF,
-            ".svs": FileFormat.SVS,
-        }
-        if file_extension_map[file_extension] == FileFormat.TIFF:
+        if FILE_EXTENSION_MAP[file_extension] == FileFormat.TIFF:
             tiff_info = tifftools.read_tiff(str(image_path))
             return TiffMetadataRedactionPlan(
                 tiff_info,
                 base_rules.get_metadata_tiff_rules(),
                 override_rules.get_metadata_tiff_rules() if override_rules else [],
             )
-        if file_extension_map[file_extension] == FileFormat.SVS:
+        if FILE_EXTENSION_MAP[file_extension] == FileFormat.SVS:
             tiff_info = tifftools.read_tiff(str(image_path))
             return SvsMetadataRedactionPlan(
                 tiff_info,
@@ -281,6 +283,9 @@ def redact_images(
 ) -> None:
     base_rules = get_base_rules()
     for child in image_dir.iterdir():
+        if child.suffix not in FILE_EXTENSION_MAP:
+            click.echo(f"Image format for {child.name} not supported. Skipping...")
+            continue
         try:
             redaction_plan = TiffBasedMetadataRedactionPlan.build(child, base_rules, override_rules)
         except tifftools.TifftoolsError:
