@@ -231,7 +231,8 @@ class SvsMetadataRedactionPlan(TiffMetadataRedactionPlan):
     def _redact_svs_image_description(self, ifd: IFD) -> None:
         image_description_tag = tifftools.constants.Tag["ImageDescription"]
         image_description = SvsDescription(str(ifd["tags"][image_description_tag.value]["data"]))
-        for key in image_description.metadata.keys():
+
+        for key in list(image_description.metadata):
             rule = self.description_redaction_steps.get(key)
             if rule is not None:
                 rule.apply(image_description)
