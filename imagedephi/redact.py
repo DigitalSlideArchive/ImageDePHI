@@ -47,11 +47,13 @@ class RedactionPlan:
         ...
 
 
-class MetadataRedactionPlan(RedactionPlan):
+class TiffBasedMetadataRedactionPlan(RedactionPlan):
+    tiff_info: TiffInfo
+
     @classmethod
     def build(
         cls, image_path: Path, base_rules: RuleSet, override_rules: RuleSet | None = None
-    ) -> MetadataRedactionPlan:
+    ) -> TiffBasedMetadataRedactionPlan:
         file_extension = image_path.suffix
         file_extension_map: dict[str, FileFormat] = {
             ".tif": FileFormat.TIFF,
@@ -76,8 +78,11 @@ class MetadataRedactionPlan(RedactionPlan):
             )
         raise Exception(f"File format for {image_path} not supported.")
 
+    def get_image_data(self) -> TiffInfo:
+        return self.tiff_info
 
-class TiffMetadataRedactionPlan(MetadataRedactionPlan):
+
+class TiffMetadataRedactionPlan(TiffBasedMetadataRedactionPlan):
     """
     Represents a plan of action for redacting metadata from TIFF images.
 
@@ -132,7 +137,7 @@ class TiffMetadataRedactionPlan(MetadataRedactionPlan):
         return len(self.no_match_tags) == 0
 
     def report_missing_rules(self) -> None:
-        if self.is_comprehensive():
+        if not self.is_comprehensive():
             click.echo("The following tags could not be redacted given the current set of rules.")
             for tag in self.no_match_tags:
                 click.echo(f"{tag.value} - {tag.name}")
@@ -276,22 +281,23 @@ def redact_images(
     base_rules = get_base_rules()
     for child in image_dir.iterdir():
         try:
-            tiff_info: TiffInfo = tifftools.read_tiff(child)
+            redaction_plan = TiffBasedMetadataRedactionPlan.build(child, base_rules, override_rules)
         except tifftools.TifftoolsError:
             click.echo(f"Could not open {child.name} as a tiff. Skipping...")
             continue
         click.echo(f"Redacting {child.name}...")
-        redaction_plan = MetadataRedactionPlan.build(child, base_rules, override_rules)
         if not redaction_plan.is_comprehensive():
             click.echo(f"Redaction could not be performed for {child.name}.")
             redaction_plan.report_missing_rules()
         else:
             redaction_plan.execute_plan()
             output_path = _get_output_path(child, output_dir)
-            _save_redacted_tiff(tiff_info, output_path, child, overwrite)
+            _save_redacted_tiff(redaction_plan.get_image_data(), output_path, child, overwrite)
 
 
 def show_redaction_plan(image_path: Path, override_rules: RuleSet | None = None):
     base_rules = get_base_rules()
-    metadata_redaction_plan = MetadataRedactionPlan.build(image_path, base_rules, override_rules)
+    metadata_redaction_plan = TiffBasedMetadataRedactionPlan.build(
+        image_path, base_rules, override_rules
+    )
     metadata_redaction_plan.report_plan()
