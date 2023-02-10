@@ -70,7 +70,10 @@ class MetadataTiffRule(TiffRule):
     def get_description(self) -> str:
         if self.description:
             return self.description
-        return f"Tag {self.tag.value} - {self.tag.name}: {self.redact_method} ({self.rule_source})"
+        return (
+            f"Tiff Tag {self.tag.value} - "
+            f"{self.tag.name}: {self.redact_method.value} ({self.rule_source.value})"
+        )
 
     @classmethod
     def build(cls, rule_spec: dict, rule_source: RuleSource) -> MetadataTiffRule:
@@ -156,7 +159,10 @@ class MetadataSvsRule(SvsRule):
     def get_description(self) -> str:
         if self.description:
             return self.description
-        return f"SVS Image Description - {self.key}: {self.redact_method} ({self.rule_source})"
+        return (
+            f"SVS Image Description - "
+            f"{self.key}: {self.redact_method.value} ({self.rule_source.value})"
+        )
 
     @classmethod
     def build(cls, rule_spec: dict, rule_source: RuleSource) -> MetadataSvsRule:
