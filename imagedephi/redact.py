@@ -27,6 +27,8 @@ if TYPE_CHECKING:
 
 
 class RedactionPlan:
+    file_format: FileFormat
+
     @abc.abstractmethod
     def report_plan(self):
         ...
@@ -36,7 +38,37 @@ class RedactionPlan:
         ...
 
 
-class TiffMetadataRedactionPlan(RedactionPlan):
+class MetadataRedactionPlan(RedactionPlan):
+    @classmethod
+    def build(
+        cls, image_path: Path, base_rules: RuleSet, override_rules: RuleSet | None = None
+    ) -> MetadataRedactionPlan:
+        file_extension = image_path.suffix
+        file_extension_map: dict[str, FileFormat] = {
+            ".tif": FileFormat.TIFF,
+            ".tiff": FileFormat.TIFF,
+            ".svs": FileFormat.SVS,
+        }
+        if file_extension_map[file_extension] == FileFormat.TIFF:
+            tiff_info = tifftools.read_tiff(str(image_path))
+            return TiffMetadataRedactionPlan(
+                tiff_info,
+                base_rules.get_metadata_tiff_rules(),
+                override_rules.get_metadata_tiff_rules() if override_rules else [],
+            )
+        if file_extension_map[file_extension] == FileFormat.SVS:
+            tiff_info = tifftools.read_tiff(str(image_path))
+            return SvsMetadataRedactionPlan(
+                tiff_info,
+                base_rules.get_metadata_tiff_rules(),
+                base_rules.get_metadata_svs_rules(),
+                override_rules.get_metadata_tiff_rules() if override_rules else [],
+                override_rules.get_metadata_svs_rules() if override_rules else [],
+            )
+        raise Exception(f"File format for {image_path} not supported.")
+
+
+class TiffMetadataRedactionPlan(MetadataRedactionPlan):
     """
     Represents a plan of action for redacting metadata from TIFF images.
 
@@ -44,6 +76,7 @@ class TiffMetadataRedactionPlan(RedactionPlan):
     images, and also executing the plan.
     """
 
+    file_format = FileFormat.TIFF
     tiff_info: TiffInfo
     redaction_steps: dict[int, MetadataTiffRule]
     no_match_tags: list[tifftools.TiffTag]
@@ -110,6 +143,15 @@ class TiffMetadataRedactionPlan(RedactionPlan):
 
 
 class SvsMetadataRedactionPlan(TiffMetadataRedactionPlan):
+    """
+    Represents a plan of action for redacting files in Aperio (.svs) format.
+
+    Redaction for this type of file is similar to redaction for .tiff files, as the
+    formats are similar. However, Aperio images store additional information in its
+    ImageDescription tags. As a result, this tag is treated specially here.
+    """
+
+    file_format = FileFormat.SVS
     description_redaction_steps: dict[str, MetadataSvsRule]
     no_match_description_keys: list[str]
 
@@ -217,29 +259,7 @@ def redact_images(
             _save_redacted_tiff(tiff_info, output_path, child, overwrite)
 
 
-# TODO make a MetadataRedactionPlan base class and add this as a .build function
-def _build_redation_plan(image_path: Path, override_rules: RuleSet | None = None) -> RedactionPlan:
-    base_rules = get_base_rules()
-    file_extension = image_path.suffix
-    file_extension_map = {".tif": FileFormat.TIFF, ".tiff": FileFormat.TIFF, ".svs": FileFormat.SVS}
-    tiff_info = tifftools.read_tiff(str(image_path))
-    if file_extension_map[file_extension] == FileFormat.TIFF:
-        return TiffMetadataRedactionPlan(
-            tiff_info,
-            base_rules.get_metadata_tiff_rules(),
-            override_rules.get_metadata_tiff_rules() if override_rules else [],
-        )
-    if file_extension_map[file_extension] == FileFormat.SVS:
-        return SvsMetadataRedactionPlan(
-            tiff_info,
-            base_rules.get_metadata_tiff_rules(),
-            base_rules.get_metadata_svs_rules(),
-            override_rules.get_metadata_tiff_rules() if override_rules else [],
-            override_rules.get_metadata_svs_rules() if override_rules else [],
-        )
-    raise Exception("File format not yet supported.")
-
-
 def show_redaction_plan(image_path: Path, override_rules: RuleSet | None = None):
-    redaction_plan = _build_redation_plan(image_path, override_rules)
-    redaction_plan.report_plan()
+    base_rules = get_base_rules()
+    metadata_redaction_plan = MetadataRedactionPlan.build(image_path, base_rules, override_rules)
+    metadata_redaction_plan.report_plan()
