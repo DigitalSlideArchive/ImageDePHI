@@ -3,13 +3,12 @@ from __future__ import annotations
 import asyncio
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List
 
 from fastapi import BackgroundTasks, FastAPI, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
-from imagedephi.redact import redact_images
+from imagedephi.redact import iter_image_files, redact_images
 
 app = FastAPI()
 templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
@@ -20,21 +19,18 @@ shutdown_event = asyncio.Event()
 @dataclass
 class DirectoryData:
     directory_path: Path
-    images: List[Path]
+    images: list[Path]
 
 
-def _create_directory_list(path: Path) -> List[DirectoryData]:
-    directory_list: List[DirectoryData] = []
+def _create_directory_list(path: Path) -> list[DirectoryData]:
+    directory_list: list[DirectoryData] = []
     for directory in path.iterdir():
         if directory.is_dir():
-            children: List[Path] = []
             try:
-                for child in directory.iterdir():
-                    if child.suffix == ".tif" or child.suffix == ".svs":
-                        children.append(child)
+                images = list(iter_image_files(directory))
             except PermissionError:
-                pass
-            directory_list.append({"directory_path": directory, "images": children})
+                images = []
+            directory_list.append(DirectoryData(directory_path=directory, images=images))
 
     return directory_list
 

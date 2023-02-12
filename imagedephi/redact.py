@@ -114,6 +114,17 @@ def get_base_rules():
         return base_rule_set
 
 
+def iter_image_files(directory: Path) -> Generator[Path, None, None]:
+    """
+    Given a directory return an iterable of available images.
+
+    May raise a PermissionError if the directory is not readable.
+    """
+    for child in directory.iterdir():
+        if child.suffix == ".tif" or child.suffix == ".svs":
+            yield child
+
+
 def redact_images(
     image_dir: Path,
     output_dir: Path,
@@ -121,25 +132,25 @@ def redact_images(
     overwrite: bool = False,
 ) -> None:
     base_rules = get_base_rules()
-    for child in image_dir.iterdir():
+    for image_file in iter_image_files(image_dir):
         try:
-            tiff_info: TiffInfo = tifftools.read_tiff(child)
+            tiff_info: TiffInfo = tifftools.read_tiff(image_file)
         except tifftools.TifftoolsError:
-            click.echo(f"Could not open {child.name} as a tiff. Skipping...")
+            click.echo(f"Could not open {image_file.name} as a tiff. Skipping...")
             continue
-        click.echo(f"Redacting {child.name}...")
+        click.echo(f"Redacting {image_file.name}...")
         redaction_plan = TiffMetadataRedactionPlan(
             tiff_info,
             base_rules.get_metadata_tiff_rules(),
             override_rules.get_metadata_tiff_rules() if override_rules else [],
         )
         if redaction_plan.no_match_tags:
-            click.echo(f"Redaction could not be performed for {child.name}.")
+            click.echo(f"Redaction could not be performed for {image_file.name}.")
             redaction_plan.report_missing_rules()
         else:
             redaction_plan.execute_plan()
-            output_path = _get_output_path(child, output_dir)
-            _save_redacted_tiff(tiff_info, output_path, child, overwrite)
+            output_path = _get_output_path(image_file, output_dir)
+            _save_redacted_tiff(tiff_info, output_path, image_file, overwrite)
 
 
 def show_redaction_plan(image_path: click.Path, override_rules: RuleSet | None = None):
