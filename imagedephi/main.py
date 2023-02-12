@@ -58,7 +58,10 @@ def run(
     obj: ImagedephiContext, input_path: Path, output_dir: Path, overwrite_existing_output: bool
 ):
     """Perform the redaction of images."""
-    redact_images(input_path, output_dir, obj.override_rule_set, overwrite_existing_output)
+    try:
+        redact_images(input_path, output_dir, obj.override_rule_set, overwrite_existing_output)
+    except FileExistsError:
+        return
 
 
 @imagedephi.command

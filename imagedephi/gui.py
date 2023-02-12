@@ -95,7 +95,9 @@ def redact(
         return {"message": "Image(s) successfully overwritten"}
 
     # Should we handle other failures?
-    elif redact_images(input_directory, output_directory) == errno.EEXIST:
+    try:
+        redact_images(input_directory, output_directory)
+    except FileExistsError:
         return templates.TemplateResponse(
             "SelectedDirectory.html.j2",
             {
@@ -105,12 +107,11 @@ def redact(
             },
         )
 
-    else:
-        # Shutdown after the response is sent, as this is the terminal endpoint
-        background_tasks.add_task(shutdown_event.set)
-        return {
-            "message": (
-                f"You chose this input directory: {input_directory} "
-                f"and this output directory: {output_directory}"
-            )
-        }
+    # Shutdown after the response is sent, as this is the terminal endpoint
+    background_tasks.add_task(shutdown_event.set)
+    return {
+        "message": (
+            f"You chose this input directory: {input_directory} "
+            f"and this output directory: {output_directory}"
+        )
+    }

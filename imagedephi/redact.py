@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from collections.abc import Generator
-import errno
 import importlib.resources
 from itertools import chain
 from pathlib import Path
@@ -104,7 +103,9 @@ def _save_redacted_tiff(tiff_info: TiffInfo, output_path: Path, input_path: Path
                 f"Could not redact {input_path.name}, existing redacted file in output directory. "
                 "Use the --overwrite-existing-output flag to overwrite previously redacted files."
             )
-            return errno.EEXIST
+            # This has been discussed before but if we are raising errors this should probably
+            # go to stderror
+            raise FileExistsError("Redacted image file already exists.")
     tifftools.write_tiff(tiff_info, output_path, allowExisting=True)
 
 
@@ -151,7 +152,7 @@ def redact_images(
         else:
             redaction_plan.execute_plan()
             output_path = _get_output_path(image_file, output_dir)
-            return _save_redacted_tiff(tiff_info, output_path, image_file, overwrite)
+            _save_redacted_tiff(tiff_info, output_path, image_file, overwrite)
 
 
 def show_redaction_plan(image_path: click.Path, override_rules: RuleSet | None = None):
