@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import contextlib
 from dataclasses import dataclass
 import errno
 import importlib.resources
@@ -82,7 +81,7 @@ def redact(
     background_tasks: BackgroundTasks,
     input_directory: Path = Form(),  # noqa: B008
     output_directory: Path = Form(),  # noqa: B008
-    overwrite: bool = Form(),
+    overwrite: bool = Form(),  # noqa: B008
 ):
     if not input_directory.is_dir():
         raise HTTPException(status_code=404, detail="Input directory not found")

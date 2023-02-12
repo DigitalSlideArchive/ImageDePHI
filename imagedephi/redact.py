@@ -150,8 +150,8 @@ def redact_images(
             redaction_plan.report_missing_rules()
         else:
             redaction_plan.execute_plan()
-            output_path = _get_output_path(child, output_dir)
-            return _save_redacted_tiff(tiff_info, output_path, child, overwrite)
+            output_path = _get_output_path(image_file, output_dir)
+            return _save_redacted_tiff(tiff_info, output_path, image_file, overwrite)
 
 
 def show_redaction_plan(image_path: click.Path, override_rules: RuleSet | None = None):
