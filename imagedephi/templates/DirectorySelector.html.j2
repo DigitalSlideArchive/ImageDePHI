@@ -69,9 +69,12 @@
                           href="/?input_directory={{ current_input|urlencode }}/&output_directory={{ output['directory_path']|urlencode }}">
                           {{ output['directory_path'].name }}/
                         </a>
-                        <ul>
+                        <ul class="pl-3">
                           {% for image in output['images'] %}
-                          <li>{{ image.name }}</li>
+                          <li>
+                            <span class="mdi mdi-image" "></span>
+                            {{ image.name }}
+                          </li>
                           {% endfor %}
                         </ul>
                       </li>
