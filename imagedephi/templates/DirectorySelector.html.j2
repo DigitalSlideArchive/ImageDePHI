@@ -43,11 +43,16 @@
           </ul>
           <ul>
             {% for image in input_directories['images'] %}
+            {% if loop.index0 < 10 %}
             <li>
-              <span class="mdi mdi-image" "></span>
+              <span class="mdi mdi-image"></span>
               {{ image.name }}
             </li>
+            {% endif %}
             {% endfor %}
+            {% if input_directories['images'] | length > 10 %}
+            ...
+            {% endif %}
           </ul>
         </div>
         <div class=" basis-1/2 flex-none pl-8 ">
@@ -73,12 +78,17 @@
                       {% endfor %}
                       <ul>
                         {% for image in output_directories['images'] %}
+                        {% if loop.index0 < 10 %}
                         <li>
-                          <span class="mdi mdi-image" "></span>
+                          <span class="mdi mdi-image"></span>
                           {{ image.name }}
                         </li>
+                        {% endif %}
                         {% endfor %}
                       </ul>
+                      {% if output_directories['images'] | length > 10 %}
+                      ...
+                      {% endif %}
                     </ul>
         </div>
       </div>
