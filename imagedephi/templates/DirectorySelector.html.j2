@@ -29,23 +29,23 @@
             {% endfor %}
           </h3>
           <ul>
-            {% for input in input_directories %}
+            {% for input in input_directories["directory_list"] %}
             <li>
-              <input type="radio" , id="{{ input_directory }}" , value="{{ input['directory_path'] }}" ,
+              <input type="radio" , id="{{ input_directory }}" , value="{{ input }}" ,
                 name="input_directory">
               <a class="text-blue-700"
-                href="/?input_directory={{ input['directory_path']|urlencode }}/&output_directory={{ current_output|urlencode }}">
-                {{ input['directory_path'].name }}/
+                href="/?input_directory={{ input|urlencode }}/&output_directory={{ current_output|urlencode }}">
+                {{ input.name }}/
               </a>
 
-              <ul class="pl-3">
-                {% for image in input['images'] %}
-                <li>
-                  <span class="mdi mdi-image" "></span>
-                  {{ image.name }}
-                </li>
-                {% endfor %}
-              </ul>
+            </li>
+            {% endfor %}
+          </ul>
+          <ul>
+            {% for image in input_directories['images'] %}
+            <li>
+              <span class="mdi mdi-image" "></span>
+              {{ image.name }}
             </li>
             {% endfor %}
           </ul>
@@ -61,24 +61,24 @@
                       {% endfor %}
                     </h3>
                     <ul>
-                      {% for output in output_directories %}
+                      {% for output in output_directories["directory_list"] %}
                       <li>
-                        <input type="radio" , id="{{ output_directory }}" , value="{{ output['directory_path'] }}" ,
+                        <input type="radio" , id="{{ output_directory }}" , value="{{ output }}" ,
                           name="output_directory">
                         <a class="text-blue-700"
-                          href="/?input_directory={{ current_input|urlencode }}/&output_directory={{ output['directory_path']|urlencode }}">
-                          {{ output['directory_path'].name }}/
+                          href="/?input_directory={{ current_input|urlencode }}/&output_directory={{ output|urlencode }}">
+                          {{ output.name }}/
                         </a>
-                        <ul class="pl-3">
-                          {% for image in output['images'] %}
-                          <li>
-                            <span class="mdi mdi-image" "></span>
-                            {{ image.name }}
-                          </li>
-                          {% endfor %}
-                        </ul>
                       </li>
                       {% endfor %}
+                      <ul>
+                        {% for image in output_directories['images'] %}
+                        <li>
+                          <span class="mdi mdi-image" "></span>
+                          {{ image.name }}
+                        </li>
+                        {% endfor %}
+                      </ul>
                     </ul>
         </div>
       </div>

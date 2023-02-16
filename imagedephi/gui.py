@@ -18,21 +18,22 @@ shutdown_event = asyncio.Event()
 
 @dataclass
 class DirectoryData:
-    directory_path: Path
+    directory_list: list[Path]
     images: list[Path]
 
 
-def _create_directory_list(path: Path) -> list[DirectoryData]:
-    directory_list: list[DirectoryData] = []
+def _create_directory_list(path: Path) -> DirectoryData:
+    path_info: DirectoryData = DirectoryData(directory_list=[], images=[])
+
     for directory in path.iterdir():
         if directory.is_dir():
-            try:
-                images = list(iter_image_files(directory))
-            except PermissionError:
-                images = []
-            directory_list.append(DirectoryData(directory_path=directory, images=images))
+            path_info.directory_list.append(directory)
+        try:
+            path_info.images = list(iter_image_files(path))
+        except PermissionError:
+            path_info.images = []
 
-    return directory_list
+    return path_info
 
 
 @app.on_event("startup")
