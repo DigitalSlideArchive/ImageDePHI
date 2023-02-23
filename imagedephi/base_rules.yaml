@@ -82,6 +82,12 @@ rules:
     - tag_name: Predictor
       method: keep
       type: metadata
+    - tag_name: Software
+      method: delete
+      type: metadata
+    - tag_name: ReferenceBlackWhite
+      method: keep
+      type: metadata
   svs:
     - key_name: AppMag
       method: keep
@@ -93,7 +99,7 @@ rules:
       method: keep
       type: metadata
     - key_name: StripeWidth
-      method: delete
+      method: keep
       type: metadata
     - key_name: ScanScope ID
       method: delete
@@ -114,22 +120,22 @@ rules:
       method: delete
       type: metadata
     - key_name: Left
-      method: delete
+      method: keep
       type: metadata
     - key_name: Top
-      method: delete
+      method: keep
       type: metadata
     - key_name: LineCameraSkew
-      method: delete
+      method: keep
       type: metadata
     - key_name: LineAreaXOffset
-      method: delete
+      method: keep
       type: metadata
     - key_name: LineAreaYOffset
-      method: delete
+      method: keep
       type: metadata
     - key_name: Focus Offset
-      method: delete
+      method: keep
       type: metadata
     - key_name: DSR ID
       method: delete
@@ -138,32 +144,68 @@ rules:
       method: delete
       type: metadata
     - key_name: Exposure Time
-      method: delete
+      method: keep
       type: metadata
     - key_name: Exposure Scale
-      method: delete
+      method: keep
       type: metadata
     - key_name: DisplayColor
-      method: delete
+      method: keep
       type: metadata
     - key_name: SessonMode
       method: delete
       type: metadata
     - key_name: OriginalWidth
-      method: delete
+      method: keep
       type: metadata
     - key_name: OriginalHeight
-      method: delete
+      method: keep
       type: metadata
     - key_name: ICC Profile
-      method: delete
+      method: keep
       type: metadata
     - key_name: Title
       method: delete
       type: metadata
     - key_name: Originalheight
-      method: delete
+      method: keep
       type: metadata
     - key_name: Filtered
+      method: delete
+      type: metadata
+    - key_name: Parmset
+      method: delete
+      type: metadata
+    - key_name: BigTIFF
+      method: delete
+      type: metadata
+    - key_name: Converter
+      method: delete
+      type: metadata
+    - key_name: ConverterEpoch
+      method: delete
+      type: metadata
+    - key_name: ConverterVersion
+      method: delete
+      type: metadata
+    - key_name: CompressedFile
+      method: delete
+      type: metadata
+    - key_name: Gamma
+      method: keep
+      type: metadata
+    - key_name: Rack
+      method: delete
+      type: metadata
+    - key_name: Slide
+      method: delete
+      type: metadata
+    - key_name: BestFocusLayer
+      method: keep
+      type: metadata
+    - key_name: Accession
+      method: delete
+      type: metadata
+    - key_name: Copyright
       method: delete
       type: metadata
