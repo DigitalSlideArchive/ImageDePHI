@@ -33,6 +33,12 @@ FILE_EXTENSION_MAP: dict[str, FileFormat] = {
 }
 
 
+class MalformedAperioFileException(Exception):
+    """Raised when the program cannot process an Aperio/SVS file as expected."""
+
+    ...
+
+
 class RedactionPlan:
     file_format: FileFormat
 
@@ -185,6 +191,8 @@ class SvsMetadataRedactionPlan(TiffMetadataRedactionPlan):
         super().__init__(tiff_info, base_rules_tiff, override_rules_tiff)
 
         image_description_tag = tifftools.constants.Tag["ImageDescription"]
+        if image_description_tag.value not in self.redaction_steps:
+            raise MalformedAperioFileException()
         del self.redaction_steps[image_description_tag.value]
 
         self.description_redaction_steps = {}
@@ -291,6 +299,9 @@ def redact_images(
         except tifftools.TifftoolsError:
             click.echo(f"Could not open {child.name} as a tiff. Skipping...")
             continue
+        except MalformedAperioFileException:
+            click.echo(f"{child.name} could not be processed as a valid Aperio file. Skipping...")
+            continue
         click.echo(f"Redacting {child.name}...")
         if not redaction_plan.is_comprehensive():
             click.echo(f"Redaction could not be performed for {child.name}.")
@@ -301,9 +312,19 @@ def redact_images(
             _save_redacted_tiff(redaction_plan.get_image_data(), output_path, child, overwrite)
 
 
-def show_redaction_plan(image_path: Path, override_rules: RuleSet | None = None):
+def show_redaction_plan(image_path: Path, override_rules: RuleSet | None = None) -> int | None:
+    if image_path.suffix not in FILE_EXTENSION_MAP:
+        click.echo(f"Image format for {image_path.name} not supported.", err=True)
+        return 1
     base_rules = get_base_rules()
-    metadata_redaction_plan = TiffBasedMetadataRedactionPlan.build(
-        image_path, base_rules, override_rules
-    )
+    try:
+        metadata_redaction_plan = TiffBasedMetadataRedactionPlan.build(
+            image_path, base_rules, override_rules
+        )
+    except tifftools.TifftoolsError:
+        click.echo(f"Could not open {image_path.name} as a tiff.", err=True)
+        return 1
+    except MalformedAperioFileException:
+        click.echo(f"{image_path.name} could not be processed as a valid Aperio file.", err=True)
+        return 1
     metadata_redaction_plan.report_plan()
