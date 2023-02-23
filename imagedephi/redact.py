@@ -148,7 +148,7 @@ class TiffMetadataRedactionPlan(TiffBasedMetadataRedactionPlan):
         if not self.is_comprehensive():
             click.echo("The following tags could not be redacted given the current set of rules.")
             for tag in self.no_match_tags:
-                click.echo(f"{tag.value} - {tag.name}")
+                click.echo(f"Missing tag (tiff): {tag.value} - {tag.name}")
         else:
             click.echo("This redaction plan is comprehensive.")
 
@@ -219,18 +219,14 @@ class SvsMetadataRedactionPlan(TiffMetadataRedactionPlan):
             click.echo("The redaction plan is comprehensive.")
         else:
             if self.no_match_tags:
-                click.echo(
-                    "The following tags could not be redacted given the current set of rules."
-                )
-                for tag in self.no_match_tags:
-                    click.echo(f"{tag.value} - {tag.name}")
+                super().report_missing_rules()
             if self.no_match_description_keys:
                 click.echo(
                     "The following keys were found in Aperio ImageDescription strings "
                     "and could not be redacted given the current set of rules."
                 )
                 for key in self.no_match_description_keys:
-                    click.echo(key)
+                    click.echo(f"Missing key (Aperio ImageDescription): {key}")
 
     def report_plan(self) -> None:
         click.echo("Aperio (.svs) Metadata Redaction Plan\n")
