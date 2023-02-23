@@ -106,11 +106,14 @@ class TiffMetadataRedactionPlan(TiffBasedMetadataRedactionPlan):
     @staticmethod
     def _iter_tiff_tag_entries(
         ifds: list[IFD],
+        tag_set=tifftools.constants.Tag,
     ) -> Generator[tuple[tifftools.TiffTag, IFD], None, None]:
         for ifd in ifds:
             for tag_id, entry in sorted(ifd["tags"].items()):
                 tag: tifftools.TiffTag = tifftools.constants.get_or_create_tag(
-                    tag_id, datatype=tifftools.Datatype[entry["datatype"]]
+                    tag_id,
+                    tagSet=tag_set,
+                    datatype=tifftools.Datatype[entry["datatype"]],
                 )
                 if not tag.isIFD():
                     yield tag, ifd
@@ -118,7 +121,9 @@ class TiffMetadataRedactionPlan(TiffBasedMetadataRedactionPlan):
                     # entry['ifds'] contains a list of lists
                     # see tifftools.read_tiff
                     for sub_ifds in entry.get("ifds", []):
-                        yield from TiffMetadataRedactionPlan._iter_tiff_tag_entries(sub_ifds)
+                        yield from TiffMetadataRedactionPlan._iter_tiff_tag_entries(
+                            sub_ifds, tag.get("tagset")
+                        )
 
     def __init__(
         self,
@@ -323,4 +328,4 @@ def show_redaction_plan(image_path: Path, override_rules: RuleSet | None = None)
     except MalformedAperioFileException:
         click.echo(f"{image_path.name} could not be processed as a valid Aperio file.", err=True)
         return 1
-    metadata_redaction_plan.report_plan()
+    return metadata_redaction_plan.report_plan()
