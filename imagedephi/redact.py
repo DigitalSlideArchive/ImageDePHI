@@ -33,7 +33,7 @@ FILE_EXTENSION_MAP: dict[str, FileFormat] = {
 }
 
 
-class MalformedAperioFileException(Exception):
+class MalformedAperioFileError(Exception):
     """Raised when the program cannot process an Aperio/SVS file as expected."""
 
     ...
@@ -197,7 +197,7 @@ class SvsMetadataRedactionPlan(TiffMetadataRedactionPlan):
 
         image_description_tag = tifftools.constants.Tag["ImageDescription"]
         if image_description_tag.value not in self.redaction_steps:
-            raise MalformedAperioFileException()
+            raise MalformedAperioFileError()
         del self.redaction_steps[image_description_tag.value]
 
         self.description_redaction_steps = {}
@@ -300,7 +300,7 @@ def redact_images(
         except tifftools.TifftoolsError:
             click.echo(f"Could not open {child.name} as a tiff. Skipping...")
             continue
-        except MalformedAperioFileException:
+        except MalformedAperioFileError:
             click.echo(f"{child.name} could not be processed as a valid Aperio file. Skipping...")
             continue
         click.echo(f"Redacting {child.name}...")
@@ -325,7 +325,7 @@ def show_redaction_plan(image_path: Path, override_rules: RuleSet | None = None)
     except tifftools.TifftoolsError:
         click.echo(f"Could not open {image_path.name} as a tiff.", err=True)
         return 1
-    except MalformedAperioFileException:
+    except MalformedAperioFileError:
         click.echo(f"{image_path.name} could not be processed as a valid Aperio file.", err=True)
         return 1
     return metadata_redaction_plan.report_plan()
