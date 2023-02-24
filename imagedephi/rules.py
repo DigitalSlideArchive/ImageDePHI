@@ -32,6 +32,23 @@ class RuleSource(Enum):
     OVERRIDE = "override"
 
 
+def _get_tiff_tag(tag_name: str) -> tifftools.TiffTag:
+    """
+    Given the name of a Tiff tag, attempt to return the tiff tag from tiff tools.
+
+    This function checks TagSet objects from tifftools for a given tag. If the tag is not found
+    after exhausting the tag sets, a new tag is created.
+    """
+    for tag_set in [
+        tifftools.constants.Tag,
+        tifftools.constants.GPSTag,
+        tifftools.constants.EXIFTag,
+    ]:
+        if tag_name in tag_set:
+            return tag_set[tag_name]
+    return tifftools.constants.get_or_create_tag(tag_name)
+
+
 class Rule(abc.ABC):
     description: str | None
     redact_method: RedactMethod
@@ -58,7 +75,7 @@ class MetadataTiffRule(TiffRule):
         self.description = rule_spec.get("description", None)  # this is optional
         self.redact_method = RedactMethod[rule_spec["method"].upper()]
         self.rule_source = rule_source
-        self.tag = tifftools.constants.Tag[rule_spec["tag_name"]]
+        self.tag = _get_tiff_tag(rule_spec["tag_name"])
 
     def is_match(self, tag: tifftools.TiffTag) -> bool:
         return self.tag.value == tag.value
