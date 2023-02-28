@@ -3,6 +3,7 @@
 
 <head>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.1.96/css/materialdesignicons.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/daisyui@2.47.0/dist/full.css" rel="stylesheet" type="text/css" />
   <title>Select Directory</title>
@@ -14,7 +15,7 @@
       <div class="card-title flex justify-between">
         <span>Directory Selector</span>
         <button type="submit" class="btn btn-primary btn-active">
-          Choose Directories
+          Select Current Directories
         </button>
       </div>
       <div class="grow flex divide-x-2">
@@ -23,42 +24,60 @@
           <div class="text-sm breadcrumbs mb-4 border-b-2">
             <ul class="flex flex-wrap">
               {% for bread_crumb in input_bread_crumbs %}
+              {% if input_bread_crumbs | last == bread_crumb %}
+
+              <li class="mr-1 font-black text-base">
+
+                {% if bread_crumb.name %}
+                {{ bread_crumb.name }}
+
+                {% else %}
+                /
+                {% endif %}
+
+              </li>
+              <input type="hidden" id="{{ input_directory }}" value="{{ bread_crumb }}" name="input_directory">
+              {% else %}
+
               <li>
-                <a class="text-blue-700 mr-1"
+                <a class="text-blue-700 mr-1 text-base"
                   href="/?input_directory={{ bread_crumb|urlencode }}/&output_directory={{ current_output|urlencode }}">
                   {% if bread_crumb.name %}
                   {{ bread_crumb.name }}
 
                   {% else %}
-                  root
+                  /
                   {% endif %}
                 </a>
               </li>
+              {% endif %}
               {% endfor %}
             </ul>
           </div>
           <ul>
             {% for input in input_directories["directory_list"] | sort %}
-            <li>
-              <input type="radio" id="{{ input_directory }}" value="{{ input }}" name="input_directory">
-              <a class="text-blue-700"
-                href="/?input_directory={{ input|urlencode }}/&output_directory={{ current_output|urlencode }}">
-                {{ input.name }}/
-              </a>
 
-            </li>
+            <a href=" /?input_directory={{ input|urlencode }}/&output_directory={{ current_output|urlencode }}">
+              <li @mouseover="$el.style.background = '#d1d5db'" @mouseleave="$el.style.background = '#F2F2F2'">
+                <span class=" mdi mdi-folder"></span>
+                {{ input.name }}/
+
+              </li>
+            </a>
             {% endfor %}
           </ul>
           <ul>
             {% for image in input_directories['images'] %}
             {% if loop.index0 < 10 %} <li>
-              <span class="mdi mdi-image"></span>
+              <span class="mdi mdi-image text-sky-800"></span>
               {{ image.name }}
               </li>
               {% endif %}
               {% endfor %}
               {% if input_directories['images'] | length > 10 %}
-              ...
+              <div class="italic">
+                {{input_directories['images'] | length -10}} More Images
+              </div>
               {% endif %}
           </ul>
         </div>
@@ -112,3 +131,10 @@
 </body>
 
 </html>
+
+<script>
+  function test(e) {
+    console.log('cat')
+    return false
+  }
+</script>
