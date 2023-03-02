@@ -51,3 +51,8 @@ exclude = [
 
 [tool.pyright]
 stubPath = "stubs"
+
+[tool.djlint]
+profile = "jinja"
+indent = 2
+extension = "html.j2"

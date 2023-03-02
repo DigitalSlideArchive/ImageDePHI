@@ -1,155 +1,145 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.1.96/css/materialdesignicons.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/daisyui@2.47.0/dist/full.css" rel="stylesheet" type="text/css" />
-  <title>Select Directory</title>
-</head>
-
-<body class="bg-base-300 flex justify-center min-h-screen">
-  <form method="POST" action="/directory_selection/" class="card bg-base-200 w-2/5 m-8">
-    <div class="card-body">
-      <div class="card-title flex justify-between">
-        <span>Directory Selector</span>
-        <button type="submit" class="btn btn-primary btn-active">
-          Select Current Directories
-        </button>
-      </div>
-      <div class="grow flex divide-x-2">
-        <div class="basis-1/2 flex-none pr-8">
-          <h2 class="text-lg font-semibold">Input Directory</h2>
-          <div class="text-sm breadcrumbs mb-4 border-b-2">
-            <ul class="flex flex-wrap">
-              {% for bread_crumb in input_bread_crumbs %}
-              {% if input_bread_crumbs | last == bread_crumb %}
-
-              <li class="mr-1 font-black text-base">
-
-                {% if bread_crumb.name %}
-                {{ bread_crumb.name }}
-
-                {% else %}
-                /
-                {% endif %}
-
-              </li>
-              <input type="hidden" id="{{ input_directory }}" value="{{ bread_crumb }}" name="input_directory">
-              {% else %}
-
-              <li>
-                <a class="text-blue-700 mr-1 text-base"
-                  href="/?input_directory={{ bread_crumb|urlencode }}/&output_directory={{ current_output|urlencode }}">
-                  {% if bread_crumb.name %}
-                  {{ bread_crumb.name }}
-
+  <head>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer
+            src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.1.96/css/materialdesignicons.min.css"
+          rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@2.47.0/dist/full.css"
+          rel="stylesheet"
+          type="text/css"/>
+    <title>Select Directory</title>
+  </head>
+  <body class="bg-base-300 flex justify-center min-h-screen">
+    <form method="POST"
+          action="/directory_selection/"
+          class="card bg-base-200 w-2/5 m-8">
+      <div class="card-body">
+        <div class="card-title flex justify-between">
+          <span>Directory Selector</span>
+          <button type="submit" class="btn btn-primary btn-active">Select Current Directories</button>
+        </div>
+        <div class="grow flex divide-x-2">
+          <div class="basis-1/2 flex-none pr-8">
+            <h2 class="text-lg font-semibold">Input Directory</h2>
+            <div class="text-sm breadcrumbs mb-4 border-b-2">
+              <ul class="flex flex-wrap">
+                {% for bread_crumb in input_bread_crumbs %}
+                  {% if input_bread_crumbs | last == bread_crumb %}
+                    <li class="mr-1 font-black text-base">
+                      {% if bread_crumb.name %}
+                        {{ bread_crumb.name }}
+                      {% else %}
+                        /
+                      {% endif %}
+                    </li>
+                    <input type="hidden"
+                           id="{{ input_directory }}"
+                           value="{{ bread_crumb }}"
+                           name="input_directory">
                   {% else %}
-                  /
+                    <li>
+                      <a class="text-blue-700 mr-1 text-base"
+                         href="/?input_directory={{ bread_crumb|urlencode }}/&output_directory={{ current_output|urlencode }}">
+                        {% if bread_crumb.name %}
+                          {{ bread_crumb.name }}
+                        {% else %}
+                          /
+                        {% endif %}
+                      </a>
+                    </li>
                   {% endif %}
+                {% endfor %}
+              </ul>
+            </div>
+            <ul x-data>
+              {% for input in input_directories["directory_list"] | sort %}
+                <a href=" /?input_directory={{ input|urlencode }}/&output_directory={{ current_output|urlencode }}">
+                  <li @mouseover="$el.style.background = '#d1d5db'"
+                      @mouseleave="$el.style.background = '#F2F2F2'">
+                    <span class=" mdi mdi-folder"></span>
+                    {{ input.name }}/
+                  </li>
                 </a>
-              </li>
-              {% endif %}
               {% endfor %}
             </ul>
-          </div>
-          <ul x-data>
-            {% for input in input_directories["directory_list"] | sort %}
-
-            <a href=" /?input_directory={{ input|urlencode }}/&output_directory={{ current_output|urlencode }}">
-              <li @mouseover="$el.style.background = '#d1d5db'" @mouseleave="$el.style.background = '#F2F2F2'">
-                <span class=" mdi mdi-folder"></span>
-                {{ input.name }}/
-
-              </li>
-            </a>
-            {% endfor %}
-          </ul>
-          <ul>
-            {% for image in input_directories['images'] %}
-            {% if loop.index0 < 10 %} <li>
-              <span class="mdi mdi-image text-sky-800"></span>
-              {{ image.name }}
-              </li>
-              {% endif %}
+            <ul>
+              {% for image in input_directories['images'] %}
+                {% if loop.index0 < 10 %}
+                  <li>
+                    <span class="mdi mdi-image text-sky-800"></span>
+                    {{ image.name }}
+                  </li>
+                {% endif %}
               {% endfor %}
               {% if input_directories['images'] | length > 10 %}
-              <div class="italic">
-                {{input_directories['images'] | length -10}} More Images
-              </div>
+                <div class="italic">{{ input_directories['images'] | length -10 }} More Images</div>
               {% endif %}
-          </ul>
-        </div>
-        <div class=" basis-1/2 flex-none pl-8 ">
-          <h2 class=" text-lg font-semibold">Output Directory</h2>
-          <div class="text-sm breadcrumbs mb-4 border-b-2">
-            <ul class="flex flex-wrap">
-              {% for bread_crumb in output_bread_crumbs %}
-              {% if output_bread_crumbs | last == bread_crumb %}
-
-              <li class="mr-1 font-black text-base">
-
-                {% if bread_crumb.name %}
-                {{ bread_crumb.name }}
-
-                {% else %}
-                /
-                {% endif %}
-
-              </li>
-              <input type="hidden" id="{{ output_directory }}" value="{{ bread_crumb }}" name="output_directory">
-              {% else %}
-
-              <li>
-                <a class="text-blue-700 mr-1 text-base"
-                  href="/?input_directory={{ current_input|urlencode }}/&output_directory={{ bread_crumb|urlencode }}">
-                  {% if bread_crumb.name %}
-                  {{ bread_crumb.name }}
-
-                  {% else %}
-                  /
-                  {% endif %}
-                </a>
-              </li>
-              {% endif %}
-              {% endfor %}
             </ul>
           </div>
-          <ul x-data>
-            {% for output in output_directories["directory_list"] | sort %}
-
-            <a href=" /?input_directory={{ current_input|urlencode }}/&output_directory={{ output|urlencode }}">
-              <li @mouseover="$el.style.background = '#d1d5db'" @mouseleave="$el.style.background = '#F2F2F2'">
-                <span class=" mdi mdi-folder"></span>
-                {{ output.name }}/
-
-              </li>
-            </a>
-            {% endfor %}
-          </ul>
-          <ul>
-            {% for image in output_directories['images'] %}
-            {% if loop.index0 < 10 %} <li>
-              <span class="mdi mdi-image text-sky-800"></span>
-              {{ image.name }}
-              </li>
-              {% endif %}
+          <div class=" basis-1/2 flex-none pl-8 ">
+            <h2 class=" text-lg font-semibold">Output Directory</h2>
+            <div class="text-sm breadcrumbs mb-4 border-b-2">
+              <ul class="flex flex-wrap">
+                {% for bread_crumb in output_bread_crumbs %}
+                  {% if output_bread_crumbs | last == bread_crumb %}
+                    <li class="mr-1 font-black text-base">
+                      {% if bread_crumb.name %}
+                        {{ bread_crumb.name }}
+                      {% else %}
+                        /
+                      {% endif %}
+                    </li>
+                    <input type="hidden"
+                           id="{{ output_directory }}"
+                           value="{{ bread_crumb }}"
+                           name="output_directory">
+                  {% else %}
+                    <li>
+                      <a class="text-blue-700 mr-1 text-base"
+                         href="/?input_directory={{ current_input|urlencode }}/&output_directory={{ bread_crumb|urlencode }}">
+                        {% if bread_crumb.name %}
+                          {{ bread_crumb.name }}
+                        {% else %}
+                          /
+                        {% endif %}
+                      </a>
+                    </li>
+                  {% endif %}
+                {% endfor %}
+              </ul>
+            </div>
+            <ul x-data>
+              {% for output in output_directories["directory_list"] | sort %}
+                <a href=" /?input_directory={{ current_input|urlencode }}/&output_directory={{ output|urlencode }}">
+                  <li @mouseover="$el.style.background = '#d1d5db'"
+                      @mouseleave="$el.style.background = '#F2F2F2'">
+                    <span class=" mdi mdi-folder"></span>
+                    {{ output.name }}/
+                  </li>
+                </a>
+              {% endfor %}
+            </ul>
+            <ul>
+              {% for image in output_directories['images'] %}
+                {% if loop.index0 < 10 %}
+                  <li>
+                    <span class="mdi mdi-image text-sky-800"></span>
+                    {{ image.name }}
+                  </li>
+                {% endif %}
               {% endfor %}
               {% if output_directories['images'] | length > 10 %}
-              <div class="italic">
-                {{output_directories['images'] | length -10}} More Images
-              </div>
+                <div class="italic">{{ output_directories['images'] | length -10 }} More Images</div>
               {% endif %}
-          </ul>
+            </ul>
+          </div>
         </div>
       </div>
-    </div>
-  </form>
-</body>
-
+    </form>
+  </body>
 </html>
-
 <script>
   function test(e) {
     console.log('cat')
