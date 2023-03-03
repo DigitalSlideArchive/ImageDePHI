@@ -43,7 +43,7 @@ def test_e2e_run(runner: CliRunner, data_dir: Path, tmp_path: Path) -> None:
     assert b"large_image_converter" not in output_file_bytes
     assert b"Redacted by ImageDePHI" in output_file_bytes
 
-    svs_output_file = tmp_path / "REDACTED_test_svs_image.svs"
+    svs_output_file = tmp_path / "REDACTED_test_svs_image_blank.svs"
     assert svs_output_file.exists()
     svs_output_file_bytes = svs_output_file.read_bytes()
     # verify our custom svs rule was applied
@@ -73,7 +73,7 @@ def test_e2e_plan_svs(runner: CliRunner, data_dir: Path, tmp_path: Path) -> None
             "--override-rules",
             str(data_dir / "rules" / "example_user_rules.yml"),
             "plan",
-            str(data_dir / "input" / "test_svs_image.svs"),
+            str(data_dir / "input" / "test_svs_image_blank.svs"),
         ],
     )
     assert result.exit_code == 0
