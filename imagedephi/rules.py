@@ -224,10 +224,18 @@ class RuleSet:
     rules: dict[FileFormat, list[Rule]]
 
     def get_metadata_tiff_rules(self) -> list[MetadataTiffRule]:
-        return [rule for rule in self.rules[FileFormat.TIFF] if isinstance(rule, MetadataTiffRule)]
+        if FileFormat.TIFF in self.rules:
+            return [
+                rule for rule in self.rules[FileFormat.TIFF] if isinstance(rule, MetadataTiffRule)
+            ]
+        return []
 
     def get_metadata_svs_rules(self) -> list[MetadataSvsRule]:
-        return [rule for rule in self.rules[FileFormat.SVS] if isinstance(rule, MetadataSvsRule)]
+        if FileFormat.SVS in self.rules:
+            return [
+                rule for rule in self.rules[FileFormat.SVS] if isinstance(rule, MetadataSvsRule)
+            ]
+        return []
 
 
 def _build_rule(file_format: FileFormat, rule_spec: dict, rule_source: RuleSource) -> Rule:
