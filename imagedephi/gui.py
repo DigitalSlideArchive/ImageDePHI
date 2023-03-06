@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-from dataclasses import dataclass
 from pathlib import Path
 
 from fastapi import BackgroundTasks, FastAPI, Form, HTTPException, Request
@@ -16,24 +15,21 @@ templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
 shutdown_event = asyncio.Event()
 
 
-@dataclass
 class DirectoryData:
-    directory_list: list[Path]
-    images: list[Path]
+    directory: Path
+    ancestors: list[Path]
+    child_directories: list[Path]
+    child_images: list[Path]
 
+    def __init__(self, directory: Path):
+        self.directory = directory
 
-def _create_directory_list(path: Path) -> DirectoryData:
-    path_info: DirectoryData = DirectoryData(directory_list=[], images=[])
+        self.ancestors = list(reversed(directory.parents))
+        self.ancestors.append(directory)
 
-    for directory in path.iterdir():
-        if directory.is_dir():
-            path_info.directory_list.append(directory)
-        try:
-            path_info.images = list(iter_image_files(path))
-        except PermissionError:
-            path_info.images = []
+        self.child_directories = [child for child in directory.iterdir() if child.is_dir()]
 
-    return path_info
+        self.child_images = list(iter_image_files(directory))
 
 
 @app.on_event("startup")
@@ -48,33 +44,25 @@ def select_directory(
     input_directory: Path = Path("/"),  # noqa: B008
     output_directory: Path = Path("/"),  # noqa: B008
 ):
+    Path("")
+    # TODO: if input_directory is specified but an empty string, it gets instantiated as the CWD
     if not input_directory.is_dir():
         raise HTTPException(status_code=404, detail="Input directory not a directory")
     if not output_directory.is_dir():
         raise HTTPException(status_code=404, detail="Output directory not a directory")
 
-    input_bread_crumbs = list(reversed(input_directory.parents))
-    input_bread_crumbs.append(input_directory)
-
-    output_bread_crumbs = list(reversed(output_directory.parents))
-    output_bread_crumbs.append(output_directory)
-
     return templates.TemplateResponse(
         "DirectorySelector.html.j2",
         {
             "request": request,
-            "input_directories": _create_directory_list(input_directory),
-            "output_directories": _create_directory_list(output_directory),
-            "input_bread_crumbs": input_bread_crumbs,
-            "output_bread_crumbs": output_bread_crumbs,
-            "current_input": input_directory,
-            "current_output": output_directory,
+            "input_directory_data": DirectoryData(input_directory),
+            "output_directory_data": DirectoryData(output_directory),
         },
     )
 
 
-@app.post("/directory_selection/")
-def selection(
+@app.post("/redact/")
+def redact(
     background_tasks: BackgroundTasks,
     input_directory: Path = Form(),  # noqa: B008
     output_directory: Path = Form(),  # noqa: B008

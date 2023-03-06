@@ -53,6 +53,6 @@ exclude = [
 stubPath = "stubs"
 
 [tool.djlint]
+extension = "html.j2"
 profile = "jinja"
 indent = 2
-extension = "html.j2"

@@ -1,132 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <title>Select Directory</title>
+    <meta name="description" content="ImageDePHI GUI"/>
+    <meta name="keywords" content=""/>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer
             src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.1.96/css/materialdesignicons.min.css"
-          rel="stylesheet">
+          rel="stylesheet"/>
     <link href="https://cdn.jsdelivr.net/npm/daisyui@2.47.0/dist/full.css"
           rel="stylesheet"
           type="text/css"/>
-    <title>Select Directory</title>
   </head>
   <body class="bg-base-300 flex justify-center min-h-screen">
     <div class="card bg-base-200 w-2/5 m-8">
       <div class="card-body">
         <div class="card-title flex justify-between">
           <span>Directory Selector</span>
-          <form method="POST" action="/directory_selection/">
-            <input type="hidden" value="{{ current_input }}" name="input_directory">
-            <input type="hidden" value="{{ current_output }}" name="output_directory">
+          <form method="post" action="{{ url_for('redact') }}">
+            <input type="hidden"
+                   value="{{ input_directory_data.directory }}"
+                   name="input_directory"/>
+            <input type="hidden"
+                   value="{{ output_directory_data.directory }}"
+                   name="output_directory"/>
             <button type="submit" class="btn btn-primary btn-active">Select Current Directories</button>
           </form>
         </div>
         <div class="grow flex divide-x-2">
-          <div class="basis-1/2 flex-none pr-8">
-            <h2 class="text-lg font-semibold">Input Directory</h2>
-            <div class="text-sm breadcrumbs mb-4 border-b-2">
-              <ul class="flex flex-wrap">
-                {% for bread_crumb in input_bread_crumbs %}
-                  <li class="mr-1 text-base">
-                    {% if loop.last %}
-                      {# The root directory has an empty string "name" #}
-                      {# TODO: What happends on Windows? #}
-                      <span class="font-black">{{ bread_crumb.name|default('/', true) }}</span>
-                    {% else %}
-                      <a class="text-blue-700"
-                         href="/?input_directory={{ bread_crumb|urlencode }}/&output_directory={{ current_output|urlencode }}">
-                        {{ bread_crumb.name|default('/', true) }}
-                      </a>
-                    {% endif %}
-                  </li>
-                {% endfor %}
-              </ul>
-            </div>
-            <ul>
-              {% for input_subdirectory in input_directories.directory_list|sort %}
-                {# Put the <a> outside, to make the whole line clickable #}
-                <a href="/?input_directory={{ input_subdirectory|urlencode }}/&output_directory={{ current_output|urlencode }}"></a>
-                <li class="hover:bg-base-300">
-                  <i class="mdi mdi-folder"></i>
-                  {{ input_subdirectory.name }}/
-                </li>
-              </a>
-            {% endfor %}
-          </ul>
-          <ul>
-            {% for input_image in input_directories.images[:10] %}
-              <li>
-                <i class="mdi mdi-image text-sky-800"></i>
-                {{ input_image.name }}
-              </li>
-            {% endfor %}
-            {% if input_directories.images|length > 10 %}
-              <li class="italic">{{ input_directories.images|length - 10 }} More Images</li>
-            {% endif %}
-          </ul>
-        </div>
-        <div class=" basis-1/2 flex-none pl-8 ">
-          <h2 class=" text-lg font-semibold">Output Directory</h2>
-          <div class="text-sm breadcrumbs mb-4 border-b-2">
-            <ul class="flex flex-wrap">
-              {% for bread_crumb in output_bread_crumbs %}
-                {% if output_bread_crumbs | last == bread_crumb %}
-                  <li class="mr-1 font-black text-base">
-                    {% if bread_crumb.name %}
-                      {{ bread_crumb.name }}
-                    {% else %}
-                      /
-                    {% endif %}
-                  </li>
-                {% else %}
-                  <li>
-                    <a class="text-blue-700 mr-1 text-base"
-                       href="/?input_directory={{ current_input|urlencode }}/&output_directory={{ bread_crumb|urlencode }}">
-                      {% if bread_crumb.name %}
-                        {{ bread_crumb.name }}
-                      {% else %}
-                        /
-                      {% endif %}
-                    </a>
-                  </li>
-                {% endif %}
-              {% endfor %}
-            </ul>
-          </div>
-          <ul x-data>
-            {% for output in output_directories["directory_list"] | sort %}
-              <a href=" /?input_directory={{ current_input|urlencode }}/&output_directory={{ output|urlencode }}">
-                <li @mouseover="$el.style.background = '#d1d5db'"
-                    @mouseleave="$el.style.background = '#F2F2F2'">
-                  <span class=" mdi mdi-folder"></span>
-                  {{ output.name }}/
-                </li>
-              </a>
-            {% endfor %}
-          </ul>
-          <ul>
-            {% for image in output_directories['images'] %}
-              {% if loop.index0 < 10 %}
-                <li>
-                  <span class="mdi mdi-image text-sky-800"></span>
-                  {{ image.name }}
-                </li>
-              {% endif %}
-            {% endfor %}
-            {% if output_directories['images'] | length > 10 %}
-              <div class="italic">{{ output_directories['images'] | length -10 }} More Images</div>
-            {% endif %}
-          </ul>
+          <div class="basis-1/2 flex-none pr-8">{% include "InputSelectorWidget.html.j2" %}</div>
+          <div class="basis-1/2 flex-none pl-8">{% include "OutputSelectorWidget.html.j2" %}</div>
         </div>
       </div>
     </div>
-  </div>
-</body>
+  </body>
 </html>
-<script>
-  function test(e) {
-    console.log('cat')
-    return false
-  }
-</script>
