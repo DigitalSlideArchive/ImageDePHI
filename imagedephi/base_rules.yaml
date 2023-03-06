@@ -101,13 +101,13 @@ rules:
       method: delete
       type: metadata
     - tag_name: OldSubfileType
-      method: delete
+      method: keep
       type: metadata
     - tag_name: Threshholding
       method: delete
       type: metadata
     - tag_name: FillOrder
-      method: delete
+      method: keep
       type: metadata
     - tag_name: DocumentName
       method: delete
@@ -128,27 +128,24 @@ rules:
       method: delete
       type: metadata
     - tag_name: Xposition
-      method: delete
+      method: keep
       type: metadata
     - tag_name: Yposition
-      method: delete
+      method: keep
       type: metadata
     - tag_name: T4Options
-      method: delete
+      method: keep
       type: metadata
     - tag_name: T6Options
-      method: delete
+      method: keep
       type: metadata
     - tag_name: PageNumber
-      method: delete
+      method: keep
       type: metadata
     - tag_name: GPSDateStamp
       method: delete
       type: metadata
     - tag_name: GPSLatitude
-      method: delete
-      type: metadata
-    - tag_name: '306'
       method: delete
       type: metadata
     - tag_name: DateTime
@@ -161,19 +158,19 @@ rules:
       method: delete
       type: metadata
     - tag_name: ColorMap
-      method: delete
+      method: keep
       type: metadata
     - tag_name: HalftoneHints
-      method: delete
+      method: keep
       type: metadata
     - tag_name: BadFaxLines
-      method: delete
+      method: keep
       type: metadata
     - tag_name: CleanFaxData
-      method: delete
+      method: keep
       type: metadata
     - tag_name: ConsecutiveBadFaxLines
-      method: delete
+      method: keep
       type: metadata
     - tag_name: Matteing
       method: delete
@@ -182,7 +179,7 @@ rules:
       method: delete
       type: metadata
     - tag_name: TileDepth
-      method: delete
+      method: keep
       type: metadata
     - tag_name: InkSet
       method: delete
@@ -194,10 +191,10 @@ rules:
       method: delete
       type: metadata
     - tag_name: ExposureTime
-      method: delete
+      method: keep
       type: metadata
     - tag_name: FNumber
-      method: delete
+      method: keep
       type: metadata
     - tag_name: NumberOfInks
       method: delete
@@ -245,7 +242,7 @@ rules:
       method: delete
       type: metadata
     - tag_name: ISOSpeedRatings
-      method: delete
+      method: keep
       type: metadata
     - tag_name: '34864'
       method: delete
@@ -260,31 +257,31 @@ rules:
       method: delete
       type: metadata
     - tag_name: ShutterSpeedValue
-      method: delete
+      method: keep
       type: metadata
     - tag_name: ApertureValue
-      method: delete
+      method: keep
       type: metadata
     - tag_name: BrightnessValue
-      method: delete
+      method: keep
       type: metadata
     - tag_name: ExposureBiasValue
-      method: delete
+      method: keep
       type: metadata
     - tag_name: MaxApertureValue
-      method: delete
+      method: keep
       type: metadata
     - tag_name: MeteringMode
-      method: delete
+      method: keep
       type: metadata
     - tag_name: LightSource
-      method: delete
+      method: keep
       type: metadata
     - tag_name: Flash
-      method: delete
+      method: keep
       type: metadata
     - tag_name: FocalLength
-      method: delete
+      method: keep
       type: metadata
     - tag_name: StoNits
       method: delete
@@ -317,64 +314,64 @@ rules:
       method: delete
       type: metadata
     - tag_name: ColorSpace
-      method: delete
+      method: keep
       type: metadata
     - tag_name: PixelXDimension
-      method: delete
+      method: keep
       type: metadata
     - tag_name: PixelYDimension
-      method: delete
+      method: keep
       type: metadata
     - tag_name: FocalPlaneXResolution
-      method: delete
+      method: keep
       type: metadata
     - tag_name: FocalPlaneYResolution
-      method: delete
+      method: keep
       type: metadata
     - tag_name: FocalPlaneResolutionUnit
-      method: delete
+      method: keep
       type: metadata
     - tag_name: SensingMethod
-      method: delete
+      method: keep
       type: metadata
     - tag_name: FileSource
       method: delete
       type: metadata
     - tag_name: SceneType
-      method: delete
+      method: keep
       type: metadata
     - tag_name: CFAPattern
-      method: delete
+      method: keep
       type: metadata
     - tag_name: CustomRendered
-      method: delete
+      method: keep
       type: metadata
     - tag_name: ExposureMode
-      method: delete
+      method: keep
       type: metadata
     - tag_name: WhiteBalance
-      method: delete
+      method: keep
       type: metadata
     - tag_name: FocalLengthIn35mmFilm
-      method: delete
+      method: keep
       type: metadata
     - tag_name: SceneCaptureType
-      method: delete
+      method: keep
       type: metadata
     - tag_name: GainControl
-      method: delete
+      method: keep
       type: metadata
     - tag_name: Contrast
-      method: delete
+      method: keep
       type: metadata
     - tag_name: Saturation
-      method: delete
+      method: keep
       type: metadata
     - tag_name: Sharpness
-      method: delete
+      method: keep
       type: metadata
     - tag_name: SubjectDistanceRange
-      method: delete
+      method: keep
       type: metadata
     - tag_name: GDAL_Metadata
       method: delete
@@ -398,31 +395,31 @@ rules:
       method: delete
       type: metadata
     - tag_name: JPEGProc
-      method: delete
+      method: keep
       type: metadata
     - tag_name: JPEGIFOffset
-      method: delete
+      method: keep
       type: metadata
     - tag_name: JPEGIFByteCount
-      method: delete
+      method: keep
       type: metadata
     - tag_name: JPEGRestartInterval
-      method: delete
+      method: keep
       type: metadata
     - tag_name: JPEGQTables
-      method: delete
+      method: keep
       type: metadata
     - tag_name: JPEGDCTables
-      method: delete
+      method: keep
       type: metadata
     - tag_name: JPEGACTables
-      method: delete
+      method: keep
       type: metadata
     - tag_name: YCbCrCoefficients
-      method: delete
+      method: keep
       type: metadata
     - tag_name: YCbCrPositioning
-      method: delete
+      method: keep
       type: metadata
     - tag_name: '55000'
       method: delete
@@ -463,9 +460,6 @@ rules:
     - tag_name: '65200'
       method: delete
       type: metadata
-    - tag_name: NDPI_ByteCountHighBytes
-      method: delete
-      type: metadata
     - tag_name: '65326'
       method: delete
       type: metadata
@@ -491,9 +485,6 @@ rules:
       method: delete
       type: metadata
     - tag_name: '65400'
-      method: delete
-      type: metadata
-    - tag_name: NDPI_DefaultGamma
       method: delete
       type: metadata
     - tag_name: GPSAltitude
