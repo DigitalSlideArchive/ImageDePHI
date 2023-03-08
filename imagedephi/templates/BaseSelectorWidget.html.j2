@@ -1,0 +1,44 @@
+<h2 class="text-lg font-semibold">
+  {% block selector_title required %}
+  {% endblock selector_title %}
+</h2>
+<div class="text-sm breadcrumbs mb-4 border-b-2">
+  <ul class="flex flex-wrap">
+    {% for ancestor in directory_data.ancestors %}
+      <li class="mr-1 text-base">
+        {# The root directory has an empty string "name" #}
+        {% set ancestor_name = ancestor.name|default('/', true) %}
+        {% if loop.last %}
+          <span class="font-black">{{ ancestor_name }}</span>
+        {% else %}
+          <a class="text-blue-700"
+             href="{{- url_for('select_directory') -}}?{%- block selector_ancestor_query scoped required -%}{%- endblock selector_ancestor_query -%}">
+            {{ ancestor_name }}
+          </a>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+</div>
+<ul>
+  {% for child_directory in directory_data.child_directories|sort %}
+    {# Put the <a> outside, to make the whole line clickable #}
+    <a href="{{- url_for('select_directory') -}}?{%- block selector_child_directory_query scoped required -%}{%- endblock selector_child_directory_query -%}">
+      <li class="hover:bg-base-300">
+        <i class="mdi mdi-folder"></i>
+        {{ child_directory.name }}
+      </li>
+    </a>
+  {% endfor %}
+</ul>
+<ul>
+  {% for child_image in directory_data.child_images[:10] %}
+    <li>
+      <i class="mdi mdi-image text-sky-800"></i>
+      {{ child_image.name }}
+    </li>
+  {% endfor %}
+  {% if directory_data.child_images|length > 10 %}
+    <li class="italic">{{ directory_data.child_images|length - 10 }} More Images</li>
+  {% endif %}
+</ul>
