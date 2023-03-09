@@ -49,12 +49,12 @@ def test_gui_navigate_output_not_found(
     assert response.json() == {"detail": "Output directory not a directory"}
 
 
-def test_gui_directory_selection(
+def test_gui_redact(
     client: TestClient,
     tmp_path: Path,
 ) -> None:
     response = client.post(
-        "/directory_selection/",
+        "/redact/",
         data={"input_directory": str(tmp_path), "output_directory": str(tmp_path)},
     )
 
@@ -66,12 +66,12 @@ def test_gui_directory_selection(
     }
 
 
-def test_gui_directory_selection_input_failure(
+def test_gui_redact_input_failure(
     client: TestClient,
     tmp_path: Path,
 ) -> None:
     response = client.post(
-        "/directory_selection/",
+        "/redact/",
         data={"input_directory": str(tmp_path / "fake"), "output_directory": str(tmp_path)},
     )
 
@@ -79,12 +79,12 @@ def test_gui_directory_selection_input_failure(
     assert response.json() == {"detail": "Input directory not found"}
 
 
-def test_gui_directory_selection_output_failure(
+def test_gui_redact_output_failure(
     client: TestClient,
     tmp_path: Path,
 ) -> None:
     response = client.post(
-        "/directory_selection/",
+        "/redact/",
         data={"input_directory": str(tmp_path), "output_directory": str(tmp_path / "fake")},
     )
 

@@ -286,6 +286,17 @@ def get_base_rules():
         return base_rule_set
 
 
+def iter_image_files(directory: Path) -> Generator[Path, None, None]:
+    """
+    Given a directory return an iterable of available images.
+
+    May raise a PermissionError if the directory is not readable.
+    """
+    for child in directory.iterdir():
+        if child.suffix == ".tif" or child.suffix == ".svs":
+            yield child
+
+
 def redact_images(
     image_dir: Path,
     output_dir: Path,
@@ -293,26 +304,30 @@ def redact_images(
     overwrite: bool = False,
 ) -> None:
     base_rules = get_base_rules()
-    for child in image_dir.iterdir():
-        if child.suffix not in FILE_EXTENSION_MAP:
-            click.echo(f"Image format for {child.name} not supported. Skipping...")
+    for image_file in iter_image_files(image_dir):
+        if image_file.suffix not in FILE_EXTENSION_MAP:
+            click.echo(f"Image format for {image_file.name} not supported. Skipping...")
             continue
         try:
-            redaction_plan = TiffBasedMetadataRedactionPlan.build(child, base_rules, override_rules)
+            redaction_plan = TiffBasedMetadataRedactionPlan.build(
+                image_file, base_rules, override_rules
+            )
         except tifftools.TifftoolsError:
-            click.echo(f"Could not open {child.name} as a tiff. Skipping...")
+            click.echo(f"Could not open {image_file.name} as a tiff. Skipping...")
             continue
         except MalformedAperioFileError:
-            click.echo(f"{child.name} could not be processed as a valid Aperio file. Skipping...")
+            click.echo(
+                f"{image_file.name} could not be processed as a valid Aperio file. Skipping..."
+            )
             continue
-        click.echo(f"Redacting {child.name}...")
+        click.echo(f"Redacting {image_file.name}...")
         if not redaction_plan.is_comprehensive():
-            click.echo(f"Redaction could not be performed for {child.name}.")
+            click.echo(f"Redaction could not be performed for {image_file.name}.")
             redaction_plan.report_missing_rules()
         else:
             redaction_plan.execute_plan()
-            output_path = _get_output_path(child, output_dir)
-            _save_redacted_tiff(redaction_plan.get_image_data(), output_path, child, overwrite)
+            output_path = _get_output_path(image_file, output_dir)
+            _save_redacted_tiff(redaction_plan.get_image_data(), output_path, image_file, overwrite)
 
 
 def show_redaction_plan(image_path: Path, override_rules: RuleSet | None = None) -> int | None:
