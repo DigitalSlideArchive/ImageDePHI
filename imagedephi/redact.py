@@ -150,12 +150,12 @@ class TiffMetadataRedactionPlan(TiffBasedMetadataRedactionPlan):
         return len(self.no_match_tags) == 0
 
     def report_missing_rules(self) -> None:
-        if not self.is_comprehensive():
+        if self.is_comprehensive():
+            click.echo("This redaction plan is comprehensive.")
+        else:
             click.echo("The following tags could not be redacted given the current set of rules.")
             for tag in self.no_match_tags:
                 click.echo(f"Missing tag (tiff): {tag.value} - {tag.name}")
-        else:
-            click.echo("This redaction plan is comprehensive.")
 
     def report_plan(self) -> None:
         click.echo("Tiff Metadata Redaction Plan\n")
@@ -201,7 +201,7 @@ class SvsMetadataRedactionPlan(TiffMetadataRedactionPlan):
         del self.redaction_steps[image_description_tag.value]
 
         self.description_redaction_steps = {}
-        self.no_match_description_keys = set({})
+        self.no_match_description_keys = set()
         ifds = self.tiff_info["ifds"]
         for tag, ifd in self._iter_tiff_tag_entries(ifds):
             if tag.value != image_description_tag.value:
@@ -217,7 +217,7 @@ class SvsMetadataRedactionPlan(TiffMetadataRedactionPlan):
                     self.no_match_description_keys.add(key)
 
     def is_comprehensive(self) -> bool:
-        return super().is_comprehensive() and len(self.no_match_description_keys) == 0
+        return super().is_comprehensive() and not self.no_match_description_keys
 
     def report_missing_rules(self) -> None:
         if self.is_comprehensive():
@@ -243,7 +243,9 @@ class SvsMetadataRedactionPlan(TiffMetadataRedactionPlan):
         image_description_tag = tifftools.constants.Tag["ImageDescription"]
         image_description = SvsDescription(str(ifd["tags"][image_description_tag.value]["data"]))
 
-        for key in list(image_description.metadata):
+        # We may be modifying the dictionary as we iterate over its keys,
+        # hence the need for a list
+        for key in list(image_description.metadata.keys()):
             rule = self.description_redaction_steps.get(key)
             if rule is not None:
                 rule.apply(image_description)
