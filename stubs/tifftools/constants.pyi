@@ -33,6 +33,10 @@ class TiffTag(TiffConstant):
 
 Tag: TiffConstantSet[TiffTag]
 
+GPSTag: TiffConstantSet[TiffTag]
+
+EXIFTag: TiffConstantSet[TiffTag]
+
 class TiffDatatype(TiffConstant): ...
 
 Datatype: TiffConstantSet[TiffDatatype]

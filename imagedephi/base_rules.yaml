@@ -2,7 +2,7 @@
 name: Base rules
 description: These are the default rules for each potential piece of redactable material (metadata, image) to be used as a fallback if there are no user-defined rules for a piece of redactable material.
 rules:
-  # For images that strictly adhere to the tiff standards e.g. svs files
+  # For images that strictly adhere to the tiff standards
   tiff:
     - tag_name: NewSubfileType
       method: keep
@@ -81,4 +81,607 @@ rules:
       type: metadata
     - tag_name: Predictor
       method: keep
+      type: metadata
+    - tag_name: Software
+      method: delete
+      type: metadata
+    - tag_name: ReferenceBlackWhite
+      method: keep
+      type: metadata
+    - tag_name: GPSVersionID
+      method: delete
+      type: metadata
+    - tag_name: '11'
+      method: delete
+      type: metadata
+    - tag_name: GPSMapDatum
+      method: delete
+      type: metadata
+    - tag_name: GPSLatitudeRef
+      method: delete
+      type: metadata
+    - tag_name: OldSubfileType
+      method: keep
+      type: metadata
+    - tag_name: Threshholding
+      method: delete
+      type: metadata
+    - tag_name: FillOrder
+      method: keep
+      type: metadata
+    - tag_name: DocumentName
+      method: delete
+      type: metadata
+    - tag_name: Make
+      method: delete
+      type: metadata
+    - tag_name: Model
+      method: delete
+      type: metadata
+    - tag_name: MinSampleValue
+      method: delete
+      type: metadata
+    - tag_name: MaxSampleValue
+      method: delete
+      type: metadata
+    - tag_name: PageName
+      method: delete
+      type: metadata
+    - tag_name: Xposition
+      method: keep
+      type: metadata
+    - tag_name: Yposition
+      method: keep
+      type: metadata
+    - tag_name: T4Options
+      method: keep
+      type: metadata
+    - tag_name: T6Options
+      method: keep
+      type: metadata
+    - tag_name: PageNumber
+      method: keep
+      type: metadata
+    - tag_name: GPSDateStamp
+      method: delete
+      type: metadata
+    - tag_name: GPSLatitude
+      method: delete
+      type: metadata
+    - tag_name: DateTime
+      method: delete
+      type: metadata
+    - tag_name: Artist
+      method: delete
+      type: metadata
+    - tag_name: HostComputer
+      method: delete
+      type: metadata
+    - tag_name: ColorMap
+      method: keep
+      type: metadata
+    - tag_name: HalftoneHints
+      method: keep
+      type: metadata
+    - tag_name: BadFaxLines
+      method: keep
+      type: metadata
+    - tag_name: CleanFaxData
+      method: keep
+      type: metadata
+    - tag_name: ConsecutiveBadFaxLines
+      method: keep
+      type: metadata
+    - tag_name: Matteing
+      method: delete
+      type: metadata
+    - tag_name: Datatype
+      method: delete
+      type: metadata
+    - tag_name: TileDepth
+      method: keep
+      type: metadata
+    - tag_name: InkSet
+      method: delete
+      type: metadata
+    - tag_name: InkNames
+      method: delete
+      type: metadata
+    - tag_name: Copyright
+      method: delete
+      type: metadata
+    - tag_name: ExposureTime
+      method: keep
+      type: metadata
+    - tag_name: FNumber
+      method: keep
+      type: metadata
+    - tag_name: NumberOfInks
+      method: delete
+      type: metadata
+    - tag_name: ModelPixelScaleTag
+      method: delete
+      type: metadata
+    - tag_name: '33628'
+      method: delete
+      type: metadata
+    - tag_name: RichTiffIPTC
+      method: delete
+      type: metadata
+    - tag_name: ExtraSamples
+      method: delete
+      type: metadata
+    - tag_name: ModelTiepointTag
+      method: delete
+      type: metadata
+    - tag_name: SMinSampleValue
+      method: delete
+      type: metadata
+    - tag_name: '34118'
+      method: delete
+      type: metadata
+    - tag_name: '34119'
+      method: delete
+      type: metadata
+    - tag_name: SMaxSampleValue
+      method: delete
+      type: metadata
+    - tag_name: Photoshop
+      method: delete
+      type: metadata
+    - tag_name: GeoKeyDirectoryTag
+      method: delete
+      type: metadata
+    - tag_name: GeoDoubleParamsTag
+      method: delete
+      type: metadata
+    - tag_name: GeoAsciiParamsTag
+      method: delete
+      type: metadata
+    - tag_name: ExposureProgram
+      method: delete
+      type: metadata
+    - tag_name: ISOSpeedRatings
+      method: keep
+      type: metadata
+    - tag_name: '34864'
+      method: delete
+      type: metadata
+    - tag_name: ExifVersion
+      method: delete
+      type: metadata
+    - tag_name: DateTimeOriginal
+      method: delete
+      type: metadata
+    - tag_name: CreateDate
+      method: delete
+      type: metadata
+    - tag_name: ShutterSpeedValue
+      method: keep
+      type: metadata
+    - tag_name: ApertureValue
+      method: keep
+      type: metadata
+    - tag_name: BrightnessValue
+      method: keep
+      type: metadata
+    - tag_name: ExposureBiasValue
+      method: keep
+      type: metadata
+    - tag_name: MaxApertureValue
+      method: keep
+      type: metadata
+    - tag_name: MeteringMode
+      method: keep
+      type: metadata
+    - tag_name: LightSource
+      method: keep
+      type: metadata
+    - tag_name: Flash
+      method: keep
+      type: metadata
+    - tag_name: FocalLength
+      method: keep
+      type: metadata
+    - tag_name: StoNits
+      method: delete
+      type: metadata
+    - tag_name: MakerNote
+      method: delete
+      type: metadata
+    - tag_name: UserComment
+      method: delete
+      type: metadata
+    - tag_name: SubSecTime
+      method: delete
+      type: metadata
+    - tag_name: SubSecTimeOriginal
+      method: delete
+      type: metadata
+    - tag_name: SubSecTimeDigitized
+      method: delete
+      type: metadata
+    - tag_name: ImageSourceData
+      method: delete
+      type: metadata
+    - tag_name: GPSLongitudeRef
+      method: delete
+      type: metadata
+    - tag_name: FlashpixVersion
+      method: delete
+      type: metadata
+    - tag_name: '40961'
+      method: delete
+      type: metadata
+    - tag_name: ColorSpace
+      method: keep
+      type: metadata
+    - tag_name: PixelXDimension
+      method: keep
+      type: metadata
+    - tag_name: PixelYDimension
+      method: keep
+      type: metadata
+    - tag_name: FocalPlaneXResolution
+      method: keep
+      type: metadata
+    - tag_name: FocalPlaneYResolution
+      method: keep
+      type: metadata
+    - tag_name: FocalPlaneResolutionUnit
+      method: keep
+      type: metadata
+    - tag_name: SensingMethod
+      method: keep
+      type: metadata
+    - tag_name: FileSource
+      method: delete
+      type: metadata
+    - tag_name: SceneType
+      method: keep
+      type: metadata
+    - tag_name: CFAPattern
+      method: keep
+      type: metadata
+    - tag_name: CustomRendered
+      method: keep
+      type: metadata
+    - tag_name: ExposureMode
+      method: keep
+      type: metadata
+    - tag_name: WhiteBalance
+      method: keep
+      type: metadata
+    - tag_name: FocalLengthIn35mmFilm
+      method: keep
+      type: metadata
+    - tag_name: SceneCaptureType
+      method: keep
+      type: metadata
+    - tag_name: GainControl
+      method: keep
+      type: metadata
+    - tag_name: Contrast
+      method: keep
+      type: metadata
+    - tag_name: Saturation
+      method: keep
+      type: metadata
+    - tag_name: Sharpness
+      method: keep
+      type: metadata
+    - tag_name: SubjectDistanceRange
+      method: keep
+      type: metadata
+    - tag_name: GDAL_Metadata
+      method: delete
+      type: metadata
+    - tag_name: GDAL_NoData
+      method: delete
+      type: metadata
+    - tag_name: GPSLongitude
+      method: delete
+      type: metadata
+    - tag_name: '50838'
+      method: delete
+      type: metadata
+    - tag_name: '50839'
+      method: delete
+      type: metadata
+    - tag_name: '51123'
+      method: delete
+      type: metadata
+    - tag_name: '51168'
+      method: delete
+      type: metadata
+    - tag_name: JPEGProc
+      method: keep
+      type: metadata
+    - tag_name: JPEGIFOffset
+      method: keep
+      type: metadata
+    - tag_name: JPEGIFByteCount
+      method: keep
+      type: metadata
+    - tag_name: JPEGRestartInterval
+      method: keep
+      type: metadata
+    - tag_name: JPEGQTables
+      method: keep
+      type: metadata
+    - tag_name: JPEGDCTables
+      method: keep
+      type: metadata
+    - tag_name: JPEGACTables
+      method: keep
+      type: metadata
+    - tag_name: YCbCrCoefficients
+      method: keep
+      type: metadata
+    - tag_name: YCbCrPositioning
+      method: keep
+      type: metadata
+    - tag_name: '55000'
+      method: delete
+      type: metadata
+    - tag_name: '55001'
+      method: delete
+      type: metadata
+    - tag_name: '55002'
+      method: delete
+      type: metadata
+    - tag_name: '55003'
+      method: delete
+      type: metadata
+    - tag_name: '55004'
+      method: delete
+      type: metadata
+    - tag_name: '59932'
+      method: delete
+      type: metadata
+    - tag_name: Padding
+      method: delete
+      type: metadata
+    - tag_name: OffsetSchema
+      method: delete
+      type: metadata
+    - tag_name: GPSAltitudeRef
+      method: delete
+      type: metadata
+    - tag_name: '60010'
+      method: delete
+      type: metadata
+    - tag_name: '60011'
+      method: delete
+      type: metadata
+    - tag_name: '60020'
+      method: delete
+      type: metadata
+    - tag_name: '65200'
+      method: delete
+      type: metadata
+    - tag_name: '65326'
+      method: delete
+      type: metadata
+    - tag_name: '65327'
+      method: delete
+      type: metadata
+    - tag_name: '65328'
+      method: delete
+      type: metadata
+    - tag_name: '65329'
+      method: delete
+      type: metadata
+    - tag_name: '65330'
+      method: delete
+      type: metadata
+    - tag_name: '65331'
+      method: delete
+      type: metadata
+    - tag_name: '65332'
+      method: delete
+      type: metadata
+    - tag_name: '65333'
+      method: delete
+      type: metadata
+    - tag_name: '65400'
+      method: delete
+      type: metadata
+    - tag_name: GPSAltitude
+      method: delete
+      type: metadata
+    - tag_name: XMLPacket
+      method: delete
+      type: metadata
+    - tag_name: GPSTimeStamp
+      method: delete
+      type: metadata
+    - tag_name: GPSSatellites
+      method: delete
+      type: metadata
+  svs:
+    # rules that apply to Aperio-specific format choices, like the use
+    # of the ImageDescription tag to store additional metadata
+    - key_name: AppMag
+      method: keep
+      type: metadata
+    - key_name: MPP
+      method: keep
+      type: metadata
+    - key_name: mpp
+      method: keep
+      type: metadata
+    - key_name: StripeWidth
+      method: keep
+      type: metadata
+    - key_name: ScanScope ID
+      method: delete
+      type: metadata
+    - key_name: Filename
+      method: delete
+      type: metadata
+    - key_name: Date
+      method: delete
+      type: metadata
+    - key_name: Time
+      method: delete
+      type: metadata
+    - key_name: Time Zone
+      method: delete
+      type: metadata
+    - key_name: User
+      method: delete
+      type: metadata
+    - key_name: Left
+      method: keep
+      type: metadata
+    - key_name: Top
+      method: keep
+      type: metadata
+    - key_name: LineCameraSkew
+      method: keep
+      type: metadata
+    - key_name: LineAreaXOffset
+      method: keep
+      type: metadata
+    - key_name: LineAreaYOffset
+      method: keep
+      type: metadata
+    - key_name: Focus Offset
+      method: keep
+      type: metadata
+    - key_name: DSR ID
+      method: delete
+      type: metadata
+    - key_name: ImageID
+      method: delete
+      type: metadata
+    - key_name: Exposure Time
+      method: keep
+      type: metadata
+    - key_name: Exposure Scale
+      method: keep
+      type: metadata
+    - key_name: DisplayColor
+      method: keep
+      type: metadata
+    - key_name: SessonMode
+      method: delete
+      type: metadata
+    - key_name: OriginalWidth
+      method: keep
+      type: metadata
+    - key_name: OriginalHeight
+      method: keep
+      type: metadata
+    - key_name: ICC Profile
+      method: keep
+      type: metadata
+    - key_name: Title
+      method: delete
+      type: metadata
+    - key_name: Originalheight
+      method: keep
+      type: metadata
+    - key_name: Filtered
+      method: delete
+      type: metadata
+    - key_name: Parmset
+      method: delete
+      type: metadata
+    - key_name: BigTIFF
+      method: delete
+      type: metadata
+    - key_name: Converter
+      method: delete
+      type: metadata
+    - key_name: ConverterEpoch
+      method: delete
+      type: metadata
+    - key_name: ConverterVersion
+      method: delete
+      type: metadata
+    - key_name: CompressedFile
+      method: delete
+      type: metadata
+    - key_name: Gamma
+      method: keep
+      type: metadata
+    - key_name: Rack
+      method: delete
+      type: metadata
+    - key_name: Slide
+      method: delete
+      type: metadata
+    - key_name: BestFocusLayer
+      method: keep
+      type: metadata
+    - key_name: Accession
+      method: delete
+      type: metadata
+    - key_name: Copyright
+      method: delete
+      type: metadata
+    - key_name: CustomField.Behavior_Code
+      method: delete
+      type: metadata
+    - key_name: CustomField.Date_of_Birth_mmddyyyy
+      method: delete
+      type: metadata
+    - key_name: CustomField.First_Name
+      method: delete
+      type: metadata
+    - key_name: CustomField.Histology_Code
+      method: delete
+      type: metadata
+    - key_name: CustomField.ImageID
+      method: delete
+      type: metadata
+    - key_name: CustomField.InputFileName
+      method: delete
+      type: metadata
+    - key_name: CustomField.LabelText
+      method: delete
+      type: metadata
+    - key_name: CustomField.Last_Name
+      method: delete
+      type: metadata
+    - key_name: CustomField.PatientID
+      method: delete
+      type: metadata
+    - key_name: CustomField.Proc_Seq
+      method: delete
+      type: metadata
+    - key_name: CustomField.Proc_Type
+      method: delete
+      type: metadata
+    - key_name: CustomField.Registry
+      method: delete
+      type: metadata
+    - key_name: CustomField.SampleID
+      method: delete
+      type: metadata
+    - key_name: CustomField.Slide_ID
+      method: delete
+      type: metadata
+    - key_name: CustomField.Spec_Site
+      method: delete
+      type: metadata
+    - key_name: CustomField.SurgPathNum
+      method: delete
+      type: metadata
+    - key_name: CustomField.TokenID
+      method: delete
+      type: metadata
+    - key_name: CustomField.Tumor_Rec_Number
+      method: delete
+      type: metadata
+    - key_name: Patient
+      method: delete
+      type: metadata
+    - key_name: Scanner ID
+      method: delete
+      type: metadata
+    - key_name: Webslide Files
+      method: delete
       type: metadata

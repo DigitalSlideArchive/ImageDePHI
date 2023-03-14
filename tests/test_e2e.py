@@ -32,7 +32,7 @@ def test_e2e_run(runner: CliRunner, data_dir: Path, tmp_path: Path) -> None:
             "--override-rules",
             str(data_dir / "rules" / "example_user_rules.yml"),
             "run",
-            str(data_dir / "input"),
+            str(data_dir / "input" / "tiff"),
             str(tmp_path),
         ],
     )
@@ -52,7 +52,7 @@ def test_e2e_plan(runner: CliRunner, data_dir: Path, tmp_path: Path) -> None:
             "--override-rules",
             str(data_dir / "rules" / "example_user_rules.yml"),
             "plan",
-            str(data_dir / "input" / "test_image.tif"),
+            str(data_dir / "input" / "tiff" / "test_image.tif"),
         ],
     )
     assert result.exit_code == 0
@@ -76,7 +76,7 @@ def test_e2e_gui(
         return httpx.post(
             f"http://127.0.0.1:{port}/redact/",
             data={
-                "input_directory": str(data_dir / "input"),
+                "input_directory": str(data_dir / "input" / "tiff"),
                 "output_directory": str(tmp_path),
             },
         )

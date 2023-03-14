@@ -3,7 +3,7 @@ from __future__ import annotations
 import abc
 from dataclasses import dataclass
 from enum import Enum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeVar
 
 import tifftools
 
@@ -24,11 +24,26 @@ class RedactMethod(Enum):
 
 class FileFormat(Enum):
     TIFF = "tiff"
+    SVS = "svs"
 
 
 class RuleSource(Enum):
     BASE = "base"
     OVERRIDE = "override"
+
+
+def _get_tiff_tag(tag_name: str) -> tifftools.TiffTag:
+    """Given the name of a TIFF tag, attempt to return the TIFF tag from tifftools."""
+    # This function checks TagSet objects from tifftools for a given tag. If the tag is not found
+    # after exhausting the tag sets, a new tag is created.
+    for tag_set in [
+        tifftools.constants.Tag,
+        tifftools.constants.GPSTag,
+        tifftools.constants.EXIFTag,
+    ]:
+        if tag_name in tag_set:
+            return tag_set[tag_name]
+    return tifftools.constants.get_or_create_tag(tag_name)
 
 
 class Rule(abc.ABC):
@@ -37,9 +52,32 @@ class Rule(abc.ABC):
     rule_type: RuleType
     rule_source: RuleSource
 
+    def __init__(self, rule_spec: dict, rule_source: RuleSource) -> None:
+        self.description = rule_spec.get("description", None)
+        self.redact_method = RedactMethod[rule_spec["method"].upper()]
+        self.rule_source = rule_source
+
     def get_description(self) -> str:
         """Generate a title for the rule."""
         return self.description if self.description else ""
+
+
+class MetadataRuleMixin(Rule):
+    rule_type = RuleType.METADATA
+
+    @classmethod
+    def build(
+        cls: type[MetadataRuleMixinT], rule_spec: dict, rule_source: RuleSource
+    ) -> MetadataRuleMixinT:
+        redact_method = RedactMethod[rule_spec["method"].upper()]
+        for rule_class in cls.__subclasses__():
+            if rule_class.redact_method == redact_method:
+                return rule_class(rule_spec, rule_source)
+        else:
+            raise Exception("Unknown redact_method.")
+
+
+MetadataRuleMixinT = TypeVar("MetadataRuleMixinT", bound=MetadataRuleMixin)
 
 
 class TiffRule(Rule):
@@ -48,16 +86,13 @@ class TiffRule(Rule):
         ...
 
 
-class MetadataTiffRule(TiffRule):
+class MetadataTiffRule(TiffRule, MetadataRuleMixin):
     tag: tifftools.TiffTag
-    rule_type = RuleType.METADATA
 
     def __init__(self, rule_spec: dict, rule_source: RuleSource) -> None:
         """Transform a rule from schema into an object."""
-        self.description = rule_spec.get("description", None)  # this is optional
-        self.redact_method = RedactMethod[rule_spec["method"].upper()]
-        self.rule_source = rule_source
-        self.tag = tifftools.constants.Tag[rule_spec["tag_name"]]
+        super().__init__(rule_spec, rule_source)
+        self.tag = _get_tiff_tag(rule_spec["tag_name"])
 
     def is_match(self, tag: tifftools.TiffTag) -> bool:
         return self.tag.value == tag.value
@@ -69,17 +104,10 @@ class MetadataTiffRule(TiffRule):
     def get_description(self) -> str:
         if self.description:
             return self.description
-        return f"Tag {self.tag.value} - {self.tag.name}: {self.redact_method} ({self.rule_source})"
-
-    @classmethod
-    def build(cls, rule_spec: dict, rule_source: RuleSource) -> MetadataTiffRule:
-        # TODO: some input validation here, in case an invalid "method" is provided
-        redact_method = RedactMethod[rule_spec["method"].upper()]
-        for rule_class in cls.__subclasses__():
-            if rule_class.redact_method == redact_method:
-                return rule_class(rule_spec, rule_source)
-        else:
-            raise Exception("Unknown redact_method.")
+        return (
+            f"Tiff Tag {self.tag.value} - "
+            f"{self.tag.name}: {self.redact_method.value} ({self.rule_source.value})"
+        )
 
 
 class ReplaceMetadataTiffRule(MetadataTiffRule):
@@ -108,6 +136,82 @@ class KeepMetadataTiffRule(MetadataTiffRule):
         pass
 
 
+class SvsDescription:
+    prefix: str
+    metadata: dict[str, str]
+
+    def __init__(self, svs_description_string: str):
+        description_components = svs_description_string.split("|")
+        self.prefix = description_components[0]
+
+        self.metadata = {}
+        for metadata_component in description_components[1:]:
+            key, value = [token.strip() for token in metadata_component.split("=")]
+            self.metadata[key] = value
+
+    def __str__(self) -> str:
+        components = [self.prefix]
+        components = components + [
+            " = ".join([key, self.metadata[key]]) for key in self.metadata.keys()
+        ]
+        return "|".join(components)
+
+
+class SvsRule(Rule):
+    @abc.abstractmethod
+    def apply(self, svs_description: SvsDescription):
+        ...
+
+
+class MetadataSvsRule(SvsRule, MetadataRuleMixin):
+    key: str
+
+    def __init__(self, rule_spec: dict, rule_source: RuleSource) -> None:
+        super().__init__(rule_spec, rule_source)
+        self.key = rule_spec["key_name"]
+
+    def is_match(self, key: str) -> bool:
+        return self.key == key
+
+    @abc.abstractmethod
+    def apply(self, svs_description: SvsDescription):
+        ...
+
+    def get_description(self) -> str:
+        if self.description:
+            return self.description
+        return (
+            f"SVS Image Description - "
+            f"{self.key}: {self.redact_method.value} ({self.rule_source.value})"
+        )
+
+
+class ReplaceMetadataSvsRule(MetadataSvsRule):
+    redact_method = RedactMethod.REPLACE
+    replace_value: str
+
+    def __init__(self, rule_spec: dict, source: RuleSource):
+        super().__init__(rule_spec, source)
+        self.replace_value = rule_spec["new_value"]
+
+    def apply(self, svs_description: SvsDescription):
+        svs_description.metadata[self.key] = self.replace_value
+
+
+class DeleteMetadataSvsRule(MetadataSvsRule):
+    redact_method = RedactMethod.DELETE
+
+    def apply(self, svs_description: SvsDescription):
+        del svs_description.metadata[self.key]
+
+
+class KeepMetadataSvsRule(MetadataSvsRule):
+    redact_method = RedactMethod.KEEP
+
+    def apply(self, svs_description: SvsDescription):
+        pass
+
+
 @dataclass
 class RuleSet:
     name: str
@@ -115,7 +219,18 @@ class RuleSet:
     rules: dict[FileFormat, list[Rule]]
 
     def get_metadata_tiff_rules(self) -> list[MetadataTiffRule]:
-        return [rule for rule in self.rules[FileFormat.TIFF] if isinstance(rule, MetadataTiffRule)]
+        if FileFormat.TIFF in self.rules:
+            return [
+                rule for rule in self.rules[FileFormat.TIFF] if isinstance(rule, MetadataTiffRule)
+            ]
+        return []
+
+    def get_metadata_svs_rules(self) -> list[MetadataSvsRule]:
+        if FileFormat.SVS in self.rules:
+            return [
+                rule for rule in self.rules[FileFormat.SVS] if isinstance(rule, MetadataSvsRule)
+            ]
+        return []
 
 
 def _build_rule(file_format: FileFormat, rule_spec: dict, rule_source: RuleSource) -> Rule:
@@ -123,6 +238,9 @@ def _build_rule(file_format: FileFormat, rule_spec: dict, rule_source: RuleSourc
     if file_format == FileFormat.TIFF:
         if rule_type == RuleType.METADATA:
             return MetadataTiffRule.build(rule_spec, rule_source)
+    if file_format == FileFormat.SVS:
+        if rule_type == RuleType.METADATA:
+            return MetadataSvsRule.build(rule_spec, rule_source)
 
     raise Exception("Unsupported rule.")
 
