@@ -293,7 +293,7 @@ def iter_image_files(directory: Path) -> Generator[Path, None, None]:
     May raise a PermissionError if the directory is not readable.
     """
     for child in directory.iterdir():
-        if child.suffix == ".tif" or child.suffix == ".svs":
+        if child.suffix in FILE_EXTENSION_MAP:
             yield child
 
 
