@@ -76,7 +76,6 @@ base_rules_path = importlib.resources.files("imagedephi") / "base_rules.yaml"
 with base_rules_path.open() as stream:
     rules_model = RuleFile.parse_obj(yaml.safe_load(stream))
 
-print(rules_model)
 assert isinstance(rules_model, RuleFile)
 assert rules_model.rules.tiff is not None
 assert isinstance(rules_model.rules.tiff[0], KeepTagMetadataRule)
