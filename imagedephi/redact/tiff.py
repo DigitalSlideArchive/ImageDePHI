@@ -83,18 +83,18 @@ class TiffMetadataRedactionPlan(TiffBasedMetadataRedactionPlan):
         self,
         tiff_info: TiffInfo,
         base_rule_set: RuleSet,
-        override_rule_set: RuleSet,
+        override_rule_set: RuleSet | None = None,
     ) -> None:
         self.tiff_info = tiff_info
 
         self.redaction_steps = {}
         self.no_match_tags = []
         ifds = self.tiff_info["ifds"]
+        override_rules = override_rule_set.get_metadata_tiff_rules() if override_rule_set else []
+        base_rules = base_rule_set.get_metadata_tiff_rules()
         for tag, _ in self._iter_tiff_tag_entries(ifds):
             # First iterate through overrides, then base
-            for rule in chain(
-                override_rule_set.get_metadata_tiff_rules(), base_rule_set.get_metadata_tiff_rules()
-            ):
+            for rule in chain(override_rules, base_rules):
                 if rule.is_match(tag):
                     self.redaction_steps[tag.value] = rule
                     break

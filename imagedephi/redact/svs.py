@@ -37,7 +37,7 @@ class SvsMetadataRedactionPlan(TiffMetadataRedactionPlan):
         self,
         tiff_info: TiffInfo,
         base_rule_set: RuleSet,
-        override_rule_set: RuleSet,
+        override_rule_set: RuleSet | None = None,
     ) -> None:
         super().__init__(tiff_info, base_rule_set, override_rule_set)
 
@@ -54,11 +54,12 @@ class SvsMetadataRedactionPlan(TiffMetadataRedactionPlan):
                 continue
 
             svs_description = SvsDescription(str(ifd["tags"][tag.value]["data"]))
+            override_svs_rules = (
+                override_rule_set.get_metadata_svs_rules() if override_rule_set else []
+            )
+            base_svs_rules = base_rule_set.get_metadata_svs_rules()
             for key in svs_description.metadata.keys():
-                for rule in chain(
-                    override_rule_set.get_metadata_svs_rules(),
-                    base_rule_set.get_metadata_svs_rules(),
-                ):
+                for rule in chain(override_svs_rules, base_svs_rules):
                     if rule.is_match(key):
                         self.description_redaction_steps[key] = rule
                         break
