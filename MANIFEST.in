@@ -1,0 +1,3 @@
+recursive-include imagedephi/ *.yaml *.j2
+
+prune tests/
