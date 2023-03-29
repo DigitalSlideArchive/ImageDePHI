@@ -56,13 +56,15 @@ def iter_image_files(directory: Path) -> Generator[Path, None, None]:
 
 
 def redact_images(
-    image_dir: Path,
+    input_path: Path,
     output_dir: Path,
     override_rules: RuleSet | None = None,
     overwrite: bool = False,
 ) -> None:
     base_rules = get_base_rules()
-    for image_file in iter_image_files(image_dir):
+    images_to_redact = iter_image_files(input_path) if input_path.is_dir() else [input_path]
+
+    for image_file in images_to_redact:
         if image_file.suffix not in FILE_EXTENSION_MAP:
             click.echo(f"Image format for {image_file.name} not supported. Skipping...")
             continue
@@ -88,19 +90,24 @@ def redact_images(
             _save_redacted_tiff(redaction_plan.get_image_data(), output_path, image_file, overwrite)
 
 
-def show_redaction_plan(image_path: Path, override_rules: RuleSet | None = None) -> int | None:
-    if image_path.suffix not in FILE_EXTENSION_MAP:
-        click.echo(f"Image format for {image_path.name} not supported.", err=True)
-        return 1
-    base_rules = get_base_rules()
-    try:
-        metadata_redaction_plan = TiffBasedMetadataRedactionPlan.build(
-            image_path, base_rules, override_rules
-        )
-    except tifftools.TifftoolsError:
-        click.echo(f"Could not open {image_path.name} as a tiff.", err=True)
-        return 1
-    except MalformedAperioFileError:
-        click.echo(f"{image_path.name} could not be processed as a valid Aperio file.", err=True)
-        return 1
-    return metadata_redaction_plan.report_plan()
+def show_redaction_plan(input_path: Path, override_rules: RuleSet | None = None) -> None:
+    image_paths = iter_image_files(input_path) if input_path.is_dir() else [input_path]
+    for image_path in image_paths:
+        if image_path.suffix not in FILE_EXTENSION_MAP:
+            click.echo(f"Image format for {image_path.name} not supported.", err=True)
+            continue
+        base_rules = get_base_rules()
+        try:
+            metadata_redaction_plan = TiffBasedMetadataRedactionPlan.build(
+                image_path, base_rules, override_rules
+            )
+        except tifftools.TifftoolsError:
+            click.echo(f"Could not open {image_path.name} as a tiff.", err=True)
+            continue
+        except MalformedAperioFileError:
+            click.echo(
+                f"{image_path.name} could not be processed as a valid Aperio file.", err=True
+            )
+            continue
+        print(f"\nRedaction plan for {image_path.name}")
+        metadata_redaction_plan.report_plan()
