@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 import tifftools
 
-from .rule import MetadataRuleMixin, RedactMethod, Rule, RuleSource
+from .rule import ExpectedType, MetadataRuleMixin, RedactMethod, Rule, RuleSource, is_expected_type
 
 if TYPE_CHECKING:
     from tifftools.tifftools import IFD
@@ -72,6 +72,23 @@ class DeleteMetadataTiffRule(MetadataTiffRule):
 
     def apply(self, ifd: IFD):
         del ifd["tags"][self.tag.value]
+
+
+class DataTypeMetadataTiffRule(MetadataTiffRule):
+    redact_method = RedactMethod.DATATYPE
+    expected_type: ExpectedType
+    expected_count: int = 1
+
+    def __init__(self, rule_spec: dict, source: RuleSource) -> None:
+        super().__init__(rule_spec, source)
+        self.expected_type = rule_spec["expected_type"]
+        self.expected_count = rule_spec["expected_count"]
+
+    def apply(self, ifd: IFD):
+        if not is_expected_type(
+            ifd["tags"][self.tag.value]["data"], self.expected_type, self.expected_count
+        ):
+            del ifd["tags"][self.tag.value]
 
 
 class KeepMetadataTiffRule(MetadataTiffRule):
