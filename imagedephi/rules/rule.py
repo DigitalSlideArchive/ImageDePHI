@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import abc
 from enum import Enum
-from typing import TypeVar
+from typing import Any, Type, TypeVar
 
 
 class RuleType(Enum):
@@ -14,6 +14,7 @@ class RedactMethod(Enum):
     REPLACE = "replace"
     DELETE = "delete"
     KEEP = "keep"
+    DATATYPE = "datatype"
 
 
 class FileFormat(Enum):
@@ -24,6 +25,22 @@ class FileFormat(Enum):
 class RuleSource(Enum):
     BASE = "base"
     OVERRIDE = "override"
+
+
+class ExpectedType(Enum):
+    NUMBER = "number"
+
+
+_expected_type_map: dict[ExpectedType, tuple[Type[Any]]] = {
+    ExpectedType.NUMBER: tuple([int, float]),
+}
+
+
+def is_expected_type(value: Any, expected_type: ExpectedType, expected_count: int) -> bool:
+    valid_types = _expected_type_map[expected_type]
+    if isinstance(value, list):
+        return len(value) == expected_count and all(isinstance(item, valid_types) for item in value)
+    return isinstance(value, valid_types)
 
 
 class Rule(abc.ABC):
