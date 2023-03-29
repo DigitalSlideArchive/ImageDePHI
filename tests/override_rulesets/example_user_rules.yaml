@@ -1,0 +1,20 @@
+---
+name: Example user rules
+description: A set of reasonable rules used for testing
+rules:
+  tiff:
+    - description: Replace ImageDescription
+      tag_name: ImageDescription
+      method: replace
+      new_value: Redacted by ImageDePHI
+      type: metadata
+    - tag_name: YCbCrSubsampling
+      method: datatype
+      expected_type: number
+      expected_count: 2
+      type: metadata
+  svs:
+    - description: Delete ICC Profile
+      key_name: ICC Profile
+      type: metadata
+      method: delete
