@@ -22,6 +22,11 @@ imagedephi = "imagedephi.main:imagedephi"
 [tool.setuptools.packages.find]
 include = ["imagedephi*"]
 
+[tool.djlint]
+extension = "html.j2"
+profile = "jinja"
+indent = 2
+
 [tool.black]
 line-length = 100
 target-version = ["py310"]
@@ -42,8 +47,3 @@ exclude = [
 
 [tool.pyright]
 stubPath = "stubs"
-
-[tool.djlint]
-extension = "html.j2"
-profile = "jinja"
-indent = 2
