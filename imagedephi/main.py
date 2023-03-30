@@ -27,7 +27,7 @@ class ImagedephiContext:
     "-r",
     "--override-rules",
     type=click.File("r"),
-    help="Specify user-defined rules to override defaults",
+    help="User-defined rules to override defaults",
 )
 @click.pass_context
 def imagedephi(ctx: click.Context, override_rules: TextIO | None) -> None:
@@ -57,7 +57,7 @@ def imagedephi(ctx: click.Context, override_rules: TextIO | None) -> None:
 def run(
     obj: ImagedephiContext, input_path: Path, output_dir: Path, overwrite_existing_output: bool
 ):
-    """Redact images in a folder according to given rule sets."""
+    """Perform the redaction of images."""
     redact_images(input_path, output_dir, obj.override_rule_set, overwrite_existing_output)
 
 
@@ -65,7 +65,7 @@ def run(
 @click.argument("input-path", type=click.Path(exists=True, readable=True, path_type=Path))
 @click.pass_obj
 def plan(obj: ImagedephiContext, input_path: Path) -> None:
-    """Print the redaction plan for a given image and rules."""
+    """Print the redaction plan for images."""
     show_redaction_plan(input_path, obj.override_rule_set)
 
 
@@ -79,7 +79,7 @@ def plan(obj: ImagedephiContext, input_path: Path) -> None:
 )
 @run_coroutine
 async def gui(port: int) -> None:
-    """Run a web-based GUI."""
+    """Launch a web-based GUI."""
     host = "127.0.0.1"
 
     server_config = Config()
