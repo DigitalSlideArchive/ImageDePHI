@@ -45,5 +45,9 @@ exclude = [
     "build/",
 ]
 
+[tool.pytest.ini_options]
+addopts = "--strict-config --strict-markers --showlocals --verbose"
+testpaths = ["tests"]
+
 [tool.pyright]
 stubPath = "stubs"
