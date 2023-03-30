@@ -25,3 +25,15 @@ jobs:
       - name: Run tests
         run: |
           tox
+      - name: Build binary
+        run: |
+          tox -e binary
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: imagedephi-${{ matrix.os }}-binary
+          path: |
+            dist/imagedephi
+            dist/imagedephi.exe
+          retention-days: 5
+          if-no-files-found: error

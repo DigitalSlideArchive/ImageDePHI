@@ -1,16 +1,29 @@
 from __future__ import annotations
 
 import asyncio
+import importlib.resources
 from pathlib import Path
 
 from fastapi import BackgroundTasks, FastAPI, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from jinja2 import FunctionLoader
 
 from imagedephi.redact import iter_image_files, redact_images
 
+
+def _load_template(template_name: str) -> str | None:
+    template_file = importlib.resources.files("imagedephi") / "templates" / template_name
+    return template_file.read_text() if template_file.is_file() else None
+
+
 app = FastAPI()
-templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
+templates = Jinja2Templates(
+    # Jinja2Templates requires a "directory" argument, but it is effectively unused
+    # if a custom loader is passed
+    directory="",
+    loader=FunctionLoader(_load_template),
+)
 
 shutdown_event = asyncio.Event()
 
