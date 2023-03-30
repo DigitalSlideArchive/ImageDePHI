@@ -41,7 +41,7 @@ def imagedephi(ctx: click.Context, override_rules: TextIO | None) -> None:
 
 
 @imagedephi.command
-@click.argument("input_path", type=click.Path(exists=True, readable=True, path_type=Path))
+@click.argument("input-path", type=click.Path(exists=True, readable=True, path_type=Path))
 @click.argument(
     "output-dir",
     type=click.Path(exists=True, file_okay=False, readable=True, writable=True, path_type=Path),
@@ -62,7 +62,7 @@ def run(
 
 
 @imagedephi.command
-@click.argument("input_path", type=click.Path(exists=True, readable=True, path_type=Path))
+@click.argument("input-path", type=click.Path(exists=True, readable=True, path_type=Path))
 @click.pass_obj
 def plan(obj: ImagedephiContext, input_path: Path) -> None:
     """Print the redaction plan for a given image and rules."""
