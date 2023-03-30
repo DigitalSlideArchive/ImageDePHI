@@ -41,9 +41,7 @@ def imagedephi(ctx: click.Context, override_rules: TextIO | None) -> None:
 
 
 @imagedephi.command
-@click.argument(
-    "input-dir", type=click.Path(exists=True, file_okay=False, readable=True, path_type=Path)
-)
+@click.argument("input-path", type=click.Path(exists=True, readable=True, path_type=Path))
 @click.argument(
     "output-dir",
     type=click.Path(exists=True, file_okay=False, readable=True, writable=True, path_type=Path),
@@ -56,17 +54,19 @@ def imagedephi(ctx: click.Context, override_rules: TextIO | None) -> None:
     help="Overwrite previous output for input images",
 )
 @click.pass_obj
-def run(obj: ImagedephiContext, input_dir: Path, output_dir: Path, overwrite_existing_output: bool):
+def run(
+    obj: ImagedephiContext, input_path: Path, output_dir: Path, overwrite_existing_output: bool
+):
     """Redact images in a folder according to given rule sets."""
-    redact_images(input_dir, output_dir, obj.override_rule_set, overwrite_existing_output)
+    redact_images(input_path, output_dir, obj.override_rule_set, overwrite_existing_output)
 
 
 @imagedephi.command
-@click.argument("image", type=click.Path(path_type=Path))
+@click.argument("input-path", type=click.Path(exists=True, readable=True, path_type=Path))
 @click.pass_obj
-def plan(obj: ImagedephiContext, image: Path) -> None:
+def plan(obj: ImagedephiContext, input_path: Path) -> None:
     """Print the redaction plan for a given image and rules."""
-    show_redaction_plan(image, obj.override_rule_set)
+    show_redaction_plan(input_path, obj.override_rule_set)
 
 
 @imagedephi.command
