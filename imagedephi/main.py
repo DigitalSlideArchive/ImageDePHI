@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 from dataclasses import dataclass
 from pathlib import Path
+import sys
 from typing import TextIO
 import webbrowser
 
@@ -24,10 +25,18 @@ class ImagedephiContext:
     override_rule_set: RuleSet | None = None
 
 
+CONTEXT_SETTINGS = {"help_option_names": ["--help"]}
+if sys.platform == "win32":
+    # Allow Windows users to get help via "/?".
+    # To avoid ambiguity with actual paths, only support this on Windows.
+    CONTEXT_SETTINGS["help_option_names"].append("/?")
+
+
 @click.group(
     cls=FallthroughGroup,
     subcommand_name="gui",
     should_fallthrough=launched_from_windows_explorer,
+    context_settings=CONTEXT_SETTINGS,
 )
 @click.version_option(prog_name="ImageDePHI")
 @click.option(

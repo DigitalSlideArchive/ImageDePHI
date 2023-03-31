@@ -2,6 +2,7 @@ import asyncio
 from collections.abc import Generator
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+import sys
 
 from click.testing import CliRunner
 import httpx
@@ -110,3 +111,19 @@ def test_e2e_version(cli_runner: CliRunner) -> None:
 
     assert result.exit_code == 0
     assert "ImageDePHI, version" in result.output
+
+
+@pytest.mark.parametrize(
+    "help_flag",
+    [
+        "--help",
+        pytest.param(
+            "/?", marks=pytest.mark.skipif(sys.platform != "win32", reason="windows only")
+        ),
+    ],
+)
+def test_e2e_help(cli_runner: CliRunner, help_flag: str) -> None:
+    result = cli_runner.invoke(main.imagedephi, [help_flag])
+
+    assert result.exit_code == 0
+    assert "Usage: imagedephi" in result.output
