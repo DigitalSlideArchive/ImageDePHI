@@ -55,7 +55,11 @@ def test_gui_redact(
 ) -> None:
     response = client.post(
         "/redact/",
-        data={"input_directory": str(tmp_path), "output_directory": str(tmp_path)},
+        data={
+            "input_directory": str(tmp_path),
+            "output_directory": str(tmp_path),
+            "overwrite": str(False),
+        },
     )
 
     assert response.status_code == 200
@@ -72,7 +76,11 @@ def test_gui_redact_input_failure(
 ) -> None:
     response = client.post(
         "/redact/",
-        data={"input_directory": str(tmp_path / "fake"), "output_directory": str(tmp_path)},
+        data={
+            "input_directory": str(tmp_path / "fake"),
+            "output_directory": str(tmp_path),
+            "overwrite": str(False),
+        },
     )
 
     assert response.status_code == 404
@@ -85,7 +93,11 @@ def test_gui_redact_output_failure(
 ) -> None:
     response = client.post(
         "/redact/",
-        data={"input_directory": str(tmp_path), "output_directory": str(tmp_path / "fake")},
+        data={
+            "input_directory": str(tmp_path),
+            "output_directory": str(tmp_path / "fake"),
+            "overwrite": str(False),
+        },
     )
 
     assert response.status_code == 404

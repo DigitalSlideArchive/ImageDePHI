@@ -1,10 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from dataclasses import dataclass
-import errno
 import importlib.resources
-import io
 from pathlib import Path
 
 from fastapi import BackgroundTasks, FastAPI, Form, HTTPException, Request
@@ -78,6 +75,7 @@ def select_directory(
 
 @app.post("/redact/")
 def redact(
+    request: Request,
     background_tasks: BackgroundTasks,
     input_directory: Path = Form(),  # noqa: B008
     output_directory: Path = Form(),  # noqa: B008

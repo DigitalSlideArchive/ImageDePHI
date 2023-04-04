@@ -33,7 +33,8 @@ def _save_redacted_tiff(tiff_info: TiffInfo, output_path: Path, input_path: Path
                 f"Could not redact {input_path.name}, existing redacted file in output directory. "
                 "Use the --overwrite-existing-output flag to overwrite previously redacted files."
             )
-            return
+            raise FileExistsError("Redacted image file already exists.")
+
     tifftools.write_tiff(tiff_info, output_path, allowExisting=True)
 
 

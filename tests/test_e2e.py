@@ -78,6 +78,7 @@ def test_e2e_gui(
             data={
                 "input_directory": str(data_dir / "input" / "tiff"),
                 "output_directory": str(tmp_path),
+                "overwrite": str(False),
             },
         )
 
