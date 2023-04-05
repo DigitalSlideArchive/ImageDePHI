@@ -9,7 +9,7 @@ import pytest
 from pytest_mock import MockerFixture
 
 from imagedephi import main
-from imagedephi.async_utils import wait_for_port
+from imagedephi.utils.network import wait_for_port
 
 
 @pytest.fixture
@@ -45,7 +45,7 @@ def test_e2e_run(runner: CliRunner, data_dir: Path, tmp_path: Path) -> None:
 
 
 @pytest.mark.timeout(5)
-def test_e2e_plan(runner: CliRunner, data_dir: Path, tmp_path: Path) -> None:
+def test_e2e_plan(runner: CliRunner, data_dir: Path) -> None:
     result = runner.invoke(
         main.imagedephi,
         [
