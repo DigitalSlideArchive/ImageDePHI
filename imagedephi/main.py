@@ -15,7 +15,7 @@ from imagedephi.gui import app, shutdown_event
 from imagedephi.redact import redact_images, show_redaction_plan
 from imagedephi.rules import RuleSet, RuleSource, build_ruleset
 from imagedephi.utils.cli import run_coroutine
-from imagedephi.utils.network import wait_for_port
+from imagedephi.utils.network import unused_tcp_port, wait_for_port
 
 
 @dataclass
@@ -74,8 +74,8 @@ def plan(obj: ImagedephiContext, input_path: Path) -> None:
 @click.option(
     "--port",
     type=click.IntRange(1, 65535),
-    default=8000,
-    show_default=True,
+    default=unused_tcp_port,
+    show_default="random unused port",
     help="Local TCP port to run the GUI webserver on.",
 )
 @run_coroutine
