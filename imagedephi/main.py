@@ -11,10 +11,11 @@ from hypercorn import Config
 from hypercorn.asyncio import serve
 import yaml
 
-from imagedephi.async_utils import run_coroutine, wait_for_port
 from imagedephi.gui import app, shutdown_event
 from imagedephi.redact import redact_images, show_redaction_plan
 from imagedephi.rules import RuleSet, RuleSource, build_ruleset
+from imagedephi.utils.cli import run_coroutine
+from imagedephi.utils.network import wait_for_port
 
 
 @dataclass
