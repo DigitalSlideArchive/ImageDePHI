@@ -24,7 +24,7 @@
                  name="output_directory"/>
           <input type="hidden" id="{{ overwrite }}" value="True" name="overwrite" />
           <button type="submit" class="btn bg-gray-800">Yes</button>
-          <a href=" /?input_directory={{ input_directory.parent|urlencode }}/&output_directory={{ output_directory.parent|urlencode }}">
+          <a href=" /?input_directory={{ input_directory|urlencode }}/&output_directory={{ output_directory|urlencode }}">
             <button type="button" class="btn bg-gray-800">No</button>
           </a>
         </div>
