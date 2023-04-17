@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from collections.abc import Generator
-from itertools import chain
 from pathlib import Path
 from typing import TYPE_CHECKING, Type
 
@@ -90,16 +89,19 @@ class TiffMetadataRedactionPlan(TiffBasedMetadataRedactionPlan):
         self.redaction_steps = {}
         self.no_match_tags = []
         ifds = self.tiff_info["ifds"]
-        override_rules = override_rule_set.get_metadata_tiff_rules() if override_rule_set else []
-        base_rules = base_rule_set.get_metadata_tiff_rules()
+        override_rules: dict[int, MetadataTiffRule] | None = (
+            override_rule_set.tiff.metadata_rules if override_rule_set else None
+        )
+        base_rules: dict[int, MetadataTiffRule] = base_rule_set.get_format_rules(
+            self.file_format
+        ).metadata_rules
+        merged_rules = base_rules | override_rules if override_rules else base_rules
         for tag, _ in self._iter_tiff_tag_entries(ifds):
             # First iterate through overrides, then base
-            for rule in chain(override_rules, base_rules):
-                if rule.is_match(tag):
-                    self.redaction_steps[tag.value] = rule
-                    break
+            tag_rule = merged_rules.get(tag.value, None)
+            if tag_rule and tag_rule.is_match(tag):
+                self.redaction_steps[tag.value] = tag_rule
             else:
-                # End of iteration, without "break"; no matching rule found anywhere
                 self.no_match_tags.append(tag)
 
     def is_comprehensive(self) -> bool:

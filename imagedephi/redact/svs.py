@@ -55,14 +55,17 @@ class SvsMetadataRedactionPlan(TiffMetadataRedactionPlan):
 
             svs_description = SvsDescription(str(ifd["tags"][tag.value]["data"]))
             override_svs_rules = (
-                override_rule_set.get_metadata_svs_rules() if override_rule_set else []
+                override_rule_set.svs.image_description_rules if override_rule_set else None
             )
-            base_svs_rules = base_rule_set.get_metadata_svs_rules()
+            base_svs_rules = base_rule_set.svs.image_description_rules
+            merged_svs_rules = (
+                base_svs_rules | override_svs_rules if override_svs_rules else base_svs_rules
+            )
+
             for key in svs_description.metadata.keys():
-                for rule in chain(override_svs_rules, base_svs_rules):
-                    if rule.is_match(key):
-                        self.description_redaction_steps[key] = rule
-                        break
+                key_rule = merged_svs_rules.get(key, None)
+                if key_rule and key_rule.is_match(key):
+                    self.description_redaction_steps[key] = key_rule
                 else:
                     self.no_match_description_keys.add(key)
 
