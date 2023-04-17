@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from tifftools.tifftools import IFD
 
 
-def _get_tiff_tag(tag_name: str) -> tifftools.TiffTag:
+def get_tiff_tag(tag_name: str) -> tifftools.TiffTag:
     """Given the name of a TIFF tag, attempt to return the TIFF tag from tifftools."""
     # This function checks TagSet objects from tifftools for a given tag. If the tag is not found
     # after exhausting the tag sets, a new tag is created.
@@ -37,7 +37,7 @@ class MetadataTiffRule(TiffRule, MetadataRuleMixin):
     def __init__(self, rule_spec: dict, rule_source: RuleSource) -> None:
         """Transform a rule from schema into an object."""
         super().__init__(rule_spec, rule_source)
-        self.tag = _get_tiff_tag(rule_spec["tag_name"])
+        self.tag = get_tiff_tag(rule_spec["tag_name"])
 
     def is_match(self, tag: tifftools.TiffTag) -> bool:
         return self.tag.value == tag.value
