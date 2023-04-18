@@ -4,8 +4,12 @@ description: A set of reasonable rules used for testing
 tiff:
   metadata:
     ImageDescription:
+      description: Replace ImageDescription
       method: replace
       new_value: Redacted by ImageDePHI
+
 svs:
   image_description:
-    ICC Profile: delete
+    ICC Profile:
+      description: Delete ICC Profile
+      method: delete
