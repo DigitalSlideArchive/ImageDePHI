@@ -8,8 +8,8 @@ from imagedephi.rules import RuleSource, build_ruleset
 
 
 @pytest.fixture
-def override_rule_set(data_dir):
-    rule_file = data_dir / "rules" / "example_user_rules.yml"
+def override_rule_set(rules_dir: Path):
+    rule_file = rules_dir / "example_user_rules.yml"
     with rule_file.open() as rule_stream:
         return build_ruleset(yaml.safe_load(rule_stream), RuleSource.OVERRIDE)
 
