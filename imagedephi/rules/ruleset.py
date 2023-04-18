@@ -28,7 +28,7 @@ class TiffFormatRules(FileFormatRules):
 
     def __init__(self, file_format_spec: dict, rule_source: RuleSource):
         self.metadata_rules = {}
-        for tag_name, method_info in file_format_spec["metadata"].items():
+        for tag_name, method_info in file_format_spec.get("metadata", {}).items():
             tiff_tag = get_tiff_tag(tag_name)
             self.metadata_rules[tiff_tag.value] = TiffFormatRules.build_tiff_metadata_rule(
                 tag_name, method_info, rule_source
@@ -53,7 +53,7 @@ class SvsFormatRules(TiffFormatRules):
     def __init__(self, file_format_spec: dict, rule_source: RuleSource):
         super().__init__(file_format_spec, rule_source)
         self.image_description_rules = {}
-        for key_name, method_info in file_format_spec["image_description"].items():
+        for key_name, method_info in file_format_spec.get("image_description", {}).items():
             self.image_description_rules[
                 key_name
             ] = SvsFormatRules.build_svs_image_description_rule(key_name, method_info, rule_source)
