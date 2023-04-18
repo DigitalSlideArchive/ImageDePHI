@@ -14,8 +14,9 @@ import yaml
 from imagedephi.gui import app, shutdown_event
 from imagedephi.redact import redact_images, show_redaction_plan
 from imagedephi.rules import RuleSet, RuleSource, build_ruleset
-from imagedephi.utils.cli import run_coroutine
+from imagedephi.utils.cli import FallthroughGroup, run_coroutine
 from imagedephi.utils.network import unused_tcp_port, wait_for_port
+from imagedephi.utils.os import launched_from_windows_explorer
 
 
 @dataclass
@@ -23,7 +24,11 @@ class ImagedephiContext:
     override_rule_set: RuleSet | None = None
 
 
-@click.group
+@click.group(
+    cls=FallthroughGroup,
+    subcommand_name="gui",
+    should_fallthrough=launched_from_windows_explorer,
+)
 @click.option(
     "-r",
     "--override-rules",
