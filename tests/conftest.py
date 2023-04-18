@@ -1,6 +1,12 @@
 from pathlib import Path
 
+from click.testing import CliRunner
 import pytest
+
+
+@pytest.fixture
+def cli_runner() -> CliRunner:
+    return CliRunner()
 
 
 @pytest.fixture

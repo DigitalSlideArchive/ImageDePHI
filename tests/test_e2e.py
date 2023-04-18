@@ -13,11 +13,6 @@ from imagedephi.utils.network import wait_for_port
 
 
 @pytest.fixture
-def runner() -> CliRunner:
-    return CliRunner()
-
-
-@pytest.fixture
 def thread_executor() -> Generator[ThreadPoolExecutor, None, None]:
     executor = ThreadPoolExecutor(max_workers=1)
     yield executor
@@ -25,8 +20,8 @@ def thread_executor() -> Generator[ThreadPoolExecutor, None, None]:
 
 
 @pytest.mark.timeout(5)
-def test_e2e_run(runner: CliRunner, data_dir: Path, rules_dir: Path, tmp_path: Path) -> None:
-    result = runner.invoke(
+def test_e2e_run(cli_runner: CliRunner, data_dir: Path, rules_dir: Path, tmp_path: Path) -> None:
+    result = cli_runner.invoke(
         main.imagedephi,
         [
             "--override-rules",
@@ -45,8 +40,8 @@ def test_e2e_run(runner: CliRunner, data_dir: Path, rules_dir: Path, tmp_path: P
 
 
 @pytest.mark.timeout(5)
-def test_e2e_plan(runner: CliRunner, data_dir: Path, rules_dir: Path) -> None:
-    result = runner.invoke(
+def test_e2e_plan(cli_runner: CliRunner, data_dir: Path, rules_dir: Path) -> None:
+    result = cli_runner.invoke(
         main.imagedephi,
         [
             "--override-rules",
@@ -56,12 +51,12 @@ def test_e2e_plan(runner: CliRunner, data_dir: Path, rules_dir: Path) -> None:
         ],
     )
     assert result.exit_code == 0
-    assert "Replace ImageDescription" in result.stdout
+    assert "Replace ImageDescription" in result.output
 
 
 @pytest.mark.timeout(5)
 def test_e2e_gui(
-    runner: CliRunner,
+    cli_runner: CliRunner,
     unused_tcp_port: int,
     data_dir: Path,
     tmp_path: Path,
@@ -93,7 +88,7 @@ def test_e2e_gui(
     # we'll break that expection here.
     client_future = thread_executor.submit(client_select_directory, unused_tcp_port)
 
-    cli_result = runner.invoke(main.imagedephi, ["gui", "--port", str(unused_tcp_port)])
+    cli_result = cli_runner.invoke(main.imagedephi, ["gui", "--port", str(unused_tcp_port)])
 
     assert cli_result.exit_code == 0
     webbrowser_open_mock.assert_called_once()
