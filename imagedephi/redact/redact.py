@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Generator
+import datetime
 import importlib.resources
 from pathlib import Path
 
@@ -46,7 +47,10 @@ def redact_images(
 ) -> None:
     base_rules = get_base_rules()
     images_to_redact = iter_image_files(input_path) if input_path.is_dir() else [input_path]
-
+    time_stamp = datetime.datetime.now().isoformat(timespec="seconds")
+    redact_dir = Path(f"{output_dir}/Redacted_{time_stamp}")
+    redact_dir.mkdir(parents=True)
+    click.echo(f"Created redaction folder: {redact_dir}")
     for image_file in images_to_redact:
         if image_file.suffix not in FILE_EXTENSION_MAP:
             click.echo(f"Image format for {image_file.name} not supported. Skipping...")
@@ -72,6 +76,8 @@ def redact_images(
             redaction_plan.execute_plan()
             output_path = _get_output_path(image_file, output_dir)
             redaction_plan.save(output_path, overwrite)
+            output_path = _get_output_path(image_file, redact_dir)
+            _save_redacted_tiff(redaction_plan.get_image_data(), output_path, image_file, overwrite)
 
 
 def show_redaction_plan(input_path: Path, override_rules: Ruleset | None = None) -> None:
