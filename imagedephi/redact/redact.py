@@ -25,7 +25,7 @@ def _get_output_path(file_path: Path, output_dir: Path) -> Path:
     return output_dir / f"REDACTED_{file_path.name}"
 
 
-def _save_redacted_tiff(tiff_info: TiffInfo, output_path: Path, input_path: Path, overwrite: bool):
+def _save_redacted_tiff(tiff_info: TiffInfo, output_path: Path):
     tifftools.write_tiff(tiff_info, output_path, allowExisting=True)
 
 
@@ -51,7 +51,6 @@ def redact_images(
     input_path: Path,
     output_dir: Path,
     override_rules: RuleSet | None = None,
-    overwrite: bool = False,
 ) -> None:
     base_rules = get_base_rules()
     images_to_redact = iter_image_files(input_path) if input_path.is_dir() else [input_path]
@@ -82,7 +81,7 @@ def redact_images(
         else:
             redaction_plan.execute_plan()
             output_path = _get_output_path(image_file, redact_dir)
-            _save_redacted_tiff(redaction_plan.get_image_data(), output_path, image_file, overwrite)
+            _save_redacted_tiff(redaction_plan.get_image_data(), output_path)
 
 
 def show_redaction_plan(input_path: Path, override_rules: RuleSet | None = None) -> None:
