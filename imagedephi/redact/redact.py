@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Generator
+import datetime
 import importlib.resources
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -25,15 +26,6 @@ def _get_output_path(file_path: Path, output_dir: Path) -> Path:
 
 
 def _save_redacted_tiff(tiff_info: TiffInfo, output_path: Path, input_path: Path, overwrite: bool):
-    if output_path.exists():
-        if overwrite:
-            click.echo(f"Found existing redaction for {input_path.name}. Overwriting...")
-        else:
-            click.echo(
-                f"Could not redact {input_path.name}, existing redacted file in output directory. "
-                "Use the --overwrite-existing-output flag to overwrite previously redacted files."
-            )
-            return
     tifftools.write_tiff(tiff_info, output_path, allowExisting=True)
 
 
@@ -63,7 +55,10 @@ def redact_images(
 ) -> None:
     base_rules = get_base_rules()
     images_to_redact = iter_image_files(input_path) if input_path.is_dir() else [input_path]
-
+    time_stamp = datetime.datetime.now().isoformat(timespec="seconds")
+    redact_dir = Path(f"{output_dir}/Redacted_{time_stamp}")
+    redact_dir.mkdir(parents=True)
+    click.echo(f"Created redaction folder: {redact_dir}")
     for image_file in images_to_redact:
         if image_file.suffix not in FILE_EXTENSION_MAP:
             click.echo(f"Image format for {image_file.name} not supported. Skipping...")
@@ -86,7 +81,7 @@ def redact_images(
             redaction_plan.report_missing_rules()
         else:
             redaction_plan.execute_plan()
-            output_path = _get_output_path(image_file, output_dir)
+            output_path = _get_output_path(image_file, redact_dir)
             _save_redacted_tiff(redaction_plan.get_image_data(), output_path, image_file, overwrite)
 
 
