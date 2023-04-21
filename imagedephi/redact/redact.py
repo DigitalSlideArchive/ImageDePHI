@@ -21,6 +21,10 @@ def _get_output_path(file_path: Path, output_dir: Path) -> Path:
     return output_dir / f"REDACTED_{file_path.name}"
 
 
+def _save_redacted_tiff(tiff_info: TiffInfo, output_path: Path, input_path: Path, overwrite: bool):
+    tifftools.write_tiff(tiff_info, output_path, allowExisting=True)
+
+
 def get_base_rules():
     base_rules_path = importlib.resources.files("imagedephi") / "base_rules.yaml"
     with base_rules_path.open() as base_rules_stream:
@@ -74,8 +78,6 @@ def redact_images(
             redaction_plan.report_missing_rules()
         else:
             redaction_plan.execute_plan()
-            output_path = _get_output_path(image_file, output_dir)
-            redaction_plan.save(output_path, overwrite)
             output_path = _get_output_path(image_file, redact_dir)
             _save_redacted_tiff(redaction_plan.get_image_data(), output_path, image_file, overwrite)
 

@@ -64,19 +64,20 @@ def imagedephi(ctx: click.Context, override_rules: TextIO | None) -> None:
     default=Path('.'),
     type=click.Path(exists=True, file_okay=False, readable=True, writable=True, path_type=Path),
 )
-@click.option(
-    "-o",
-    "--overwrite-existing-output",
-    is_flag=True,
-    default=False,
-    help="Overwrite previous output for input images.",
-)
+# I don't think we need this anymore
+# @click.option(
+#     "-o",
+#     "--overwrite-existing-output",
+#     is_flag=True,
+#     default=False,
+#     help="Overwrite previous output for input images",
+# )
 @click.pass_obj
 def run(
-    obj: ImagedephiContext, input_path: Path, output_dir: Path, overwrite_existing_output: bool
+    obj: ImagedephiContext, input_path: Path, output_dir: Path
 ):
     """Perform the redaction of images."""
-    redact_images(input_path, output_dir, obj.override_rule_set, overwrite_existing_output)
+    redact_images(input_path, output_dir, obj.override_rule_set)
 
 
 @imagedephi.command
