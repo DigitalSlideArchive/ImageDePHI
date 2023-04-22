@@ -1,8 +1,6 @@
 import ctypes
 import sys
 
-import click
-
 
 def launched_from_frozen_binary() -> bool:
     """Return whether the current program was launched within a frozen binary."""
@@ -27,14 +25,11 @@ def launched_from_windows_explorer() -> bool:
             process_list, process_list_size
         )
         if process_count == 0:
-            # TODO: Change this to be logged internally, as it's not actionable by end users.
-            click.echo("Could not detect Windows console.", err=True)
-            # Assume it's not Explorer, to be conservative
-            return False
-        else:
-            # If frozen, the Pyinstaller bootloader is also running in this console:
-            # https://pyinstaller.org/en/stable/advanced-topics.html#the-bootstrap-process-in-detail
-            expected_solo_process_count = 2 if launched_from_frozen_binary() else 1
-            return process_count == expected_solo_process_count
+            # TODO: Log this internally
+            raise OSError("Could not detect Windows console.")
+        # If frozen, the Pyinstaller bootloader is also running in this console:
+        # https://pyinstaller.org/en/stable/advanced-topics.html#the-bootstrap-process-in-detail
+        expected_solo_process_count = 2 if launched_from_frozen_binary() else 1
+        return process_count == expected_solo_process_count
     else:
         return False
