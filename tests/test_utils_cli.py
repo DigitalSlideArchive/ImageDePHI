@@ -2,6 +2,7 @@ from inspect import iscoroutinefunction
 
 import click
 from click.testing import CliRunner
+import pytest
 from pytest_mock import MockerFixture
 
 from imagedephi.utils.cli import FallthroughGroup, run_coroutine
@@ -27,6 +28,7 @@ def test_utils_cli_fallthrough_group_baseline(mocker: MockerFixture, cli_runner:
     )
     cmd_group.add_command(click.Command(name="sub", callback=sub))
 
+    # Explicitly invoke a subcommand
     result = cli_runner.invoke(cmd_group, ["sub"])
 
     assert result.exit_code == 0
@@ -36,33 +38,21 @@ def test_utils_cli_fallthrough_group_baseline(mocker: MockerFixture, cli_runner:
     assert "Usage" not in result.output
 
 
-def test_utils_cli_fallthrough_group_false(mocker: MockerFixture, cli_runner: CliRunner) -> None:
+@pytest.mark.parametrize("should_fallthrough", [False, True])
+def test_utils_cli_fallthrough_group_empty(
+    should_fallthrough: bool, mocker: MockerFixture, cli_runner: CliRunner
+) -> None:
     cmd = mocker.Mock()
     sub = mocker.Mock()
     cmd_group = FallthroughGroup(
-        subcommand_name="sub", should_fallthrough=lambda: False, callback=cmd
+        subcommand_name="sub", should_fallthrough=lambda: should_fallthrough, callback=cmd
     )
     cmd_group.add_command(click.Command(name="sub", callback=sub))
 
+    # No subcommand
     result = cli_runner.invoke(cmd_group, [])
 
     assert result.exit_code == 0
-    cmd.assert_not_called()
-    sub.assert_not_called()
-    assert "Usage" in result.output
-
-
-def test_utils_cli_fallthrough_group_true(mocker: MockerFixture, cli_runner: CliRunner) -> None:
-    cmd = mocker.Mock()
-    sub = mocker.Mock()
-    cmd_group = FallthroughGroup(
-        subcommand_name="sub", should_fallthrough=lambda: True, callback=cmd
-    )
-    cmd_group.add_command(click.Command(name="sub", callback=sub))
-
-    result = cli_runner.invoke(cmd_group, [])
-
-    assert result.exit_code == 0
-    cmd.assert_called_once()
-    sub.assert_called_once()
-    assert "Usage" not in result.output
+    assert cmd.called is should_fallthrough
+    assert sub.called is should_fallthrough
+    assert ("Usage" in result.output) is not should_fallthrough
