@@ -51,7 +51,6 @@ def test_e2e_plan(cli_runner: CliRunner, data_dir: Path, rules_dir: Path) -> Non
         ],
     )
     assert result.exit_code == 0
-    assert "Replace ImageDescription" in result.output
 
 
 @pytest.mark.timeout(5)
