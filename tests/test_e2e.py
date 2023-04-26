@@ -21,7 +21,7 @@ def thread_executor() -> Generator[ThreadPoolExecutor, None, None]:
 
 
 @pytest.mark.timeout(5)
-def test_e2e_run(cli_runner: CliRunner, data_dir: Path, rules_dir: Path,tmp_path: Path) -> None:
+def test_e2e_run(cli_runner: CliRunner, data_dir: Path, rules_dir: Path, tmp_path: Path) -> None:
     result = cli_runner.invoke(
         main.imagedephi,
         [
