@@ -1,6 +1,7 @@
 import asyncio
 from collections.abc import Generator
 from concurrent.futures import ThreadPoolExecutor
+import datetime
 from pathlib import Path
 import sys
 
@@ -34,7 +35,8 @@ def test_e2e_run(cli_runner: CliRunner, data_dir: Path, tmp_path: Path) -> None:
     )
 
     assert result.exit_code == 0
-    output_file = tmp_path / "REDACTED_test_image.tif"
+    time_stamp = datetime.datetime.now().isoformat(timespec="seconds")
+    output_file = tmp_path / f"Redacted_{time_stamp}/REDACTED_test_image.tif"
     assert output_file.exists()
     output_file_bytes = output_file.read_bytes()
     assert b"large_image_converter" not in output_file_bytes
@@ -95,7 +97,8 @@ def test_e2e_gui(
 
     assert cli_result.exit_code == 0
     webbrowser_open_mock.assert_called_once()
-    output_file = tmp_path / "REDACTED_test_image.tif"
+    time_stamp = datetime.datetime.now().isoformat(timespec="seconds")
+    output_file = tmp_path / f"Redacted_{time_stamp}/REDACTED_test_image.tif"
     assert output_file.exists()
     output_file_bytes = output_file.read_bytes()
     assert b"large_image_converter" not in output_file_bytes
