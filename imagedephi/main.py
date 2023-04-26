@@ -29,6 +29,7 @@ class ImagedephiContext:
     subcommand_name="gui",
     should_fallthrough=launched_from_windows_explorer,
 )
+@click.version_option(prog_name="ImageDePHI")
 @click.option(
     "-r",
     "--override-rules",

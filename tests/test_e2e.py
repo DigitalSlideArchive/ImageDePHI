@@ -101,3 +101,10 @@ def test_e2e_gui(
     client_response = client_future.result(timeout=0)
     assert client_response.status_code == 200
     assert "You chose" in client_response.text
+
+
+def test_e2e_version(cli_runner: CliRunner) -> None:
+    result = cli_runner.invoke(main.imagedephi, ["--version"])
+
+    assert result.exit_code == 0
+    assert "ImageDePHI, version" in result.output
