@@ -11,7 +11,6 @@ import tifftools.constants
 import yaml
 
 from imagedephi.models.rules import Ruleset
-from imagedephi.rules import RuleSource, build_ruleset
 
 from .redaction_plan import FILE_EXTENSION_MAP
 from .svs import MalformedAperioFileError
