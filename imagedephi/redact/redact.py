@@ -10,7 +10,7 @@ import tifftools
 import tifftools.constants
 import yaml
 
-from imagedephi.rules import RuleSet, RuleSource, build_ruleset
+from imagedephi.models.rules import Ruleset
 
 from .redaction_plan import FILE_EXTENSION_MAP
 from .svs import MalformedAperioFileError
@@ -40,7 +40,7 @@ def _save_redacted_tiff(tiff_info: TiffInfo, output_path: Path, input_path: Path
 def get_base_rules():
     base_rules_path = importlib.resources.files("imagedephi") / "base_rules.yaml"
     with base_rules_path.open() as base_rules_stream:
-        base_rule_set = build_ruleset(yaml.safe_load(base_rules_stream), RuleSource.BASE)
+        base_rule_set = Ruleset.parse_obj(yaml.safe_load(base_rules_stream))
         return base_rule_set
 
 
@@ -58,7 +58,7 @@ def iter_image_files(directory: Path) -> Generator[Path, None, None]:
 def redact_images(
     input_path: Path,
     output_dir: Path,
-    override_rules: RuleSet | None = None,
+    override_rules: Ruleset | None = None,
     overwrite: bool = False,
 ) -> None:
     base_rules = get_base_rules()
@@ -90,13 +90,13 @@ def redact_images(
             _save_redacted_tiff(redaction_plan.get_image_data(), output_path, image_file, overwrite)
 
 
-def show_redaction_plan(input_path: Path, override_rules: RuleSet | None = None) -> None:
+def show_redaction_plan(input_path: Path, override_rules: Ruleset | None = None) -> None:
     image_paths = iter_image_files(input_path) if input_path.is_dir() else [input_path]
+    base_rules = get_base_rules()
     for image_path in image_paths:
         if image_path.suffix not in FILE_EXTENSION_MAP:
             click.echo(f"Image format for {image_path.name} not supported.", err=True)
             continue
-        base_rules = get_base_rules()
         try:
             metadata_redaction_plan = TiffBasedMetadataRedactionPlan.build(
                 image_path, base_rules, override_rules

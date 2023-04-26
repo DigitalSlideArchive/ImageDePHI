@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from itertools import chain
 from typing import TYPE_CHECKING
 
 import tifftools
 import tifftools.constants
 
-from imagedephi.rules import FileFormat, MetadataSvsRule, RuleSet, SvsDescription
+from imagedephi.models.rules import ConcreteMetadataRule, Ruleset
+from imagedephi.rules import FileFormat, SvsDescription
 
 from .tiff import TiffMetadataRedactionPlan
 
@@ -30,14 +30,14 @@ class SvsMetadataRedactionPlan(TiffMetadataRedactionPlan):
     """
 
     file_format = FileFormat.SVS
-    description_redaction_steps: dict[str, MetadataSvsRule]
+    description_redaction_steps: dict[str, ConcreteMetadataRule]
     no_match_description_keys: set[str]
 
     def __init__(
         self,
         tiff_info: TiffInfo,
-        base_rule_set: RuleSet,
-        override_rule_set: RuleSet | None = None,
+        base_rule_set: Ruleset,
+        override_rule_set: Ruleset | None = None,
     ) -> None:
         super().__init__(tiff_info, base_rule_set, override_rule_set)
 
@@ -55,19 +55,35 @@ class SvsMetadataRedactionPlan(TiffMetadataRedactionPlan):
 
             svs_description = SvsDescription(str(ifd["tags"][tag.value]["data"]))
             override_svs_rules = (
-                override_rule_set.svs.image_description_rules if override_rule_set else None
+                override_rule_set.svs.image_description if override_rule_set else None
             )
-            base_svs_rules = base_rule_set.svs.image_description_rules
+            base_svs_rules = base_rule_set.svs.image_description
             merged_svs_rules = (
                 base_svs_rules | override_svs_rules if override_svs_rules else base_svs_rules
             )
 
             for key in svs_description.metadata.keys():
                 key_rule = merged_svs_rules.get(key, None)
-                if key_rule and key_rule.is_match(key):
+                if key_rule and self.is_match(key_rule, key):
                     self.description_redaction_steps[key] = key_rule
                 else:
                     self.no_match_description_keys.add(key)
+
+    def is_match(self, rule: ConcreteMetadataRule, data: tifftools.TiffTag | str) -> bool:
+        if rule.action in ["keep", "delete", "replace"]:
+            if isinstance(data, tifftools.TiffTag):
+                return super().is_match(rule, data)
+            return rule.key_name == data
+        return False
+
+    def apply(self, rule: ConcreteMetadataRule, data: SvsDescription | IFD) -> None:
+        if isinstance(data, SvsDescription):
+            if rule.action == "delete":
+                del data.metadata[rule.key_name]
+            elif rule.action == "replace":
+                data.metadata[rule.key_name] = rule.new_value
+            return
+        return super().apply(rule, data)
 
     def is_comprehensive(self) -> bool:
         return super().is_comprehensive() and not self.no_match_description_keys
@@ -88,8 +104,10 @@ class SvsMetadataRedactionPlan(TiffMetadataRedactionPlan):
 
     def report_plan(self) -> None:
         print("Aperio (.svs) Metadata Redaction Plan\n")
-        for rule in chain(self.redaction_steps.values(), self.description_redaction_steps.values()):
-            print(rule.get_description())
+        for tag_value, rule in self.redaction_steps.items():
+            print(f"Tiff Tag {tag_value} - {rule.key_name}: {rule.action}")
+        for key_name, rule in self.description_redaction_steps.items():
+            print(f"SVS Image Description - {key_name}: {rule.action}")
         self.report_missing_rules()
 
     def _redact_svs_image_description(self, ifd: IFD) -> None:
@@ -101,7 +119,7 @@ class SvsMetadataRedactionPlan(TiffMetadataRedactionPlan):
         for key in list(image_description.metadata.keys()):
             rule = self.description_redaction_steps.get(key)
             if rule is not None:
-                rule.apply(image_description)
+                self.apply(rule, image_description)
         ifd["tags"][image_description_tag.value]["data"] = str(image_description)
 
     def execute_plan(self) -> None:
@@ -110,6 +128,6 @@ class SvsMetadataRedactionPlan(TiffMetadataRedactionPlan):
         for tag, ifd in self._iter_tiff_tag_entries(ifds):
             rule = self.redaction_steps.get(tag.value)
             if rule is not None:
-                rule.apply(ifd)
+                self.apply(rule, ifd)
             elif tag.value == image_description_tag.value:
                 self._redact_svs_image_description(ifd)

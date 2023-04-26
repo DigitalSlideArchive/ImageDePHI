@@ -7,7 +7,9 @@ from typing import TYPE_CHECKING, Type
 import tifftools
 import tifftools.constants
 
-from imagedephi.rules import FileFormat, MetadataTiffRule, RuleSet
+from imagedephi.models.rules import ConcreteMetadataRule, Ruleset
+from imagedephi.rules import FileFormat
+from imagedephi.utils.tiff import get_tiff_tag
 
 from .redaction_plan import FILE_EXTENSION_MAP, RedactionPlan
 
@@ -18,7 +20,7 @@ if TYPE_CHECKING:
 class TiffBasedMetadataRedactionPlan(RedactionPlan):
     tiff_info: TiffInfo
 
-    def __init__(self, tiff_info: TiffInfo, base_rules: RuleSet, override_rule_set: RuleSet | None):
+    def __init__(self, tiff_info: TiffInfo, base_rules: Ruleset, override_rule_set: Ruleset | None):
         self.tiff_info = tiff_info
 
     @classmethod
@@ -29,7 +31,7 @@ class TiffBasedMetadataRedactionPlan(RedactionPlan):
 
     @classmethod
     def build(
-        cls, image_path: Path, base_rules: RuleSet, override_rules: RuleSet | None = None
+        cls, image_path: Path, base_rules: Ruleset, override_rules: Ruleset | None = None
     ) -> TiffBasedMetadataRedactionPlan:
         file_extension = FILE_EXTENSION_MAP[image_path.suffix]
         for redaction_plan_class in cls.get_all_subclasses():
@@ -53,7 +55,7 @@ class TiffMetadataRedactionPlan(TiffBasedMetadataRedactionPlan):
 
     file_format = FileFormat.TIFF
     tiff_info: TiffInfo
-    redaction_steps: dict[int, MetadataTiffRule]
+    redaction_steps: dict[int, ConcreteMetadataRule]
     no_match_tags: list[tifftools.TiffTag]
 
     @staticmethod
@@ -81,28 +83,45 @@ class TiffMetadataRedactionPlan(TiffBasedMetadataRedactionPlan):
     def __init__(
         self,
         tiff_info: TiffInfo,
-        base_rule_set: RuleSet,
-        override_rule_set: RuleSet | None = None,
+        base_rule_set: Ruleset,
+        override_rule_set: Ruleset | None = None,
     ) -> None:
         self.tiff_info = tiff_info
 
         self.redaction_steps = {}
         self.no_match_tags = []
         ifds = self.tiff_info["ifds"]
-        override_rules: dict[int, MetadataTiffRule] | None = (
-            override_rule_set.tiff.metadata_rules if override_rule_set else None
+        override_rules = (
+            override_rule_set.get_format_rules(self.file_format).metadata
+            if override_rule_set
+            else None
         )
-        base_rules: dict[int, MetadataTiffRule] = base_rule_set.get_format_rules(
+        base_rules: dict[str, ConcreteMetadataRule] = base_rule_set.get_format_rules(
             self.file_format
-        ).metadata_rules
+        ).metadata
         merged_rules = base_rules | override_rules if override_rules else base_rules
         for tag, _ in self._iter_tiff_tag_entries(ifds):
-            # First iterate through overrides, then base
-            tag_rule = merged_rules.get(tag.value, None)
-            if tag_rule and tag_rule.is_match(tag):
-                self.redaction_steps[tag.value] = tag_rule
+            tag_rule = None
+            for name in [tag.name] + list(tag.get("altnames", set())):
+                tag_rule = merged_rules.get(name, None)
+                if tag_rule and self.is_match(tag_rule, tag):
+                    self.redaction_steps[tag.value] = tag_rule
+                    break
             else:
                 self.no_match_tags.append(tag)
+
+    def is_match(self, rule: ConcreteMetadataRule, tag: tifftools.TiffTag) -> bool:
+        if rule.action in ["keep", "delete", "replace"]:
+            rule_tag = get_tiff_tag(rule.key_name)
+            return rule_tag.value == tag.value
+        return False
+
+    def apply(self, rule: ConcreteMetadataRule, ifd: IFD) -> None:
+        tag = get_tiff_tag(rule.key_name)
+        if rule.action == "delete":
+            del ifd["tags"][tag.value]
+        elif rule.action == "replace":
+            ifd["tags"][tag.value]["data"] = rule.new_value
 
     def is_comprehensive(self) -> bool:
         return len(self.no_match_tags) == 0
@@ -117,8 +136,8 @@ class TiffMetadataRedactionPlan(TiffBasedMetadataRedactionPlan):
 
     def report_plan(self) -> None:
         print("Tiff Metadata Redaction Plan\n")
-        for rule in self.redaction_steps.values():
-            print(rule.get_description())
+        for tag_value, rule in self.redaction_steps.items():
+            print(f"Tiff Tag {tag_value} - {rule.key_name}: {rule.action}")
         self.report_missing_rules()
 
     def execute_plan(self) -> None:
@@ -127,4 +146,4 @@ class TiffMetadataRedactionPlan(TiffBasedMetadataRedactionPlan):
         for tag, ifd in self._iter_tiff_tag_entries(ifds):
             rule = self.redaction_steps.get(tag.value)
             if rule is not None:
-                rule.apply(ifd)
+                self.apply(rule, ifd)
