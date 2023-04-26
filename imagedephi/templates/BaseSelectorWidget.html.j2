@@ -12,7 +12,7 @@
           <span class="font-black">{{ ancestor_name }}</span>
         {% else %}
           <a class="text-blue-700"
-             href="{{- url_for('select_directory') -}}?{%- block selector_ancestor_query scoped required -%}{%- endblock selector_ancestor_query -%}">
+             href="{%- block selector_ancestor_url scoped required -%}{%- endblock selector_ancestor_url -%}">
             {{ ancestor_name }}
           </a>
         {% endif %}
@@ -23,7 +23,7 @@
 <ul>
   {% for child_directory in directory_data.child_directories|sort %}
     {# Put the <a> outside, to make the whole line clickable #}
-    <a href="{{- url_for('select_directory') -}}?{%- block selector_child_directory_query scoped required -%}{%- endblock selector_child_directory_query -%}">
+    <a href="{%- block selector_child_directory_url scoped required -%}{%- endblock selector_child_directory_url -%}">
       <li class="hover:bg-base-300">
         <i class="mdi mdi-folder"></i>
         {{ child_directory.name }}

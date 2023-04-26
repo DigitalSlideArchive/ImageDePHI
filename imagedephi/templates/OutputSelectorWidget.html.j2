@@ -3,9 +3,9 @@
 {% block selector_title %}
   Output Directory
 {% endblock selector_title %}
-{% block selector_ancestor_query -%}
-  input_directory={{ input_directory_data.directory|urlencode }}&output_directory={{ ancestor|urlencode }}
-{%- endblock selector_ancestor_query %}
-{% block selector_child_directory_query -%}
-  input_directory={{ input_directory_data.directory|urlencode }}&output_directory={{ child_directory|urlencode }}
-{%- endblock selector_child_directory_query %}
+{% block selector_ancestor_url -%}
+  {{ request.url.include_query_params(output_directory=ancestor) }}
+{%- endblock selector_ancestor_url %}
+{% block selector_child_directory_url -%}
+  {{ request.url.include_query_params(output_directory=child_directory) }}
+{%- endblock selector_child_directory_url %}
