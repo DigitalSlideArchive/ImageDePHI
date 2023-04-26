@@ -75,6 +75,7 @@ class Ruleset(BaseModel):
             return self.tiff
         if file_format == FileFormat.SVS:
             return self.svs
+        raise Exception("File format not supported")
 
 
 base_rules_path = importlib.resources.files("imagedephi") / "base_rules.yaml"
