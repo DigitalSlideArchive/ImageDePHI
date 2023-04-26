@@ -53,7 +53,10 @@ def redact_images(
     images_to_redact = iter_image_files(input_path) if input_path.is_dir() else [input_path]
     time_stamp = datetime.datetime.now().isoformat(timespec="seconds")
     redact_dir = Path(f"{output_dir}/Redacted_{time_stamp}")
-    redact_dir.mkdir(parents=True)
+    try:
+        redact_dir.mkdir(parents=True)
+    except PermissionError:
+        "Cannnot create an output directory, permission error."
     click.echo(f"Created redaction folder: {redact_dir}")
     for image_file in images_to_redact:
         if image_file.suffix not in FILE_EXTENSION_MAP:
