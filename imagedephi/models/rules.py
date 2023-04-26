@@ -4,6 +4,8 @@ from typing import Annotated, Any, Literal
 from pydantic import BaseModel, Field, validator
 import yaml
 
+from imagedephi.rules import FileFormat
+
 
 class _MetadataRule(BaseModel):
     # key_name is not set by users, but is availible internally
@@ -43,7 +45,7 @@ class TiffRules(BaseModel):
         if isinstance(metadata, dict):
             for key, value in metadata.items():
                 if isinstance(value, dict):
-                    value["tag_name"] = key
+                    value["key_name"] = key
         return metadata
 
 
@@ -58,7 +60,7 @@ class SvsRules(BaseModel):
         if isinstance(metadata, dict):
             for key, value in metadata.items():
                 if isinstance(value, dict):
-                    value["tag_name"] = key
+                    value["key_name"] = key
         return metadata
 
 
@@ -67,6 +69,13 @@ class Ruleset(BaseModel):
     description: str
     tiff: TiffRules
     svs: SvsRules
+
+    def get_format_rules(self, file_format: FileFormat) -> TiffRules | SvsRules:
+        if file_format == FileFormat.TIFF:
+            return self.tiff
+        if file_format == FileFormat.SVS:
+            return self.svs
+        raise Exception("File format not supported")
 
 
 base_rules_path = importlib.resources.files("imagedephi") / "base_rules.yaml"
