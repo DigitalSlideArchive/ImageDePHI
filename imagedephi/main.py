@@ -12,8 +12,8 @@ from hypercorn.asyncio import serve
 import yaml
 
 from imagedephi.gui import app, shutdown_event
+from imagedephi.models.rules import Ruleset
 from imagedephi.redact import redact_images, show_redaction_plan
-from imagedephi.rules import RuleSet, RuleSource, build_ruleset
 from imagedephi.utils.cli import FallthroughGroup, run_coroutine
 from imagedephi.utils.network import unused_tcp_port, wait_for_port
 from imagedephi.utils.os import launched_from_windows_explorer
@@ -21,7 +21,7 @@ from imagedephi.utils.os import launched_from_windows_explorer
 
 @dataclass
 class ImagedephiContext:
-    override_rule_set: RuleSet | None = None
+    override_rule_set: Ruleset | None = None
 
 
 @click.group(
@@ -43,7 +43,7 @@ def imagedephi(ctx: click.Context, override_rules: TextIO | None) -> None:
     ctx.obj = obj
 
     if override_rules:
-        obj.override_rule_set = build_ruleset(yaml.safe_load(override_rules), RuleSource.OVERRIDE)
+        obj.override_rule_set = Ruleset.parse_obj(yaml.safe_load(override_rules))
 
 
 @imagedephi.command
