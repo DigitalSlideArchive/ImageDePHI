@@ -9,6 +9,7 @@ import tifftools.constants
 
 from imagedephi.models.rules import ConcreteMetadataRule, Ruleset
 from imagedephi.rules import FileFormat
+from imagedephi.utils.tiff import get_tiff_tag
 
 from .redaction_plan import FILE_EXTENSION_MAP, RedactionPlan
 
@@ -103,11 +104,24 @@ class TiffMetadataRedactionPlan(TiffBasedMetadataRedactionPlan):
             tag_rule = None
             for name in [tag.name] + list(tag.get("altnames", set())):
                 tag_rule = merged_rules.get(name, None)
-                if tag_rule:
+                if tag_rule and self.is_match(tag_rule, tag):
                     self.redaction_steps[tag.value] = tag_rule
                     break
             else:
                 self.no_match_tags.append(tag)
+
+    def is_match(self, rule: ConcreteMetadataRule, tag: tifftools.TiffTag) -> bool:
+        if rule.action in ["keep", "delete", "replace"]:
+            rule_tag = get_tiff_tag(rule.key_name)
+            return rule_tag.value == tag.value
+        return False
+
+    def apply(self, rule: ConcreteMetadataRule, ifd: IFD) -> None:
+        tag = get_tiff_tag(rule.key_name)
+        if rule.action == "delete":
+            del ifd["tags"][tag.value]
+        elif rule.action == "replace":
+            ifd["tags"][tag.value]["data"] = rule.new_value
 
     def is_comprehensive(self) -> bool:
         return len(self.no_match_tags) == 0
@@ -132,5 +146,4 @@ class TiffMetadataRedactionPlan(TiffBasedMetadataRedactionPlan):
         for tag, ifd in self._iter_tiff_tag_entries(ifds):
             rule = self.redaction_steps.get(tag.value)
             if rule is not None:
-                # rule.apply(ifd)
-                print("applying rule")
+                self.apply(rule, ifd)

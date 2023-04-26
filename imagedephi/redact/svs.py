@@ -64,10 +64,26 @@ class SvsMetadataRedactionPlan(TiffMetadataRedactionPlan):
 
             for key in svs_description.metadata.keys():
                 key_rule = merged_svs_rules.get(key, None)
-                if key_rule:
+                if key_rule and self.is_match(key_rule, key):
                     self.description_redaction_steps[key] = key_rule
                 else:
                     self.no_match_description_keys.add(key)
+
+    def is_match(self, rule: ConcreteMetadataRule, data: tifftools.TiffTag | str) -> bool:
+        if rule.action in ["keep", "delete", "replace"]:
+            if isinstance(data, tifftools.TiffTag):
+                return super().is_match(rule, data)
+            return rule.key_name == data
+        return False
+
+    def apply(self, rule: ConcreteMetadataRule, data: SvsDescription | IFD) -> None:
+        if isinstance(data, SvsDescription):
+            if rule.action == "delete":
+                del data.metadata[rule.key_name]
+            elif rule.action == "replace":
+                data.metadata[rule.key_name] = rule.new_value
+            return
+        return super().apply(rule, data)
 
     def is_comprehensive(self) -> bool:
         return super().is_comprehensive() and not self.no_match_description_keys
@@ -103,8 +119,7 @@ class SvsMetadataRedactionPlan(TiffMetadataRedactionPlan):
         for key in list(image_description.metadata.keys()):
             rule = self.description_redaction_steps.get(key)
             if rule is not None:
-                # rule.apply(image_description)
-                print("Applying rule")
+                self.apply(rule, image_description)
         ifd["tags"][image_description_tag.value]["data"] = str(image_description)
 
     def execute_plan(self) -> None:
@@ -113,7 +128,6 @@ class SvsMetadataRedactionPlan(TiffMetadataRedactionPlan):
         for tag, ifd in self._iter_tiff_tag_entries(ifds):
             rule = self.redaction_steps.get(tag.value)
             if rule is not None:
-                # rule.apply(ifd)
-                print("Applying rule")
+                self.apply(rule, ifd)
             elif tag.value == image_description_tag.value:
                 self._redact_svs_image_description(ifd)
