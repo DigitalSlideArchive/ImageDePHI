@@ -4,14 +4,14 @@ import pytest
 import yaml
 
 from imagedephi import redact
-from imagedephi.rules import RuleSource, build_ruleset
+from imagedephi.models.rules import Ruleset
 
 
 @pytest.fixture
 def override_rule_set(rules_dir: Path):
     rule_file = rules_dir / "example_user_rules.yml"
     with rule_file.open() as rule_stream:
-        return build_ruleset(yaml.safe_load(rule_stream), RuleSource.OVERRIDE)
+        return Ruleset.parse_obj(yaml.safe_load(rule_stream))
 
 
 @pytest.fixture(
@@ -36,6 +36,5 @@ def test_plan_svs(capsys, svs_input_path, override_rule_set):
     redact.show_redaction_plan(svs_input_path, override_rule_set)
 
     captured = capsys.readouterr()
-    assert "Replace ImageDescription" not in captured.out
     assert "Aperio (.svs) Metadata Redaction Plan" in captured.out
-    assert "Delete ICC Profile" in captured.out
+    assert "ICC Profile: delete" in captured.out
