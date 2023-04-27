@@ -1,5 +1,5 @@
 ## Development
-* create a virtualenv: [venv docs](https://docs.python.org/3/library/venv.html)
+* create and activate a virtualenv: [venv docs](https://docs.python.org/3/library/venv.html)
 * run :
     ```bash
     pip install -e .
