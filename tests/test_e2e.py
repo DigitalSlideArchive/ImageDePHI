@@ -31,6 +31,7 @@ def test_e2e_run(cli_runner: CliRunner, data_dir: Path, tmp_path: Path) -> None:
             str(tmp_path),
         ],
     )
+
     assert result.exit_code == 0
     output_file = tmp_path / "REDACTED_test_image.tif"
     assert output_file.exists()
@@ -50,6 +51,7 @@ def test_e2e_plan(cli_runner: CliRunner, data_dir: Path) -> None:
             str(data_dir / "input" / "tiff" / "test_image.tif"),
         ],
     )
+
     assert result.exit_code == 0
     assert "Replace ImageDescription" in result.output
 
@@ -101,3 +103,10 @@ def test_e2e_gui(
     client_response = client_future.result(timeout=0)
     assert client_response.status_code == 200
     assert "You chose" in client_response.text
+
+
+def test_e2e_version(cli_runner: CliRunner) -> None:
+    result = cli_runner.invoke(main.imagedephi, ["--version"])
+
+    assert result.exit_code == 0
+    assert "ImageDePHI, version" in result.output

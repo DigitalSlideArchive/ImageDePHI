@@ -29,11 +29,12 @@ class ImagedephiContext:
     subcommand_name="gui",
     should_fallthrough=launched_from_windows_explorer,
 )
+@click.version_option(prog_name="ImageDePHI")
 @click.option(
     "-r",
     "--override-rules",
     type=click.File("r"),
-    help="User-defined rules to override defaults",
+    help="User-defined rules to override defaults.",
 )
 @click.pass_context
 def imagedephi(ctx: click.Context, override_rules: TextIO | None) -> None:
@@ -57,7 +58,7 @@ def imagedephi(ctx: click.Context, override_rules: TextIO | None) -> None:
     "--overwrite-existing-output",
     is_flag=True,
     default=False,
-    help="Overwrite previous output for input images",
+    help="Overwrite previous output for input images.",
 )
 @click.pass_obj
 def run(
