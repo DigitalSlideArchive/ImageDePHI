@@ -1,0 +1,51 @@
+name: release
+on:
+  release:
+    types: [published]
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          # Use an older Linux: https://pyinstaller.org/en/stable/usage.html#making-gnu-linux-apps-forward-compatible
+          - ubuntu-20.04
+          - macos-latest
+          - windows-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          # LFS data is not needed for release
+          lfs: false
+          # Tags are needed to compute the current version number
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+      - name: Install tox
+        run: |
+          pip install --upgrade pip
+          pip install tox
+      - name: Build binary
+        run: |
+          tox -e binary
+      - name: Uniquely name binary (non-Windows)
+        run: |
+          mv ./dist/imagedephi ./dist/imagedephi-${{ runner.os }}
+        if: runner.os != 'Windows'
+      # It's difficult to rename conditionally on the ".exe" suffix
+      - name: Uniquely name binary (Windows)
+        run: |
+          mv ./dist/imagedephi.exe ./dist/imagedephi-${{ runner.os }}.exe
+        if: runner.os == 'Windows'
+      - name: Upload binary to release
+        run: |
+          gh release upload \
+            ${{ github.event.release.tag_name }} \
+            "./$(ls)#${{ runner.os }} executable" \
+        # Command substitution requires bash on Windows
+        shell: bash
+        working-directory: dist
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
