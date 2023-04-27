@@ -1,18 +1,21 @@
 # ImageDePHI
-ImageDePHI is an application to redact PHI from whole slide images.
+ImageDePHI is an application to redact personal data (PHI) from whole slide images (WSIs).
 
+> This project has been funded in whole or in part with Federal funds from the National Cancer Institute, National Institutes of Health, Department of Health and Human Services, under Contract No. 75N91022C00033
 
-This project has been funded in whole or in part with Federal funds from the National Cancer Institute, National Institutes of Health, Department of Health and Human Services, under Contract No. 75N91022C00033
+## Installation
+* Download the [latest ImageDePHI release](https://github.com/DigitalSlideArchive/ImageDePHI/releases/latest).
 
+* On **Linux and macOS only**, [make the file executable](https://askubuntu.com/a/229592):
+    ```bash
+    chmod +x ./Downloads/imagedephi-Linux
+    ```
+    or
+    ```bash
+    chmod +x ./Downloads/imagedephi-macOS
+    ```
 
-# Installation
-Get the latest release [ImageDePHI release](https://github.com/DigitalSlideArchive/ImageDePHI/releases/latest)
+## Usage
+From a command line, execute the application to get full usage help.
 
-
-
-# Usage
-Open a terminal and navigate to the directory where the artifact was downloaded.
-
-run `./imagedephi` to get a list of options
-
-### **Note**: To launch the ImageDePHI GUI, Windows users can directly run `imagdephi.exe` from Windows Explorer.
+Alternatively **on Windows only**, directly open `imagdephi-Windows.exe` in Windows Explorer to launch the ImageDePHI GUI.

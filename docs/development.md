@@ -1,31 +1,38 @@
-## Development
-* create and activate a virtualenv: [venv docs](https://docs.python.org/3/library/venv.html)
-* run :
+# Development
+
+## Installation
+To install for development:
+* [Create and activate a Python virtual environment](https://docs.python.org/3/library/venv.html).
+* Install for local development:
     ```bash
     pip install -e .
     ```
-* execute with:
+* Install [Tox](https://tox.wiki/) to run development tasks:
     ```bash
-    imagedephi
+    pip install tox
     ```
 
-## Web GUI Development
-While developing the web GUI, it may be useful to maintain a running web server
-which will auto-reload code changes:
+## Running the CLI
+With the virtual environment active, run the CLI:
+```bash
+imagedephi
+```
+
+### Developing the Web GUI
+While developing the web GUI, it may be useful to launch web server
+that auto-reloads code changes:
 ```bash
 hypercorn --reload imagedephi.gui:app
 ```
 
-## Testing
-Install tox:
-```bash
-pip install tox
-```
-Run all tox environments
-```bash
-tox
-```
-Format all code to comply to linting checks
+## Auto-format Code Changes:
+To format all code to comply with style rules:
 ```bash
 tox -e format
+```
+
+## Running Tests
+To run all tests:
+```bash
+tox
 ```
