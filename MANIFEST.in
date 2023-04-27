@@ -1,6 +1,7 @@
 recursive-include imagedephi *.yaml *.j2
 
 prune .github
+prune docs
 prune stubs
 prune tests
 
@@ -8,5 +9,4 @@ exclude .editorconfig
 exclude .git-blame-ignore-revs
 exclude .gitattributes
 exclude .gitignore
-exclude requirements.txt
 exclude tox.ini
