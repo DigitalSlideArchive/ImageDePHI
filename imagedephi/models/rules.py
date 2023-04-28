@@ -1,10 +1,14 @@
+from enum import Enum
 import importlib.resources
 from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, Field, validator
 import yaml
 
-from imagedephi.rules import FileFormat
+
+class FileFormat(Enum):
+    TIFF = "tiff"
+    SVS = "svs"
 
 
 class _MetadataRule(BaseModel):

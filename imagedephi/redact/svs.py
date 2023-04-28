@@ -5,13 +5,33 @@ from typing import TYPE_CHECKING
 import tifftools
 import tifftools.constants
 
-from imagedephi.models.rules import ConcreteMetadataRule, Ruleset
-from imagedephi.rules import FileFormat, SvsDescription
+from imagedephi.models.rules import ConcreteMetadataRule, FileFormat, Ruleset
 
 from .tiff import TiffMetadataRedactionPlan
 
 if TYPE_CHECKING:
     from tifftools.tifftools import IFD, TiffInfo
+
+
+class SvsDescription:
+    prefix: str
+    metadata: dict[str, str]
+
+    def __init__(self, svs_description_string: str):
+        description_components = svs_description_string.split("|")
+        self.prefix = description_components[0]
+
+        self.metadata = {}
+        for metadata_component in description_components[1:]:
+            key, value = [token.strip() for token in metadata_component.split("=")]
+            self.metadata[key] = value
+
+    def __str__(self) -> str:
+        components = [self.prefix]
+        components = components + [
+            " = ".join([key, self.metadata[key]]) for key in self.metadata.keys()
+        ]
+        return "|".join(components)
 
 
 class MalformedAperioFileError(Exception):

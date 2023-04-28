@@ -1,6 +1,6 @@
 import abc
 
-from imagedephi.rules import FileFormat
+from imagedephi.models.rules import FileFormat
 
 FILE_EXTENSION_MAP: dict[str, FileFormat] = {
     ".tif": FileFormat.TIFF,
