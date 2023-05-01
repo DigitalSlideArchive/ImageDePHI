@@ -8,10 +8,10 @@
     <script defer
             src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.1.96/css/materialdesignicons.min.css"
-          rel="stylesheet"/>
+          rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/daisyui@2.47.0/dist/full.css"
           rel="stylesheet"
-          type="text/css"/>
+          type="text/css" />
   </head>
   <body class="bg-base-300 flex justify-center min-h-screen">
     <div class="card bg-base-200 w-2/5 m-8">
@@ -21,10 +21,10 @@
           <form method="post" action="{{ url_for("redact") }}">
             <input type="hidden"
                    value="{{ input_directory_data.directory }}"
-                   name="input_directory"/>
+                   name="input_directory" />
             <input type="hidden"
                    value="{{ output_directory_data.directory }}"
-                   name="output_directory"/>
+                   name="output_directory" />
             <button type="submit" class="btn btn-primary btn-active">Select Current Directories</button>
           </form>
         </div>

@@ -30,6 +30,7 @@ def test_e2e_run(cli_runner: CliRunner, data_dir: Path, rules_dir: Path, tmp_pat
             str(rules_dir / "example_user_rules.yml"),
             "run",
             str(data_dir / "input" / "tiff"),
+            "--output-dir",
             str(tmp_path),
         ],
     )
