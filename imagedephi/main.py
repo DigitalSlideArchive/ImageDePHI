@@ -58,10 +58,12 @@ def imagedephi(ctx: click.Context, override_rules: TextIO | None) -> None:
 
 @imagedephi.command
 @click.argument("input-path", type=click.Path(exists=True, readable=True, path_type=Path))
-@click.argument(
-    "output-dir",
-    required=False,
-    default=Path("."),
+@click.option(
+    "-o",
+    "--output-dir",
+    default=Path.cwd(),
+    show_default="current working directory",
+    help="Path where output directory will be created.",
     type=click.Path(exists=True, file_okay=False, readable=True, writable=True, path_type=Path),
 )
 @click.pass_obj
