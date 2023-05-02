@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 import tifftools
 import tifftools.constants
 
-from imagedephi.rules import ConcreteMetadataRule, FileFormat, TiffRules
+from imagedephi.rules import ConcreteImageRule, ConcreteMetadataRule, FileFormat, TiffRules
 from imagedephi.utils.tiff import get_tiff_tag
 
 from .redaction_plan import RedactionPlan
@@ -124,3 +124,8 @@ class TiffMetadataRedactionPlan(RedactionPlan):
                 )
                 return
         tifftools.write_tiff(self.tiff_info, output_path, allowExisting=True)
+
+class TiffImageRedactionPlan(RedactionPlan):
+    file_format = FileFormat.TIFF
+    tiff_info: TiffInfo
+    redaction_steps: dict[int, ConcreteImageRule]

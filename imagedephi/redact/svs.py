@@ -8,7 +8,7 @@ import tifftools.constants
 
 from imagedephi.rules import ConcreteMetadataRule, FileFormat, SvsRules
 
-from .tiff import TiffMetadataRedactionPlan
+from .tiff import TiffImageRedactionPlan, TiffMetadataRedactionPlan
 
 if TYPE_CHECKING:
     from tifftools.tifftools import IFD
@@ -144,3 +144,7 @@ class SvsMetadataRedactionPlan(TiffMetadataRedactionPlan):
                 self.apply(rule, ifd)
             elif tag.value == image_description_tag.value:
                 self._redact_svs_image_description(ifd)
+
+
+class SvsImageRedactionPlan(TiffImageRedactionPlan):
+    file_format = FileFormat.SVS
