@@ -254,7 +254,8 @@ class TiffImageRedactionPlan(RedactionPlan):
 
     def execute_plan(self) -> None:
         ifds = self.tiff_info["ifds"]
-        self._execute_plan_inner(ifds, self.image_dir)
+        new_ifds = self._execute_plan_inner(ifds, self.image_dir)
+        self.tiff_info["ifds"] = new_ifds
 
     def is_comprehensive(self) -> bool:
         return True
