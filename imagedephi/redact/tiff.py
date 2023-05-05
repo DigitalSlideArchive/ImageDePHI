@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Generator
+import os
 from pathlib import Path
 from typing import TYPE_CHECKING
 import uuid
@@ -181,22 +182,26 @@ class TiffImageRedactionPlan(RedactionPlan):
         self, tiff_info: TiffInfo, temp_dir: Path, base_rule_set: Ruleset, override_rule_set: Ruleset | None = None
     ) -> None:
         self.tiff_info = tiff_info
-        self.temp_dir = temp_dir
+        self.image_dir = Path(os.getcwd())
 
         self.redaction_steps = {}
-        override_rules = override_rule_set.tiff.associated_images if override_rule_set else {}
-        base_rules = base_rule_set.tiff.associated_images
-        merged_rules = base_rules | override_rules
+        override_rules = (
+            override_rule_set.get_format_rules(self.file_format).associated_images
+            if override_rule_set
+            else {}
+        )
+        base_rules = base_rule_set.get_format_rules(self.file_format).associated_images
+        self.final_rules = base_rules | override_rules
         ifds = self.tiff_info["ifds"]
         for ifd in TiffImageRedactionPlan._iter_ifds(ifds):
             if not TiffImageRedactionPlan.is_tiled(ifd):
                 associated_image_key = self.get_associated_image_key_for_ifd(ifd)
-                self.redaction_steps[ifd["offset"]] = merged_rules[associated_image_key]
+                self.redaction_steps[ifd["offset"]] = self.final_rules[associated_image_key]
 
     def report_plan(self) -> None:
         print("Tiff Associated Image Redaction Plan\n")
         print(f"Found {len(self.redaction_steps)} associated images")
-        if (len(self.redaction_steps)):
+        if len(self.redaction_steps):
             default_rule = list(self.redaction_steps.values())[0]
             print(f"Redaction action: {default_rule.action}")
 
@@ -205,8 +210,8 @@ class TiffImageRedactionPlan(RedactionPlan):
         if rule.replace_with == "black_square":
             width = int(ifd["tags"][256]["data"][0])
             length = int(ifd["tags"][257]["data"][0])
-            output_path = self.temp_dir / str(uuid.uuid4())
-            image = Image.new('RGB', (width, length))
+            output_path = self.image_dir / str(uuid.uuid4())
+            image = Image.new("RGB", (width, length))
             image.save(output_path, "TIFF", compression="jpeg")
             return output_path
         raise Exception("Redaction option not currently supported")
@@ -217,7 +222,7 @@ class TiffImageRedactionPlan(RedactionPlan):
                 new_entry: TagEntry = {
                     "datatype": entry["datatype"],
                     "count": entry["count"],
-                    "data": entry["data"]
+                    "data": entry["data"],
                 }
                 new_ifd["tags"][tag_value] = new_entry
 
@@ -229,18 +234,17 @@ class TiffImageRedactionPlan(RedactionPlan):
         self.update_new_ifd(old_ifd, new_ifd)
         ifds[index] = new_ifd
 
-    def _execute_plan_inner(self, ifds: list[IFD], tag_set=tifftools.constants.Tag):
+    def _execute_plan_inner(self, ifds: list[IFD], temp_dir: Path, tag_set=tifftools.constants.Tag) -> list[IFD]:
         delete_ifd_indices = []
         for index, ifd in enumerate(ifds):
             for tag_id, entry in ifd["tags"].items():
                 tag = tifftools.constants.get_or_create_tag(
-                    tag_id,
-                    tagSet=tag_set,
-                    datatype=tifftools.Datatype[entry["datatype"]]
+                    tag_id, tagSet=tag_set, datatype=tifftools.Datatype[entry["datatype"]]
                 )
                 if tag.isIFD():
-                    for sub_ifds in entry.get("ifds", []):
-                        self._execute_plan_inner(sub_ifds, tag.get("tagset"))
+                    sub_ifds_list = entry.get("ifds", [])
+                    for idx, sub_ifds in enumerate(sub_ifds_list):
+                        sub_ifds_list[idx] = self._execute_plan_inner(sub_ifds, temp_dir, tag.get("tagset"))
             if ifd["offset"] in self.redaction_steps:
                 rule = self.redaction_steps[ifd["offset"]]
                 if rule.action == "delete":
@@ -250,7 +254,7 @@ class TiffImageRedactionPlan(RedactionPlan):
 
     def execute_plan(self) -> None:
         ifds = self.tiff_info["ifds"]
-        self._execute_plan_inner(ifds)
+        self._execute_plan_inner(ifds, self.image_dir)
 
     def is_comprehensive(self) -> bool:
         return True

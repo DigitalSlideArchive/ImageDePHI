@@ -148,3 +148,31 @@ class SvsMetadataRedactionPlan(TiffMetadataRedactionPlan):
 
 class SvsImageRedactionPlan(TiffImageRedactionPlan):
     file_format = FileFormat.SVS
+
+    def get_associated_image_key_for_ifd(self, ifd: IFD):
+        """Attempt to match an associated image with a rule. Fallback to default rule."""
+        image_description = str(ifd["tags"][270]["data"])
+        # we could do additional checks, like look for a macro based on dimensions
+        for key in self.final_rules:
+            if key in image_description:
+                return key
+        return "default"
+
+    def report_plan(self) -> None:
+        print("Aperio (.svs) Associated Image Redaction Plan\n")
+        match_counts = {}
+        for _, rule in self.redaction_steps.items():
+            if rule.key_name not in match_counts:
+                match_counts[rule.key_name] = 1
+            else:
+                match_counts[rule.key_name] = 2
+        for key in match_counts:
+            print(
+                f"{match_counts[key]} image(s) match rule: {key} - {self.final_rules[key].action}"
+            )
+
+    def report_missing_rules(self) -> None:
+        print(
+            "The redaction plan is comprehensive. Associated images will either be "
+            "redacted according to the default rule, or a more specific rule."
+        )
