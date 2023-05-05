@@ -345,7 +345,9 @@ svs:
     label:
       action: delete
     thumbnail:
-      action: delete
+      action: keep
+    default:
+      action: keep
   metadata:
     NewSubfileType:
       action: keep
