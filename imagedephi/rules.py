@@ -31,7 +31,7 @@ class ReplaceMetadataRule(ReplaceRule):
     new_value: str
 
 
-class ReplaceImageRule(_Rule):
+class ReplaceImageRule(ReplaceRule):
     replace_with: Literal["blank_image"]
 
 
