@@ -32,7 +32,7 @@ class ReplaceMetadataRule(ReplaceRule):
 
 
 class ReplaceImageRule(_Rule):
-    replace_with: Literal["black_square"]
+    replace_with: Literal["blank_image"]
 
 
 ConcreteMetadataRule = Annotated[

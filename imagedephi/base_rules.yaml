@@ -340,10 +340,10 @@ tiff:
 svs:
   associated_images:
     macro:
-      action: replace
-      replace_with: black_square
-    label:
       action: delete
+    label:
+      action: replace
+      replace_with: blank_image
     thumbnail:
       action: keep
     default:

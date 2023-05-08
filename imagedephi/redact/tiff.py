@@ -207,7 +207,7 @@ class TiffImageRedactionPlan(RedactionPlan):
 
     def create_new_image(self, ifd: IFD, rule: ReplaceImageRule) -> Path:
         image = None
-        if rule.replace_with == "black_square":
+        if rule.replace_with == "blank_image":
             width = int(ifd["tags"][256]["data"][0])
             length = int(ifd["tags"][257]["data"][0])
             output_path = self.image_dir / str(uuid.uuid4())
