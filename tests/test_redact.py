@@ -32,6 +32,15 @@ def test_redact_svs(svs_input_path, tmp_path, override_rule_set):
     assert b"ICC Profile" not in svs_output_file_bytes
 
 
+def test_redact_svs_image(data_dir, tmp_path):
+    redact.redact_images(data_dir / "input" / "svs" / "test_svs_image_blank.svs", tmp_path)
+
+    svs_output_file = tmp_path / "REDACTED_test_svs_image_blank.svs"
+    svs_output_file_bytes = svs_output_file.read_bytes()
+    # verify the base image rule was applied to the macro
+    assert b"macro" not in svs_output_file_bytes
+
+
 def test_plan_svs(capsys, svs_input_path, override_rule_set):
     redact.show_redaction_plan(svs_input_path, override_rule_set)
 
