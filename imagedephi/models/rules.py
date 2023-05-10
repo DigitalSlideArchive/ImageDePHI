@@ -1,9 +1,7 @@
 from enum import Enum
-import importlib.resources
 from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, Field, validator
-import yaml
 
 
 class FileFormat(Enum):
@@ -80,9 +78,3 @@ class Ruleset(BaseModel):
         if file_format == FileFormat.SVS:
             return self.svs
         raise Exception("File format not supported")
-
-
-base_rules_path = importlib.resources.files("imagedephi") / "base_rules.yaml"
-
-with base_rules_path.open() as stream:
-    rules_model = Ruleset.parse_obj(yaml.safe_load(stream))
