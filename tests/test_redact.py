@@ -4,7 +4,7 @@ import pytest
 import yaml
 
 from imagedephi import redact
-from imagedephi.models.rules import Ruleset
+from imagedephi.rules import Ruleset
 
 
 @pytest.fixture

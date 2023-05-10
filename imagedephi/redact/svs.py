@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 import tifftools
 import tifftools.constants
 
-from imagedephi.models.rules import ConcreteMetadataRule, FileFormat, Ruleset
+from imagedephi.rules import ConcreteMetadataRule, FileFormat, Ruleset
 
 from .tiff import TiffMetadataRedactionPlan
 

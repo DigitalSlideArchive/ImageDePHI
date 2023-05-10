@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Type
 import tifftools
 import tifftools.constants
 
-from imagedephi.models.rules import ConcreteMetadataRule, FileFormat, Ruleset
+from imagedephi.rules import ConcreteMetadataRule, FileFormat, Ruleset
 from imagedephi.utils.tiff import get_tiff_tag
 
 from .redaction_plan import FILE_EXTENSION_MAP, RedactionPlan
