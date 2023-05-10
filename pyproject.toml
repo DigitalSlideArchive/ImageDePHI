@@ -14,6 +14,7 @@ dependencies = [
     "hypercorn",
     "pyyaml",
     "Pillow",
+    "filetype",
 ]
 dynamic = ["version"]
 
