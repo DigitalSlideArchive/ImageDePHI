@@ -6,6 +6,7 @@ import importlib.resources
 from pathlib import Path
 
 import click
+import filetype
 import tifftools
 import tifftools.constants
 import yaml
