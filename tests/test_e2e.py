@@ -38,7 +38,6 @@ def test_e2e_run(cli_runner: CliRunner, data_dir: Path, rules_dir: Path, tmp_pat
     assert result.exit_code == 0
     time_stamp = datetime.datetime.now().isoformat(timespec="seconds")
     output_file = tmp_path / f"Redacted_{time_stamp}/REDACTED_test_image.tif"
-    assert output_file.exists()
     output_file_bytes = output_file.read_bytes()
     assert b"large_image_converter" not in output_file_bytes
     assert b"Redacted by ImageDePHI" in output_file_bytes
@@ -103,7 +102,6 @@ def test_e2e_gui(
     webbrowser_open_mock.assert_called_once()
     time_stamp = datetime.datetime.now().isoformat(timespec="seconds")
     output_file = tmp_path / f"Redacted_{time_stamp}/REDACTED_test_image.tif"
-    assert output_file.exists()
     output_file_bytes = output_file.read_bytes()
     assert b"large_image_converter" not in output_file_bytes
     assert f"127.0.0.1:{unused_tcp_port}" in webbrowser_open_mock.call_args.args[0]
