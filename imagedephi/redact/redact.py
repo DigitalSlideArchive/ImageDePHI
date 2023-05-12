@@ -3,7 +3,6 @@ from __future__ import annotations
 from collections.abc import Generator
 import importlib.resources
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 import click
 import tifftools
@@ -12,29 +11,12 @@ import yaml
 
 from imagedephi.rules import Ruleset
 
-from .redaction_plan import FILE_EXTENSION_MAP
+from .build_redaction_plan import FILE_EXTENSION_MAP, build_redaction_plan
 from .svs import MalformedAperioFileError
-from .tiff import TiffBasedMetadataRedactionPlan
-
-if TYPE_CHECKING:
-    from tifftools.tifftools import TiffInfo
 
 
 def _get_output_path(file_path: Path, output_dir: Path) -> Path:
     return output_dir / f"REDACTED_{file_path.name}"
-
-
-def _save_redacted_tiff(tiff_info: TiffInfo, output_path: Path, input_path: Path, overwrite: bool):
-    if output_path.exists():
-        if overwrite:
-            click.echo(f"Found existing redaction for {input_path.name}. Overwriting...")
-        else:
-            click.echo(
-                f"Could not redact {input_path.name}, existing redacted file in output directory. "
-                "Use the --overwrite-existing-output flag to overwrite previously redacted files."
-            )
-            return
-    tifftools.write_tiff(tiff_info, output_path, allowExisting=True)
 
 
 def get_base_rules():
@@ -69,9 +51,7 @@ def redact_images(
             click.echo(f"Image format for {image_file.name} not supported. Skipping...")
             continue
         try:
-            redaction_plan = TiffBasedMetadataRedactionPlan.build(
-                image_file, base_rules, override_rules
-            )
+            redaction_plan = build_redaction_plan(image_file, base_rules, override_rules)
         except tifftools.TifftoolsError:
             click.echo(f"Could not open {image_file.name} as a tiff. Skipping...")
             continue
@@ -87,7 +67,7 @@ def redact_images(
         else:
             redaction_plan.execute_plan()
             output_path = _get_output_path(image_file, output_dir)
-            _save_redacted_tiff(redaction_plan.get_image_data(), output_path, image_file, overwrite)
+            redaction_plan.save(output_path, overwrite)
 
 
 def show_redaction_plan(input_path: Path, override_rules: Ruleset | None = None) -> None:
@@ -98,9 +78,7 @@ def show_redaction_plan(input_path: Path, override_rules: Ruleset | None = None)
             click.echo(f"Image format for {image_path.name} not supported.", err=True)
             continue
         try:
-            metadata_redaction_plan = TiffBasedMetadataRedactionPlan.build(
-                image_path, base_rules, override_rules
-            )
+            metadata_redaction_plan = build_redaction_plan(image_path, base_rules, override_rules)
         except tifftools.TifftoolsError:
             click.echo(f"Could not open {image_path.name} as a tiff.", err=True)
             continue

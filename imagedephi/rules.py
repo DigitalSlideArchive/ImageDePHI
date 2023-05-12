@@ -51,8 +51,7 @@ class TiffRules(BaseModel):
         return metadata
 
 
-class SvsRules(BaseModel):
-    metadata: dict[str, ConcreteMetadataRule]
+class SvsRules(TiffRules):
     image_description: dict[str, ConcreteMetadataRule]
 
     # TODO: is pre necessary?
@@ -71,10 +70,3 @@ class Ruleset(BaseModel):
     description: str
     tiff: TiffRules
     svs: SvsRules
-
-    def get_format_rules(self, file_format: FileFormat) -> TiffRules | SvsRules:
-        if file_format == FileFormat.TIFF:
-            return self.tiff
-        if file_format == FileFormat.SVS:
-            return self.svs
-        raise Exception("File format not supported")

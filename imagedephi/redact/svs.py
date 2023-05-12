@@ -1,16 +1,17 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import tifftools
 import tifftools.constants
 
-from imagedephi.rules import ConcreteMetadataRule, FileFormat, Ruleset
+from imagedephi.rules import ConcreteMetadataRule, FileFormat, SvsRules
 
 from .tiff import TiffMetadataRedactionPlan
 
 if TYPE_CHECKING:
-    from tifftools.tifftools import IFD, TiffInfo
+    from tifftools.tifftools import IFD
 
 
 class SvsDescription:
@@ -55,11 +56,10 @@ class SvsMetadataRedactionPlan(TiffMetadataRedactionPlan):
 
     def __init__(
         self,
-        tiff_info: TiffInfo,
-        base_rule_set: Ruleset,
-        override_rule_set: Ruleset | None = None,
+        image_path: Path,
+        rules: SvsRules,
     ) -> None:
-        super().__init__(tiff_info, base_rule_set, override_rule_set)
+        super().__init__(image_path, rules)
 
         image_description_tag = tifftools.constants.Tag["ImageDescription"]
         if image_description_tag.value not in self.redaction_steps:
@@ -74,16 +74,9 @@ class SvsMetadataRedactionPlan(TiffMetadataRedactionPlan):
                 continue
 
             svs_description = SvsDescription(str(ifd["tags"][tag.value]["data"]))
-            override_svs_rules = (
-                override_rule_set.svs.image_description if override_rule_set else None
-            )
-            base_svs_rules = base_rule_set.svs.image_description
-            merged_svs_rules = (
-                base_svs_rules | override_svs_rules if override_svs_rules else base_svs_rules
-            )
 
             for key in svs_description.metadata.keys():
-                key_rule = merged_svs_rules.get(key, None)
+                key_rule = rules.image_description.get(key, None)
                 if key_rule and self.is_match(key_rule, key):
                     self.description_redaction_steps[key] = key_rule
                 else:

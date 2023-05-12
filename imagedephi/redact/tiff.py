@@ -2,49 +2,21 @@ from __future__ import annotations
 
 from collections.abc import Generator
 from pathlib import Path
-from typing import TYPE_CHECKING, Type
+from typing import TYPE_CHECKING
 
 import tifftools
 import tifftools.constants
 
-from imagedephi.rules import ConcreteMetadataRule, FileFormat, Ruleset
+from imagedephi.rules import ConcreteMetadataRule, FileFormat, TiffRules
 from imagedephi.utils.tiff import get_tiff_tag
 
-from .redaction_plan import FILE_EXTENSION_MAP, RedactionPlan
+from .redaction_plan import RedactionPlan
 
 if TYPE_CHECKING:
     from tifftools.tifftools import IFD, TiffInfo
 
 
-class TiffBasedMetadataRedactionPlan(RedactionPlan):
-    tiff_info: TiffInfo
-
-    def __init__(self, tiff_info: TiffInfo, base_rules: Ruleset, override_rule_set: Ruleset | None):
-        self.tiff_info = tiff_info
-
-    @classmethod
-    def get_all_subclasses(cls) -> Generator[Type[TiffBasedMetadataRedactionPlan], None, None]:
-        for subclass in cls.__subclasses__():
-            yield from subclass.get_all_subclasses()
-            yield subclass
-
-    @classmethod
-    def build(
-        cls, image_path: Path, base_rules: Ruleset, override_rules: Ruleset | None = None
-    ) -> TiffBasedMetadataRedactionPlan:
-        file_extension = FILE_EXTENSION_MAP[image_path.suffix]
-        for redaction_plan_class in cls.get_all_subclasses():
-            if file_extension == redaction_plan_class.file_format:
-                tiff_info = tifftools.read_tiff(str(image_path))
-                return redaction_plan_class(tiff_info, base_rules, override_rules)
-        else:
-            raise Exception(f"File format for {image_path} not supported.")
-
-    def get_image_data(self) -> TiffInfo:
-        return self.tiff_info
-
-
-class TiffMetadataRedactionPlan(TiffBasedMetadataRedactionPlan):
+class TiffMetadataRedactionPlan(RedactionPlan):
     """
     Represents a plan of action for redacting metadata from TIFF images.
 
@@ -53,6 +25,7 @@ class TiffMetadataRedactionPlan(TiffBasedMetadataRedactionPlan):
     """
 
     file_format = FileFormat.TIFF
+    image_path: Path
     tiff_info: TiffInfo
     redaction_steps: dict[int, ConcreteMetadataRule]
     no_match_tags: list[tifftools.TiffTag]
@@ -81,28 +54,20 @@ class TiffMetadataRedactionPlan(TiffBasedMetadataRedactionPlan):
 
     def __init__(
         self,
-        tiff_info: TiffInfo,
-        base_rule_set: Ruleset,
-        override_rule_set: Ruleset | None = None,
+        image_path: Path,
+        rules: TiffRules,
     ) -> None:
-        self.tiff_info = tiff_info
+        self.image_path = image_path
+        self.tiff_info = tifftools.read_tiff(str(image_path))
 
         self.redaction_steps = {}
         self.no_match_tags = []
         ifds = self.tiff_info["ifds"]
-        override_rules = (
-            override_rule_set.get_format_rules(self.file_format).metadata
-            if override_rule_set
-            else None
-        )
-        base_rules: dict[str, ConcreteMetadataRule] = base_rule_set.get_format_rules(
-            self.file_format
-        ).metadata
-        merged_rules = base_rules | override_rules if override_rules else base_rules
+
         for tag, _ in self._iter_tiff_tag_entries(ifds):
             tag_rule = None
             for name in [tag.name] + list(tag.get("altnames", set())):
-                tag_rule = merged_rules.get(name, None)
+                tag_rule = rules.metadata.get(name, None)
                 if tag_rule and self.is_match(tag_rule, tag):
                     self.redaction_steps[tag.value] = tag_rule
                     break
@@ -146,3 +111,16 @@ class TiffMetadataRedactionPlan(TiffBasedMetadataRedactionPlan):
             rule = self.redaction_steps.get(tag.value)
             if rule is not None:
                 self.apply(rule, ifd)
+
+    def save(self, output_path: Path, overwrite: bool) -> None:
+        if output_path.exists():
+            if overwrite:
+                print(f"Found existing redaction for {self.image_path.name}. Overwriting...")
+            else:
+                print(
+                    f"Could not redact {self.image_path.name}, existing redacted file in output "
+                    "directory. Use the --overwrite-existing-output flag to overwrite previously "
+                    "redacted files."
+                )
+                return
+        tifftools.write_tiff(self.tiff_info, output_path, allowExisting=True)
