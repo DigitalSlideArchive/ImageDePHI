@@ -53,7 +53,7 @@ def redact_images(
     base_rules = get_base_rules()
     images_to_redact = iter_image_files(input_path) if input_path.is_dir() else [input_path]
     time_stamp = datetime.datetime.now().isoformat(timespec="seconds")
-    redact_dir = Path(f"{output_dir}/Redacted_{time_stamp}")
+    redact_dir = output_dir / f"Redacted_{time_stamp}"
     try:
         redact_dir.mkdir(parents=True)
     except PermissionError:
