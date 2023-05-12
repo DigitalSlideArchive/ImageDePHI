@@ -1,6 +1,6 @@
 from pathlib import Path, PurePath
-import re
 
+from freezegun import freeze_time
 import pytest
 import yaml
 
@@ -23,15 +23,14 @@ def svs_input_path(data_dir, request) -> Path:
     return data_dir / "input" / request.param
 
 
+@freeze_time("2023-05-12T12:12:53")
 def test_redact_svs(svs_input_path, tmp_path, override_rule_set):
     redact.redact_images(svs_input_path, tmp_path, override_rule_set)
 
-    for x in tmp_path.iterdir():
-        if re.match(r"Redacted\_\d{4}\-\d{2}\-\d{2}[T]\d{2}\:\d{2}\:\d{2}", x.name):
-            for y in x.iterdir():
-                svs_output_file_bytes = y.read_bytes()
-                # verify our custom svs rule was applied
-                assert b"ICC Profile" not in svs_output_file_bytes
+    output_file = tmp_path / "Redacted_2023-05-12T12:12:53/REDACTED_test_svs_image_blank.svs"
+    svs_output_file_bytes = output_file.read_bytes()
+    # verify our custom svs rule was applied
+    assert b"ICC Profile" not in svs_output_file_bytes
 
 
 def test_plan_svs(capsys, svs_input_path, override_rule_set):
