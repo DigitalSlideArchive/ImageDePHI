@@ -52,7 +52,7 @@ def redact_images(
 ) -> None:
     base_rules = get_base_rules()
     images_to_redact = iter_image_files(input_path) if input_path.is_dir() else [input_path]
-    time_stamp = datetime.datetime.now().isoformat(timespec="seconds")
+    time_stamp = datetime.datetime.now().isoformat(timespec="seconds").replace(":", "")
     redact_dir = output_dir / f"Redacted_{time_stamp}"
     try:
         redact_dir.mkdir(parents=True)
