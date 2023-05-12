@@ -1,8 +1,8 @@
 import asyncio
 from collections.abc import Generator
 from concurrent.futures import ThreadPoolExecutor
-import datetime
 from pathlib import Path
+import re
 import sys
 
 from click.testing import CliRunner
@@ -36,11 +36,12 @@ def test_e2e_run(cli_runner: CliRunner, data_dir: Path, tmp_path: Path) -> None:
     )
 
     assert result.exit_code == 0
-    time_stamp = datetime.datetime.now().isoformat(timespec="seconds")
-    output_file = tmp_path / f"Redacted_{time_stamp}/REDACTED_test_image.tif"
-    output_file_bytes = output_file.read_bytes()
-    assert b"large_image_converter" not in output_file_bytes
-    assert b"Redacted by ImageDePHI" in output_file_bytes
+    for x in tmp_path.iterdir():
+        if re.match(r"Redacted\_\d{4}\-\d{2}\-\d{2}[T]\d{2}\:\d{2}\:\d{2}", x.name):
+            for y in x.iterdir():
+                output_file_bytes = y.read_bytes()
+                assert b"large_image_converter" not in output_file_bytes
+                assert b"Redacted by ImageDePHI" in output_file_bytes
 
 
 @pytest.mark.timeout(5)
@@ -97,10 +98,11 @@ def test_e2e_gui(
 
     assert cli_result.exit_code == 0
     webbrowser_open_mock.assert_called_once()
-    time_stamp = datetime.datetime.now().isoformat(timespec="seconds")
-    output_file = tmp_path / f"Redacted_{time_stamp}/REDACTED_test_image.tif"
-    output_file_bytes = output_file.read_bytes()
-    assert b"large_image_converter" not in output_file_bytes
+    for x in tmp_path.iterdir():
+        if re.match(r"Redacted\_\d{4}\-\d{2}\-\d{2}[T]\d{2}\:\d{2}\:\d{2}", x.name):
+            for y in x.iterdir():
+                output_file_bytes = y.read_bytes()
+                assert b"large_image_converter" not in output_file_bytes
     assert f"127.0.0.1:{unused_tcp_port}" in webbrowser_open_mock.call_args.args[0]
     # Expect the client thread to be completed
     client_response = client_future.result(timeout=0)

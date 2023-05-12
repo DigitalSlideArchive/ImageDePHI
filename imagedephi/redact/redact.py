@@ -4,7 +4,6 @@ from collections.abc import Generator
 import datetime
 import importlib.resources
 from pathlib import Path
-import re
 from typing import TYPE_CHECKING
 
 import click
@@ -57,10 +56,6 @@ def redact_images(
     images_to_redact = iter_image_files(input_path) if input_path.is_dir() else [input_path]
     time_stamp = datetime.datetime.now().isoformat(timespec="seconds")
     redact_dir = Path(f"{output_dir}/Redacted_{time_stamp}")
-    x = re.match(r"Redacted\_\d{4}\-\d{2}\-\d{2}[T]\d{2}\:\d{2}\:\d{2}", redact_dir.name)
-    test = re.compile(r"Redacted\_\d{4}\-\d{2}\-\d{2}[T]\d{2}\:\d{2}\:\d{2}")
-    print(test)
-    print(x)
     try:
         redact_dir.mkdir(parents=True)
     except PermissionError:
