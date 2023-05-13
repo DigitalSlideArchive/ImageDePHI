@@ -8,6 +8,8 @@ jobs:
   test:
     runs-on: ${{ matrix.os }}
     strategy:
+      # Seeing whether a failure is exclusive to one platform is useful
+      fail-fast: false
       matrix:
         os:
           # Use an older Linux: https://pyinstaller.org/en/stable/usage.html#making-gnu-linux-apps-forward-compatible
