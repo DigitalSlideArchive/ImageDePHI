@@ -4,7 +4,6 @@ from collections.abc import Generator
 import datetime
 import importlib.resources
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 import click
 import tifftools
@@ -20,10 +19,6 @@ from .tiff import UnsupportedFileTypeError
 
 def _get_output_path(file_path: Path, output_dir: Path) -> Path:
     return output_dir / f"REDACTED_{file_path.name}"
-
-
-def _save_redacted_tiff(tiff_info: TiffInfo, output_path: Path, input_path: Path, overwrite: bool):
-    tifftools.write_tiff(tiff_info, output_path, allowExisting=True)
 
 
 def get_base_rules():
@@ -89,7 +84,7 @@ def redact_images(
         else:
             redaction_plan.execute_plan()
             output_path = _get_output_path(image_file, create_redact_dir(output_dir))
-            _save_redacted_tiff(redaction_plan.get_image_data(), output_path)
+            redaction_plan.save(output_path, overwrite)
 
 
 def show_redaction_plan(input_path: Path, override_rules: Ruleset | None = None) -> None:
