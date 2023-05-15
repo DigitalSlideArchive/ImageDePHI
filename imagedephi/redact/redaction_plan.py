@@ -1,12 +1,7 @@
 import abc
+from pathlib import Path
 
 from imagedephi.rules import FileFormat
-
-FILE_EXTENSION_MAP: dict[str, FileFormat] = {
-    ".tif": FileFormat.TIFF,
-    ".tiff": FileFormat.TIFF,
-    ".svs": FileFormat.SVS,
-}
 
 
 class RedactionPlan:
@@ -27,4 +22,8 @@ class RedactionPlan:
 
     @abc.abstractmethod
     def report_missing_rules(self) -> None:
+        ...
+
+    @abc.abstractmethod
+    def save(self, output_path: Path, overwrite: bool) -> None:
         ...

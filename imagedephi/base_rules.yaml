@@ -1,687 +1,791 @@
----
 name: Base rules
-description: These are the default rules for each potential piece of redactable material (metadata, image) to be used as a fallback if there are no user-defined rules for a piece of redactable material.
-rules:
-  # For images that strictly adhere to the tiff standards
-  tiff:
-    - tag_name: NewSubfileType
-      method: keep
-      type: metadata
-    - tag_name: ImageWidth
-      method: keep
-      type: metadata
-    - tag_name: ImageLength
-      method: keep
-      type: metadata
-    - tag_name: BitsPerSample
-      method: keep
-      type: metadata
-    - tag_name: Compression
-      method: keep
-      type: metadata
-    - tag_name: Photometric
-      method: keep
-      type: metadata
-    - tag_name: ImageDescription
-      method: delete
-      type: metadata
-    - tag_name: Orientation
-      method: keep
-      type: metadata
-    - tag_name: SamplesPerPixel
-      method: keep
-      type: metadata
-    - tag_name: XResolution
-      method: keep
-      type: metadata
-    - tag_name: YResolution
-      method: keep
-      type: metadata
-    - tag_name: PlanarConfig
-      method: keep
-      type: metadata
-    - tag_name: ResolutionUnit
-      method: keep
-      type: metadata
-    - tag_name: TileWidth
-      method: keep
-      type: metadata
-    - tag_name: TileHeight
-      method: keep
-      type: metadata
-    - tag_name: TileOffsets
-      method: keep
-      type: metadata
-    - tag_name: TileByteCounts
-      method: keep
-      type: metadata
-    - tag_name: SampleFormat
-      method: keep
-      type: metadata
-    - tag_name: JPEGTables
-      method: keep
-      type: metadata
-    - tag_name: YCbCrSubsampling
-      method: keep
-      type: metadata
-    - tag_name: ImageDepth
-      method: keep
-      type: metadata
-    - tag_name: ICCProfile
-      method: keep
-      type: metadata
-    - tag_name: StripOffsets
-      method: keep
-      type: metadata
-    - tag_name: RowsPerStrip
-      method: keep
-      type: metadata
-    - tag_name: StripByteCounts
-      method: keep
-      type: metadata
-    - tag_name: Predictor
-      method: keep
-      type: metadata
-    - tag_name: Software
-      method: delete
-      type: metadata
-    - tag_name: ReferenceBlackWhite
-      method: keep
-      type: metadata
-    - tag_name: GPSVersionID
-      method: delete
-      type: metadata
-    - tag_name: '11'
-      method: delete
-      type: metadata
-    - tag_name: GPSMapDatum
-      method: delete
-      type: metadata
-    - tag_name: GPSLatitudeRef
-      method: delete
-      type: metadata
-    - tag_name: OldSubfileType
-      method: keep
-      type: metadata
-    - tag_name: Threshholding
-      method: delete
-      type: metadata
-    - tag_name: FillOrder
-      method: keep
-      type: metadata
-    - tag_name: DocumentName
-      method: delete
-      type: metadata
-    - tag_name: Make
-      method: delete
-      type: metadata
-    - tag_name: Model
-      method: delete
-      type: metadata
-    - tag_name: MinSampleValue
-      method: delete
-      type: metadata
-    - tag_name: MaxSampleValue
-      method: delete
-      type: metadata
-    - tag_name: PageName
-      method: delete
-      type: metadata
-    - tag_name: Xposition
-      method: keep
-      type: metadata
-    - tag_name: Yposition
-      method: keep
-      type: metadata
-    - tag_name: T4Options
-      method: keep
-      type: metadata
-    - tag_name: T6Options
-      method: keep
-      type: metadata
-    - tag_name: PageNumber
-      method: keep
-      type: metadata
-    - tag_name: GPSDateStamp
-      method: delete
-      type: metadata
-    - tag_name: GPSLatitude
-      method: delete
-      type: metadata
-    - tag_name: DateTime
-      method: delete
-      type: metadata
-    - tag_name: Artist
-      method: delete
-      type: metadata
-    - tag_name: HostComputer
-      method: delete
-      type: metadata
-    - tag_name: ColorMap
-      method: keep
-      type: metadata
-    - tag_name: HalftoneHints
-      method: keep
-      type: metadata
-    - tag_name: BadFaxLines
-      method: keep
-      type: metadata
-    - tag_name: CleanFaxData
-      method: keep
-      type: metadata
-    - tag_name: ConsecutiveBadFaxLines
-      method: keep
-      type: metadata
-    - tag_name: Matteing
-      method: delete
-      type: metadata
-    - tag_name: Datatype
-      method: delete
-      type: metadata
-    - tag_name: TileDepth
-      method: keep
-      type: metadata
-    - tag_name: InkSet
-      method: delete
-      type: metadata
-    - tag_name: InkNames
-      method: delete
-      type: metadata
-    - tag_name: Copyright
-      method: delete
-      type: metadata
-    - tag_name: ExposureTime
-      method: keep
-      type: metadata
-    - tag_name: FNumber
-      method: keep
-      type: metadata
-    - tag_name: NumberOfInks
-      method: delete
-      type: metadata
-    - tag_name: ModelPixelScaleTag
-      method: delete
-      type: metadata
-    - tag_name: '33628'
-      method: delete
-      type: metadata
-    - tag_name: RichTiffIPTC
-      method: delete
-      type: metadata
-    - tag_name: ExtraSamples
-      method: delete
-      type: metadata
-    - tag_name: ModelTiepointTag
-      method: delete
-      type: metadata
-    - tag_name: SMinSampleValue
-      method: delete
-      type: metadata
-    - tag_name: '34118'
-      method: delete
-      type: metadata
-    - tag_name: '34119'
-      method: delete
-      type: metadata
-    - tag_name: SMaxSampleValue
-      method: delete
-      type: metadata
-    - tag_name: Photoshop
-      method: delete
-      type: metadata
-    - tag_name: GeoKeyDirectoryTag
-      method: delete
-      type: metadata
-    - tag_name: GeoDoubleParamsTag
-      method: delete
-      type: metadata
-    - tag_name: GeoAsciiParamsTag
-      method: delete
-      type: metadata
-    - tag_name: ExposureProgram
-      method: delete
-      type: metadata
-    - tag_name: ISOSpeedRatings
-      method: keep
-      type: metadata
-    - tag_name: '34864'
-      method: delete
-      type: metadata
-    - tag_name: ExifVersion
-      method: delete
-      type: metadata
-    - tag_name: DateTimeOriginal
-      method: delete
-      type: metadata
-    - tag_name: CreateDate
-      method: delete
-      type: metadata
-    - tag_name: ShutterSpeedValue
-      method: keep
-      type: metadata
-    - tag_name: ApertureValue
-      method: keep
-      type: metadata
-    - tag_name: BrightnessValue
-      method: keep
-      type: metadata
-    - tag_name: ExposureBiasValue
-      method: keep
-      type: metadata
-    - tag_name: MaxApertureValue
-      method: keep
-      type: metadata
-    - tag_name: MeteringMode
-      method: keep
-      type: metadata
-    - tag_name: LightSource
-      method: keep
-      type: metadata
-    - tag_name: Flash
-      method: keep
-      type: metadata
-    - tag_name: FocalLength
-      method: keep
-      type: metadata
-    - tag_name: StoNits
-      method: delete
-      type: metadata
-    - tag_name: MakerNote
-      method: delete
-      type: metadata
-    - tag_name: UserComment
-      method: delete
-      type: metadata
-    - tag_name: SubSecTime
-      method: delete
-      type: metadata
-    - tag_name: SubSecTimeOriginal
-      method: delete
-      type: metadata
-    - tag_name: SubSecTimeDigitized
-      method: delete
-      type: metadata
-    - tag_name: ImageSourceData
-      method: delete
-      type: metadata
-    - tag_name: GPSLongitudeRef
-      method: delete
-      type: metadata
-    - tag_name: FlashpixVersion
-      method: delete
-      type: metadata
-    - tag_name: '40961'
-      method: delete
-      type: metadata
-    - tag_name: ColorSpace
-      method: keep
-      type: metadata
-    - tag_name: PixelXDimension
-      method: keep
-      type: metadata
-    - tag_name: PixelYDimension
-      method: keep
-      type: metadata
-    - tag_name: FocalPlaneXResolution
-      method: keep
-      type: metadata
-    - tag_name: FocalPlaneYResolution
-      method: keep
-      type: metadata
-    - tag_name: FocalPlaneResolutionUnit
-      method: keep
-      type: metadata
-    - tag_name: SensingMethod
-      method: keep
-      type: metadata
-    - tag_name: FileSource
-      method: delete
-      type: metadata
-    - tag_name: SceneType
-      method: keep
-      type: metadata
-    - tag_name: CFAPattern
-      method: keep
-      type: metadata
-    - tag_name: CustomRendered
-      method: keep
-      type: metadata
-    - tag_name: ExposureMode
-      method: keep
-      type: metadata
-    - tag_name: WhiteBalance
-      method: keep
-      type: metadata
-    - tag_name: FocalLengthIn35mmFilm
-      method: keep
-      type: metadata
-    - tag_name: SceneCaptureType
-      method: keep
-      type: metadata
-    - tag_name: GainControl
-      method: keep
-      type: metadata
-    - tag_name: Contrast
-      method: keep
-      type: metadata
-    - tag_name: Saturation
-      method: keep
-      type: metadata
-    - tag_name: Sharpness
-      method: keep
-      type: metadata
-    - tag_name: SubjectDistanceRange
-      method: keep
-      type: metadata
-    - tag_name: GDAL_Metadata
-      method: delete
-      type: metadata
-    - tag_name: GDAL_NoData
-      method: delete
-      type: metadata
-    - tag_name: GPSLongitude
-      method: delete
-      type: metadata
-    - tag_name: '50838'
-      method: delete
-      type: metadata
-    - tag_name: '50839'
-      method: delete
-      type: metadata
-    - tag_name: '51123'
-      method: delete
-      type: metadata
-    - tag_name: '51168'
-      method: delete
-      type: metadata
-    - tag_name: JPEGProc
-      method: keep
-      type: metadata
-    - tag_name: JPEGIFOffset
-      method: keep
-      type: metadata
-    - tag_name: JPEGIFByteCount
-      method: keep
-      type: metadata
-    - tag_name: JPEGRestartInterval
-      method: keep
-      type: metadata
-    - tag_name: JPEGQTables
-      method: keep
-      type: metadata
-    - tag_name: JPEGDCTables
-      method: keep
-      type: metadata
-    - tag_name: JPEGACTables
-      method: keep
-      type: metadata
-    - tag_name: YCbCrCoefficients
-      method: keep
-      type: metadata
-    - tag_name: YCbCrPositioning
-      method: keep
-      type: metadata
-    - tag_name: '55000'
-      method: delete
-      type: metadata
-    - tag_name: '55001'
-      method: delete
-      type: metadata
-    - tag_name: '55002'
-      method: delete
-      type: metadata
-    - tag_name: '55003'
-      method: delete
-      type: metadata
-    - tag_name: '55004'
-      method: delete
-      type: metadata
-    - tag_name: '59932'
-      method: delete
-      type: metadata
-    - tag_name: Padding
-      method: delete
-      type: metadata
-    - tag_name: OffsetSchema
-      method: delete
-      type: metadata
-    - tag_name: GPSAltitudeRef
-      method: delete
-      type: metadata
-    - tag_name: '60010'
-      method: delete
-      type: metadata
-    - tag_name: '60011'
-      method: delete
-      type: metadata
-    - tag_name: '60020'
-      method: delete
-      type: metadata
-    - tag_name: '65200'
-      method: delete
-      type: metadata
-    - tag_name: '65326'
-      method: delete
-      type: metadata
-    - tag_name: '65327'
-      method: delete
-      type: metadata
-    - tag_name: '65328'
-      method: delete
-      type: metadata
-    - tag_name: '65329'
-      method: delete
-      type: metadata
-    - tag_name: '65330'
-      method: delete
-      type: metadata
-    - tag_name: '65331'
-      method: delete
-      type: metadata
-    - tag_name: '65332'
-      method: delete
-      type: metadata
-    - tag_name: '65333'
-      method: delete
-      type: metadata
-    - tag_name: '65400'
-      method: delete
-      type: metadata
-    - tag_name: GPSAltitude
-      method: delete
-      type: metadata
-    - tag_name: XMLPacket
-      method: delete
-      type: metadata
-    - tag_name: GPSTimeStamp
-      method: delete
-      type: metadata
-    - tag_name: GPSSatellites
-      method: delete
-      type: metadata
-  svs:
-    # rules that apply to Aperio-specific format choices, like the use
-    # of the ImageDescription tag to store additional metadata
-    - key_name: AppMag
-      method: keep
-      type: metadata
-    - key_name: MPP
-      method: keep
-      type: metadata
-    - key_name: mpp
-      method: keep
-      type: metadata
-    - key_name: StripeWidth
-      method: keep
-      type: metadata
-    - key_name: ScanScope ID
-      method: delete
-      type: metadata
-    - key_name: Filename
-      method: delete
-      type: metadata
-    - key_name: Date
-      method: delete
-      type: metadata
-    - key_name: Time
-      method: delete
-      type: metadata
-    - key_name: Time Zone
-      method: delete
-      type: metadata
-    - key_name: User
-      method: delete
-      type: metadata
-    - key_name: Left
-      method: keep
-      type: metadata
-    - key_name: Top
-      method: keep
-      type: metadata
-    - key_name: LineCameraSkew
-      method: keep
-      type: metadata
-    - key_name: LineAreaXOffset
-      method: keep
-      type: metadata
-    - key_name: LineAreaYOffset
-      method: keep
-      type: metadata
-    - key_name: Focus Offset
-      method: keep
-      type: metadata
-    - key_name: DSR ID
-      method: delete
-      type: metadata
-    - key_name: ImageID
-      method: delete
-      type: metadata
-    - key_name: Exposure Time
-      method: keep
-      type: metadata
-    - key_name: Exposure Scale
-      method: keep
-      type: metadata
-    - key_name: DisplayColor
-      method: keep
-      type: metadata
-    - key_name: SessonMode
-      method: delete
-      type: metadata
-    - key_name: OriginalWidth
-      method: keep
-      type: metadata
-    - key_name: OriginalHeight
-      method: keep
-      type: metadata
-    - key_name: ICC Profile
-      method: keep
-      type: metadata
-    - key_name: Title
-      method: delete
-      type: metadata
-    - key_name: Originalheight
-      method: keep
-      type: metadata
-    - key_name: Filtered
-      method: delete
-      type: metadata
-    - key_name: Parmset
-      method: delete
-      type: metadata
-    - key_name: BigTIFF
-      method: delete
-      type: metadata
-    - key_name: Converter
-      method: delete
-      type: metadata
-    - key_name: ConverterEpoch
-      method: delete
-      type: metadata
-    - key_name: ConverterVersion
-      method: delete
-      type: metadata
-    - key_name: CompressedFile
-      method: delete
-      type: metadata
-    - key_name: Gamma
-      method: keep
-      type: metadata
-    - key_name: Rack
-      method: delete
-      type: metadata
-    - key_name: Slide
-      method: delete
-      type: metadata
-    - key_name: BestFocusLayer
-      method: keep
-      type: metadata
-    - key_name: Accession
-      method: delete
-      type: metadata
-    - key_name: Copyright
-      method: delete
-      type: metadata
-    - key_name: CustomField.Behavior_Code
-      method: delete
-      type: metadata
-    - key_name: CustomField.Date_of_Birth_mmddyyyy
-      method: delete
-      type: metadata
-    - key_name: CustomField.First_Name
-      method: delete
-      type: metadata
-    - key_name: CustomField.Histology_Code
-      method: delete
-      type: metadata
-    - key_name: CustomField.ImageID
-      method: delete
-      type: metadata
-    - key_name: CustomField.InputFileName
-      method: delete
-      type: metadata
-    - key_name: CustomField.LabelText
-      method: delete
-      type: metadata
-    - key_name: CustomField.Last_Name
-      method: delete
-      type: metadata
-    - key_name: CustomField.PatientID
-      method: delete
-      type: metadata
-    - key_name: CustomField.Proc_Seq
-      method: delete
-      type: metadata
-    - key_name: CustomField.Proc_Type
-      method: delete
-      type: metadata
-    - key_name: CustomField.Registry
-      method: delete
-      type: metadata
-    - key_name: CustomField.SampleID
-      method: delete
-      type: metadata
-    - key_name: CustomField.Slide_ID
-      method: delete
-      type: metadata
-    - key_name: CustomField.Spec_Site
-      method: delete
-      type: metadata
-    - key_name: CustomField.SurgPathNum
-      method: delete
-      type: metadata
-    - key_name: CustomField.TokenID
-      method: delete
-      type: metadata
-    - key_name: CustomField.Tumor_Rec_Number
-      method: delete
-      type: metadata
-    - key_name: Patient
-      method: delete
-      type: metadata
-    - key_name: Scanner ID
-      method: delete
-      type: metadata
-    - key_name: Webslide Files
-      method: delete
-      type: metadata
+description: These are the default rules for each potential piece of redactable material
+  (metadata, image) to be used as a fallback if there are no user defined rules for
+  a piece of redactable material.
+tiff:
+  metadata:
+    NewSubfileType:
+      action: keep
+    ImageWidth:
+      action: keep
+    ImageLength:
+      action: keep
+    BitsPerSample:
+      action: keep
+    Compression:
+      action: keep
+    Photometric:
+      action: keep
+    ImageDescription:
+      action: delete
+    Orientation:
+      action: keep
+    SamplesPerPixel:
+      action: keep
+    XResolution:
+      action: keep
+    YResolution:
+      action: keep
+    PlanarConfig:
+      action: keep
+    ResolutionUnit:
+      action: keep
+    TileWidth:
+      action: keep
+    TileHeight:
+      action: keep
+    TileOffsets:
+      action: keep
+    TileByteCounts:
+      action: keep
+    SampleFormat:
+      action: keep
+    JPEGTables:
+      action: keep
+    YCbCrSubsampling:
+      action: keep
+    ImageDepth:
+      action: keep
+    ICCProfile:
+      action: keep
+    StripOffsets:
+      action: keep
+    RowsPerStrip:
+      action: keep
+    StripByteCounts:
+      action: keep
+    Predictor:
+      action: keep
+    Software:
+      action: delete
+    ReferenceBlackWhite:
+      action: keep
+    GPSVersionID:
+      action: delete
+    '11':
+      action: delete
+    GPSMapDatum:
+      action: delete
+    GPSLatitudeRef:
+      action: delete
+    OldSubfileType:
+      action: keep
+    Threshholding:
+      action: delete
+    FillOrder:
+      action: keep
+    DocumentName:
+      action: delete
+    Make:
+      action: delete
+    Model:
+      action: delete
+    MinSampleValue:
+      action: delete
+    MaxSampleValue:
+      action: delete
+    PageName:
+      action: delete
+    Xposition:
+      action: keep
+    Yposition:
+      action: keep
+    T4Options:
+      action: keep
+    T6Options:
+      action: keep
+    PageNumber:
+      action: keep
+    GPSDateStamp:
+      action: delete
+    GPSLatitude:
+      action: delete
+    DateTime:
+      action: delete
+    Artist:
+      action: delete
+    HostComputer:
+      action: delete
+    ColorMap:
+      action: keep
+    HalftoneHints:
+      action: keep
+    BadFaxLines:
+      action: keep
+    CleanFaxData:
+      action: keep
+    ConsecutiveBadFaxLines:
+      action: keep
+    Matteing:
+      action: delete
+    Datatype:
+      action: delete
+    TileDepth:
+      action: keep
+    InkSet:
+      action: delete
+    InkNames:
+      action: delete
+    Copyright:
+      action: delete
+    ExposureTime:
+      action: keep
+    FNumber:
+      action: keep
+    NumberOfInks:
+      action: delete
+    ModelPixelScaleTag:
+      action: delete
+    '33628':
+      action: delete
+    RichTiffIPTC:
+      action: delete
+    ExtraSamples:
+      action: delete
+    ModelTiepointTag:
+      action: delete
+    SMinSampleValue:
+      action: delete
+    '34118':
+      action: delete
+    '34119':
+      action: delete
+    SMaxSampleValue:
+      action: delete
+    Photoshop:
+      action: delete
+    GeoKeyDirectoryTag:
+      action: delete
+    GeoDoubleParamsTag:
+      action: delete
+    GeoAsciiParamsTag:
+      action: delete
+    ExposureProgram:
+      action: delete
+    ISOSpeedRatings:
+      action: keep
+    '34864':
+      action: delete
+    ExifVersion:
+      action: delete
+    DateTimeOriginal:
+      action: delete
+    CreateDate:
+      action: delete
+    ShutterSpeedValue:
+      action: keep
+    ApertureValue:
+      action: keep
+    BrightnessValue:
+      action: keep
+    ExposureBiasValue:
+      action: keep
+    MaxApertureValue:
+      action: keep
+    MeteringMode:
+      action: keep
+    LightSource:
+      action: keep
+    Flash:
+      action: keep
+    FocalLength:
+      action: keep
+    StoNits:
+      action: delete
+    MakerNote:
+      action: delete
+    UserComment:
+      action: delete
+    SubSecTime:
+      action: delete
+    SubSecTimeOriginal:
+      action: delete
+    SubSecTimeDigitized:
+      action: delete
+    ImageSourceData:
+      action: delete
+    GPSLongitudeRef:
+      action: delete
+    FlashpixVersion:
+      action: delete
+    '40961':
+      action: delete
+    ColorSpace:
+      action: keep
+    PixelXDimension:
+      action: keep
+    PixelYDimension:
+      action: keep
+    FocalPlaneXResolution:
+      action: keep
+    FocalPlaneYResolution:
+      action: keep
+    FocalPlaneResolutionUnit:
+      action: keep
+    SensingMethod:
+      action: keep
+    FileSource:
+      action: delete
+    SceneType:
+      action: keep
+    CFAPattern:
+      action: keep
+    CustomRendered:
+      action: keep
+    ExposureMode:
+      action: keep
+    WhiteBalance:
+      action: keep
+    FocalLengthIn35mmFilm:
+      action: keep
+    SceneCaptureType:
+      action: keep
+    GainControl:
+      action: keep
+    Contrast:
+      action: keep
+    Saturation:
+      action: keep
+    Sharpness:
+      action: keep
+    SubjectDistanceRange:
+      action: keep
+    GDAL_Metadata:
+      action: delete
+    GDAL_NoData:
+      action: delete
+    GPSLongitude:
+      action: delete
+    '50838':
+      action: delete
+    '50839':
+      action: delete
+    '51123':
+      action: delete
+    '51168':
+      action: delete
+    JPEGProc:
+      action: keep
+    JPEGIFOffset:
+      action: keep
+    JPEGIFByteCount:
+      action: keep
+    JPEGRestartInterval:
+      action: keep
+    JPEGQTables:
+      action: keep
+    JPEGDCTables:
+      action: keep
+    JPEGACTables:
+      action: keep
+    YCbCrCoefficients:
+      action: keep
+    YCbCrPositioning:
+      action: keep
+    '55000':
+      action: delete
+    '55001':
+      action: delete
+    '55002':
+      action: delete
+    '55003':
+      action: delete
+    '55004':
+      action: delete
+    '59932':
+      action: delete
+    Padding:
+      action: delete
+    OffsetSchema:
+      action: delete
+    GPSAltitudeRef:
+      action: delete
+    '60010':
+      action: delete
+    '60011':
+      action: delete
+    '60020':
+      action: delete
+    '65200':
+      action: delete
+    '65326':
+      action: delete
+    '65327':
+      action: delete
+    '65328':
+      action: delete
+    '65329':
+      action: delete
+    '65330':
+      action: delete
+    '65331':
+      action: delete
+    '65332':
+      action: delete
+    '65333':
+      action: delete
+    '65400':
+      action: delete
+    GPSAltitude:
+      action: delete
+    XMLPacket:
+      action: delete
+    GPSTimeStamp:
+      action: delete
+    GPSSatellites:
+      action: delete
+svs:
+  metadata:
+    NewSubfileType:
+      action: keep
+    ImageWidth:
+      action: keep
+    ImageLength:
+      action: keep
+    BitsPerSample:
+      action: keep
+    Compression:
+      action: keep
+    Photometric:
+      action: keep
+    ImageDescription:
+      action: delete
+    Orientation:
+      action: keep
+    SamplesPerPixel:
+      action: keep
+    XResolution:
+      action: keep
+    YResolution:
+      action: keep
+    PlanarConfig:
+      action: keep
+    ResolutionUnit:
+      action: keep
+    TileWidth:
+      action: keep
+    TileHeight:
+      action: keep
+    TileOffsets:
+      action: keep
+    TileByteCounts:
+      action: keep
+    SampleFormat:
+      action: keep
+    JPEGTables:
+      action: keep
+    YCbCrSubsampling:
+      action: keep
+    ImageDepth:
+      action: keep
+    ICCProfile:
+      action: keep
+    StripOffsets:
+      action: keep
+    RowsPerStrip:
+      action: keep
+    StripByteCounts:
+      action: keep
+    Predictor:
+      action: keep
+    Software:
+      action: delete
+    ReferenceBlackWhite:
+      action: keep
+    GPSVersionID:
+      action: delete
+    '11':
+      action: delete
+    GPSMapDatum:
+      action: delete
+    GPSLatitudeRef:
+      action: delete
+    OldSubfileType:
+      action: keep
+    Threshholding:
+      action: delete
+    FillOrder:
+      action: keep
+    DocumentName:
+      action: delete
+    Make:
+      action: delete
+    Model:
+      action: delete
+    MinSampleValue:
+      action: delete
+    MaxSampleValue:
+      action: delete
+    PageName:
+      action: delete
+    Xposition:
+      action: keep
+    Yposition:
+      action: keep
+    T4Options:
+      action: keep
+    T6Options:
+      action: keep
+    PageNumber:
+      action: keep
+    GPSDateStamp:
+      action: delete
+    GPSLatitude:
+      action: delete
+    DateTime:
+      action: delete
+    Artist:
+      action: delete
+    HostComputer:
+      action: delete
+    ColorMap:
+      action: keep
+    HalftoneHints:
+      action: keep
+    BadFaxLines:
+      action: keep
+    CleanFaxData:
+      action: keep
+    ConsecutiveBadFaxLines:
+      action: keep
+    Matteing:
+      action: delete
+    Datatype:
+      action: delete
+    TileDepth:
+      action: keep
+    InkSet:
+      action: delete
+    InkNames:
+      action: delete
+    Copyright:
+      action: delete
+    ExposureTime:
+      action: keep
+    FNumber:
+      action: keep
+    NumberOfInks:
+      action: delete
+    ModelPixelScaleTag:
+      action: delete
+    '33628':
+      action: delete
+    RichTiffIPTC:
+      action: delete
+    ExtraSamples:
+      action: delete
+    ModelTiepointTag:
+      action: delete
+    SMinSampleValue:
+      action: delete
+    '34118':
+      action: delete
+    '34119':
+      action: delete
+    SMaxSampleValue:
+      action: delete
+    Photoshop:
+      action: delete
+    GeoKeyDirectoryTag:
+      action: delete
+    GeoDoubleParamsTag:
+      action: delete
+    GeoAsciiParamsTag:
+      action: delete
+    ExposureProgram:
+      action: delete
+    ISOSpeedRatings:
+      action: keep
+    '34864':
+      action: delete
+    ExifVersion:
+      action: delete
+    DateTimeOriginal:
+      action: delete
+    CreateDate:
+      action: delete
+    ShutterSpeedValue:
+      action: keep
+    ApertureValue:
+      action: keep
+    BrightnessValue:
+      action: keep
+    ExposureBiasValue:
+      action: keep
+    MaxApertureValue:
+      action: keep
+    MeteringMode:
+      action: keep
+    LightSource:
+      action: keep
+    Flash:
+      action: keep
+    FocalLength:
+      action: keep
+    StoNits:
+      action: delete
+    MakerNote:
+      action: delete
+    UserComment:
+      action: delete
+    SubSecTime:
+      action: delete
+    SubSecTimeOriginal:
+      action: delete
+    SubSecTimeDigitized:
+      action: delete
+    ImageSourceData:
+      action: delete
+    GPSLongitudeRef:
+      action: delete
+    FlashpixVersion:
+      action: delete
+    '40961':
+      action: delete
+    ColorSpace:
+      action: keep
+    PixelXDimension:
+      action: keep
+    PixelYDimension:
+      action: keep
+    FocalPlaneXResolution:
+      action: keep
+    FocalPlaneYResolution:
+      action: keep
+    FocalPlaneResolutionUnit:
+      action: keep
+    SensingMethod:
+      action: keep
+    FileSource:
+      action: delete
+    SceneType:
+      action: keep
+    CFAPattern:
+      action: keep
+    CustomRendered:
+      action: keep
+    ExposureMode:
+      action: keep
+    WhiteBalance:
+      action: keep
+    FocalLengthIn35mmFilm:
+      action: keep
+    SceneCaptureType:
+      action: keep
+    GainControl:
+      action: keep
+    Contrast:
+      action: keep
+    Saturation:
+      action: keep
+    Sharpness:
+      action: keep
+    SubjectDistanceRange:
+      action: keep
+    GDAL_Metadata:
+      action: delete
+    GDAL_NoData:
+      action: delete
+    GPSLongitude:
+      action: delete
+    '50838':
+      action: delete
+    '50839':
+      action: delete
+    '51123':
+      action: delete
+    '51168':
+      action: delete
+    JPEGProc:
+      action: keep
+    JPEGIFOffset:
+      action: keep
+    JPEGIFByteCount:
+      action: keep
+    JPEGRestartInterval:
+      action: keep
+    JPEGQTables:
+      action: keep
+    JPEGDCTables:
+      action: keep
+    JPEGACTables:
+      action: keep
+    YCbCrCoefficients:
+      action: keep
+    YCbCrPositioning:
+      action: keep
+    '55000':
+      action: delete
+    '55001':
+      action: delete
+    '55002':
+      action: delete
+    '55003':
+      action: delete
+    '55004':
+      action: delete
+    '59932':
+      action: delete
+    Padding:
+      action: delete
+    OffsetSchema:
+      action: delete
+    GPSAltitudeRef:
+      action: delete
+    '60010':
+      action: delete
+    '60011':
+      action: delete
+    '60020':
+      action: delete
+    '65200':
+      action: delete
+    '65326':
+      action: delete
+    '65327':
+      action: delete
+    '65328':
+      action: delete
+    '65329':
+      action: delete
+    '65330':
+      action: delete
+    '65331':
+      action: delete
+    '65332':
+      action: delete
+    '65333':
+      action: delete
+    '65400':
+      action: delete
+    GPSAltitude:
+      action: delete
+    XMLPacket:
+      action: delete
+    GPSTimeStamp:
+      action: delete
+    GPSSatellites:
+      action: delete
+  image_description:
+    AppMag:
+      action: keep
+    MPP:
+      action: keep
+    mpp:
+      action: keep
+    StripeWidth:
+      action: keep
+    ScanScope ID:
+      action: delete
+    Filename:
+      action: delete
+    Date:
+      action: delete
+    Time:
+      action: delete
+    Time Zone:
+      action: delete
+    User:
+      action: delete
+    Left:
+      action: keep
+    Top:
+      action: keep
+    LineCameraSkew:
+      action: keep
+    LineAreaXOffset:
+      action: keep
+    LineAreaYOffset:
+      action: keep
+    Focus Offset:
+      action: keep
+    DSR ID:
+      action: delete
+    ImageID:
+      action: delete
+    Exposure Time:
+      action: keep
+    Exposure Scale:
+      action: keep
+    DisplayColor:
+      action: keep
+    SessonMode:
+      action: delete
+    OriginalWidth:
+      action: keep
+    OriginalHeight:
+      action: keep
+    ICC Profile:
+      action: keep
+    Title:
+      action: delete
+    Originalheight:
+      action: keep
+    Filtered:
+      action: delete
+    Parmset:
+      action: delete
+    BigTIFF:
+      action: delete
+    Converter:
+      action: delete
+    ConverterEpoch:
+      action: delete
+    ConverterVersion:
+      action: delete
+    CompressedFile:
+      action: delete
+    Gamma:
+      action: keep
+    Rack:
+      action: delete
+    Slide:
+      action: delete
+    BestFocusLayer:
+      action: keep
+    Accession:
+      action: delete
+    Copyright:
+      action: delete
+    CustomField.Behavior_Code:
+      action: delete
+    CustomField.Date_of_Birth_mmddyyyy:
+      action: delete
+    CustomField.First_Name:
+      action: delete
+    CustomField.Histology_Code:
+      action: delete
+    CustomField.ImageID:
+      action: delete
+    CustomField.InputFileName:
+      action: delete
+    CustomField.LabelText:
+      action: delete
+    CustomField.Last_Name:
+      action: delete
+    CustomField.PatientID:
+      action: delete
+    CustomField.Proc_Seq:
+      action: delete
+    CustomField.Proc_Type:
+      action: delete
+    CustomField.Registry:
+      action: delete
+    CustomField.SampleID:
+      action: delete
+    CustomField.Slide_ID:
+      action: delete
+    CustomField.Spec_Site:
+      action: delete
+    CustomField.SurgPathNum:
+      action: delete
+    CustomField.TokenID:
+      action: delete
+    CustomField.Tumor_Rec_Number:
+      action: delete
+    Patient:
+      action: delete
+    Scanner ID:
+      action: delete
+    Webslide Files:
+      action: delete

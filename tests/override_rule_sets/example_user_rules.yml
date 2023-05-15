@@ -1,0 +1,14 @@
+---
+name: Example user rules
+description: A set of reasonable rules used for testing
+tiff:
+  metadata:
+    ImageDescription:
+      action: replace
+      new_value: Redacted by ImageDePHI
+
+svs:
+  metadata: {}
+  image_description:
+    ICC Profile:
+      action: delete

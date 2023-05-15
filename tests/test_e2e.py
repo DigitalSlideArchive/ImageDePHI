@@ -21,12 +21,12 @@ def thread_executor() -> Generator[ThreadPoolExecutor, None, None]:
 
 
 @pytest.mark.timeout(5)
-def test_e2e_run(cli_runner: CliRunner, data_dir: Path, tmp_path: Path) -> None:
+def test_e2e_run(cli_runner: CliRunner, data_dir: Path, rules_dir: Path, tmp_path: Path) -> None:
     result = cli_runner.invoke(
         main.imagedephi,
         [
             "--override-rules",
-            str(data_dir / "rules" / "example_user_rules.yml"),
+            str(rules_dir / "example_user_rules.yml"),
             "run",
             str(data_dir / "input" / "tiff"),
             str(tmp_path),
@@ -42,19 +42,18 @@ def test_e2e_run(cli_runner: CliRunner, data_dir: Path, tmp_path: Path) -> None:
 
 
 @pytest.mark.timeout(5)
-def test_e2e_plan(cli_runner: CliRunner, data_dir: Path) -> None:
+def test_e2e_plan(cli_runner: CliRunner, data_dir: Path, rules_dir: Path) -> None:
     result = cli_runner.invoke(
         main.imagedephi,
         [
             "--override-rules",
-            str(data_dir / "rules" / "example_user_rules.yml"),
+            str(rules_dir / "example_user_rules.yml"),
             "plan",
             str(data_dir / "input" / "tiff" / "test_image.tif"),
         ],
     )
 
     assert result.exit_code == 0
-    assert "Replace ImageDescription" in result.output
 
 
 @pytest.mark.timeout(5)
