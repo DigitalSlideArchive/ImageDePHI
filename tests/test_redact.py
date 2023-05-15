@@ -24,6 +24,12 @@ def svs_input_path(data_dir, request) -> Path:
 
 
 @freeze_time("2023-05-12 12:12:53")
+def test_create_redact_dir(tmp_path):
+    output_dir = redact.create_redact_dir(tmp_path)
+    assert output_dir.exists()
+
+
+@freeze_time("2023-05-12 12:12:53")
 def test_redact_svs(svs_input_path, tmp_path, override_rule_set):
     redact.redact_images(svs_input_path, tmp_path, override_rule_set)
 
