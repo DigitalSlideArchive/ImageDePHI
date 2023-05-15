@@ -8,7 +8,7 @@ import tifftools.constants
 
 from imagedephi.rules import ConcreteMetadataRule, FileFormat, SvsRules
 
-from .tiff import TiffImageRedactionPlan, TiffMetadataRedactionPlan
+from .tiff import TiffRedactionPlan
 
 if TYPE_CHECKING:
     from tifftools.tifftools import IFD
@@ -41,7 +41,7 @@ class MalformedAperioFileError(Exception):
     ...
 
 
-class SvsMetadataRedactionPlan(TiffMetadataRedactionPlan):
+class SvsRedactionPlan(TiffRedactionPlan):
     """
     Represents a plan of action for redacting files in Aperio (.svs) format.
 
@@ -53,18 +53,22 @@ class SvsMetadataRedactionPlan(TiffMetadataRedactionPlan):
     file_format = FileFormat.SVS
     description_redaction_steps: dict[str, ConcreteMetadataRule]
     no_match_description_keys: set[str]
+    rules: SvsRules
 
     def __init__(
         self,
         image_path: Path,
         rules: SvsRules,
     ) -> None:
+        self.rules = rules
+        self.image_redaction_steps = {}
+        self.description_redaction_steps = {}
         super().__init__(image_path, rules)
 
         image_description_tag = tifftools.constants.Tag["ImageDescription"]
-        if image_description_tag.value not in self.redaction_steps:
+        if image_description_tag.value not in self.metadata_redaction_steps:
             raise MalformedAperioFileError()
-        del self.redaction_steps[image_description_tag.value]
+        del self.metadata_redaction_steps[image_description_tag.value]
 
         self.description_redaction_steps = {}
         self.no_match_description_keys = set()
@@ -81,6 +85,15 @@ class SvsMetadataRedactionPlan(TiffMetadataRedactionPlan):
                     self.description_redaction_steps[key] = key_rule
                 else:
                     self.no_match_description_keys.add(key)
+
+    def get_associated_image_key_for_ifd(self, ifd: IFD):
+        """Attempt to match an associated image with a rule. Fallback to default rule."""
+        image_description = str(ifd["tags"][270]["data"])
+        # we could do additional checks, like look for a macro based on dimensions
+        for key in self.rules.associated_images:
+            if key in image_description:
+                return key
+        return "default"
 
     def is_match(self, rule: ConcreteMetadataRule, data: tifftools.TiffTag | str) -> bool:
         if rule.action in ["keep", "delete", "replace"]:
@@ -117,11 +130,23 @@ class SvsMetadataRedactionPlan(TiffMetadataRedactionPlan):
 
     def report_plan(self) -> None:
         print("Aperio (.svs) Metadata Redaction Plan\n")
-        for tag_value, rule in self.redaction_steps.items():
+        for tag_value, rule in self.metadata_redaction_steps.items():
             print(f"Tiff Tag {tag_value} - {rule.key_name}: {rule.action}")
         for key_name, rule in self.description_redaction_steps.items():
             print(f"SVS Image Description - {key_name}: {rule.action}")
         self.report_missing_rules()
+        print("Aperio (.svs) Associated Image Redaction Plan\n")
+        match_counts = {}
+        for _, image_rule in self.image_redaction_steps.items():
+            if image_rule.key_name not in match_counts:
+                match_counts[image_rule.key_name] = 1
+            else:
+                match_counts[image_rule.key_name] = match_counts[image_rule.key_name] + 1
+        for key in match_counts:
+            print(
+                f"{match_counts[key]} image(s) match rule:"
+                f" {key} - {self.rules.associated_images[key].action}"
+            )
 
     def _redact_svs_image_description(self, ifd: IFD) -> None:
         image_description_tag = tifftools.constants.Tag["ImageDescription"]
@@ -135,44 +160,14 @@ class SvsMetadataRedactionPlan(TiffMetadataRedactionPlan):
                 self.apply(rule, image_description)
         ifd["tags"][image_description_tag.value]["data"] = str(image_description)
 
-    def execute_plan(self) -> None:
+    def execute_plan(self, temp_dir: Path) -> None:
         ifds = self.tiff_info["ifds"]
+        new_ifds = self._redact_associated_images(ifds, temp_dir)
         image_description_tag = tifftools.constants.Tag["ImageDescription"]
-        for tag, ifd in self._iter_tiff_tag_entries(ifds):
-            rule = self.redaction_steps.get(tag.value)
+        for tag, ifd in self._iter_tiff_tag_entries(new_ifds):
+            rule = self.metadata_redaction_steps.get(tag.value)
             if rule is not None:
                 self.apply(rule, ifd)
             elif tag.value == image_description_tag.value:
                 self._redact_svs_image_description(ifd)
-
-
-class SvsImageRedactionPlan(TiffImageRedactionPlan):
-    file_format = FileFormat.SVS
-
-    def get_associated_image_key_for_ifd(self, ifd: IFD):
-        """Attempt to match an associated image with a rule. Fallback to default rule."""
-        image_description = str(ifd["tags"][270]["data"])
-        # we could do additional checks, like look for a macro based on dimensions
-        for key in self.final_rules:
-            if key in image_description:
-                return key
-        return "default"
-
-    def report_plan(self) -> None:
-        print("Aperio (.svs) Associated Image Redaction Plan\n")
-        match_counts = {}
-        for _, rule in self.redaction_steps.items():
-            if rule.key_name not in match_counts:
-                match_counts[rule.key_name] = 1
-            else:
-                match_counts[rule.key_name] = 2
-        for key in match_counts:
-            print(
-                f"{match_counts[key]} image(s) match rule: {key} - {self.final_rules[key].action}"
-            )
-
-    def report_missing_rules(self) -> None:
-        print(
-            "The redaction plan is comprehensive. Associated images will either be "
-            "redacted according to the default rule, or a more specific rule."
-        )
+        self.tiff_info["ifds"] = new_ifds

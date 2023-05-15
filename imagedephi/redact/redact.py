@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Generator
 import importlib.resources
 from pathlib import Path
+import tempfile
 
 import click
 import tifftools
@@ -65,9 +66,10 @@ def redact_images(
             click.echo(f"Redaction could not be performed for {image_file.name}.")
             redaction_plan.report_missing_rules()
         else:
-            redaction_plan.execute_plan()
-            output_path = _get_output_path(image_file, output_dir)
-            redaction_plan.save(output_path, overwrite)
+            with tempfile.TemporaryDirectory(prefix="imagedephi") as temp_dir:
+                redaction_plan.execute_plan(Path(temp_dir))
+                output_path = _get_output_path(image_file, output_dir)
+                redaction_plan.save(output_path, overwrite)
 
 
 def show_redaction_plan(input_path: Path, override_rules: Ruleset | None = None) -> None:
@@ -77,9 +79,8 @@ def show_redaction_plan(input_path: Path, override_rules: Ruleset | None = None)
         if image_path.suffix not in FILE_EXTENSION_MAP:
             click.echo(f"Image format for {image_path.name} not supported.", err=True)
             continue
-        file_format = FILE_EXTENSION_MAP[image_path.suffix]
         try:
-            metadata_redaction_plan = build_redaction_plan(image_path, base_rules, override_rules)
+            redaction_plan = build_redaction_plan(image_path, base_rules, override_rules)
         except tifftools.TifftoolsError:
             click.echo(f"Could not open {image_path.name} as a tiff.", err=True)
             continue
@@ -89,4 +90,4 @@ def show_redaction_plan(input_path: Path, override_rules: Ruleset | None = None)
             )
             continue
         print(f"\nRedaction plan for {image_path.name}")
-        metadata_redaction_plan.report_plan()
+        redaction_plan.report_plan()
