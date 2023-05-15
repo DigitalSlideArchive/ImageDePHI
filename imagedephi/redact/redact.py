@@ -44,6 +44,18 @@ def iter_image_files(directory: Path) -> Generator[Path, None, None]:
             yield child
 
 
+def create_redact_dir(base_output_dir: Path) -> Path:
+    time_stamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    redact_dir = base_output_dir / f"Redacted_{time_stamp}"
+    try:
+        redact_dir.mkdir(parents=True)
+    except PermissionError:
+        "Cannnot create an output directory, permission error."
+    click.echo(f"Created redaction folder: {redact_dir}")
+
+    return redact_dir
+
+
 def redact_images(
     input_path: Path,
     output_dir: Path,
@@ -52,13 +64,7 @@ def redact_images(
 ) -> None:
     base_rules = get_base_rules()
     images_to_redact = iter_image_files(input_path) if input_path.is_dir() else [input_path]
-    time_stamp = datetime.datetime.now().isoformat(timespec="seconds").replace(":", "")
-    redact_dir = output_dir / f"Redacted_{time_stamp}"
-    try:
-        redact_dir.mkdir(parents=True)
-    except PermissionError:
-        "Cannnot create an output directory, permission error."
-    click.echo(f"Created redaction folder: {redact_dir}")
+
     for image_file in images_to_redact:
         if image_file.suffix not in FILE_EXTENSION_MAP:
             click.echo(f"Image format for {image_file.name} not supported. Skipping...")
@@ -82,8 +88,8 @@ def redact_images(
             redaction_plan.report_missing_rules()
         else:
             redaction_plan.execute_plan()
-            output_path = _get_output_path(image_file, redact_dir)
-            _save_redacted_tiff(redaction_plan.get_image_data(), output_path, image_file, overwrite)
+            output_path = _get_output_path(image_file, create_redact_dir(output_dir))
+            _save_redacted_tiff(redaction_plan.get_image_data(), output_path)
 
 
 def show_redaction_plan(input_path: Path, override_rules: Ruleset | None = None) -> None:
