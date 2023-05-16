@@ -209,7 +209,7 @@ class TiffRedactionPlan(RedactionPlan):
                     delete_ifd_indices.append(index)
                 elif rule.action == "replace":
                     self.replace_associated_image(ifds, index, rule, temp_dir)
-        return [ifd for ids, ifd in enumerate(ifds) if ids not in delete_ifd_indices]
+        return [ifd for idx, ifd in enumerate(ifds) if idx not in delete_ifd_indices]
 
     def execute_plan(self, working_dir: Path) -> None:
         """Modify the image data according to the redaction rules."""
