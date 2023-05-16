@@ -4,6 +4,7 @@ import asyncio
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 import importlib.resources
+import os
 from pathlib import Path
 
 from fastapi import BackgroundTasks, FastAPI, Form, HTTPException, Request
@@ -34,7 +35,14 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         raise app.state.last_exception  # pyright: ignore [reportGeneralTypeIssues]
 
 
-app = FastAPI(lifespan=lifespan)
+debug_mode = bool(os.environ.get("DEBUG"))
+app = FastAPI(
+    lifespan=lifespan,
+    # End users don't need access to the OpenAPI spec
+    openapi_url="/openapi.json" if debug_mode else None,
+    # FastAPI's debug flag will render exception tracebacks
+    debug=debug_mode,
+)
 templates = Jinja2Templates(
     # Jinja2Templates requires a "directory" argument, but it is effectively unused
     # if a custom loader is passed
@@ -62,6 +70,8 @@ class DirectoryData:
         self.child_images = list(iter_image_files(directory))
 
 
+# This exception handler not be used when FastAPI debug flag is enabled,
+# due to how ServerErrorMiddleware works.
 @app.exception_handler(500)
 def on_internal_error(request: Request, exc: Exception) -> PlainTextResponse:
     """Return an error response and schedule the server for immediate shutdown."""
