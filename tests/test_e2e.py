@@ -92,6 +92,10 @@ def test_e2e_gui(
     client_future = thread_executor.submit(client_select_directory, unused_tcp_port)
 
     cli_result = cli_runner.invoke(main.imagedephi, ["gui", "--port", str(unused_tcp_port)])
+    # If an HTTP request is successfully sent, either the normal response from this endpoint or a
+    # 500 error should cause the CLI to halt. However, if halting fails, then this test is
+    # particularly succeptable to exceeding the timeout, which on Windows will crash pytest (due
+    # to the behavior of pytest-timeout).
 
     assert cli_result.exit_code == 0
     webbrowser_open_mock.assert_called_once()
