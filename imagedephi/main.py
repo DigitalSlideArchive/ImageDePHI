@@ -98,7 +98,8 @@ async def gui(port: int) -> None:
     """Launch a web-based GUI."""
     host = "127.0.0.1"
 
-    server_config = Config()
+    # Disable Hypercorn sending logs directly to stdout / stderr
+    server_config = Config.from_mapping(accesslog=None, errorlog=None)
     server_config.bind = [f"{host}:{port}"]
 
     async def announce_ready() -> None:
