@@ -5,9 +5,10 @@ import importlib.resources
 from pathlib import Path
 
 from fastapi import BackgroundTasks, FastAPI, Form, HTTPException, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse
 from fastapi.templating import Jinja2Templates
 from jinja2 import FunctionLoader
+from starlette.background import BackgroundTask
 
 from imagedephi.redact import iter_image_files, redact_images
 
@@ -43,6 +44,17 @@ class DirectoryData:
         self.child_directories = [child for child in directory.iterdir() if child.is_dir()]
 
         self.child_images = list(iter_image_files(directory))
+
+
+@app.exception_handler(500)
+def on_internal_error(request: Request, exc: Exception) -> PlainTextResponse:
+    """Return an error response and schedule the server for immediate shutdown."""
+    # Unlike the default error response, this also shuts down the server.
+    # A desktop application doesn't need to continue running through internal errors, and
+    # continuing to run makes it harder for users and the test environment to detect fatal errors.
+    return PlainTextResponse(
+        "Internal Server Error", status_code=500, background=BackgroundTask(shutdown_event.set)
+    )
 
 
 @app.on_event("startup")
