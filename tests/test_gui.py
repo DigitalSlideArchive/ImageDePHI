@@ -11,14 +11,14 @@ def client() -> TestClient:
     return TestClient(app)
 
 
-def test_gui_home(client: TestClient) -> None:
+def test_gui_select_directory(client: TestClient) -> None:
     response = client.get("/")
 
     assert response.status_code == 200
     assert "Select Directory" in response.text
 
 
-def test_gui_navigate_success(
+def test_gui_select_directory_success(
     client: TestClient,
     tmp_path: Path,
 ) -> None:
@@ -30,7 +30,7 @@ def test_gui_navigate_success(
     assert response.status_code == 200
 
 
-def test_gui_navigate_input_not_found(
+def test_gui_select_directory_input_not_found(
     client: TestClient,
     tmp_path: Path,
 ) -> None:
@@ -42,7 +42,7 @@ def test_gui_navigate_input_not_found(
     assert response.json() == {"detail": "Input directory not a directory"}
 
 
-def test_gui_navigate_output_not_found(
+def test_gui_select_directory_output_not_found(
     client: TestClient,
     tmp_path: Path,
 ) -> None:
