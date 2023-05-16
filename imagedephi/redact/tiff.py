@@ -13,7 +13,7 @@ from imagedephi.rules import (
     ConcreteImageRule,
     ConcreteMetadataRule,
     FileFormat,
-    ReplaceImageRule,
+    ImageReplaceRule,
     TiffRules,
 )
 from imagedephi.utils.tiff import get_tiff_tag
@@ -157,7 +157,7 @@ class TiffRedactionPlan(RedactionPlan):
             default_rule = list(self.image_redaction_steps.values())[0]
             print(f"Redaction action: {default_rule.action}")
 
-    def create_new_image(self, ifd: IFD, rule: ReplaceImageRule, temp_dir: Path) -> Path:
+    def create_new_image(self, ifd: IFD, rule: ImageReplaceRule, temp_dir: Path) -> Path:
         image = None
         if rule.replace_with == "blank_image":
             width = int(ifd["tags"][256]["data"][0])
@@ -179,7 +179,7 @@ class TiffRedactionPlan(RedactionPlan):
                 new_ifd["tags"][tag_value] = new_entry
 
     def replace_associated_image(
-        self, ifds: list[IFD], index: int, rule: ReplaceImageRule, temp_dir: Path
+        self, ifds: list[IFD], index: int, rule: ImageReplaceRule, temp_dir: Path
     ):
         old_ifd = ifds[index]
         new_image_path = self.create_new_image(old_ifd, rule, temp_dir)

@@ -27,20 +27,20 @@ class ReplaceRule(_Rule):
     action: Literal["replace"]
 
 
-class ReplaceMetadataRule(ReplaceRule):
+class MetadataReplaceRule(ReplaceRule):
     new_value: str
 
 
-class ReplaceImageRule(ReplaceRule):
+class ImageReplaceRule(ReplaceRule):
     replace_with: Literal["blank_image"]
 
 
 ConcreteMetadataRule = Annotated[
-    ReplaceMetadataRule | KeepRule | DeleteRule, Field(discriminator="action")
+    MetadataReplaceRule | KeepRule | DeleteRule, Field(discriminator="action")
 ]
 
 ConcreteImageRule = Annotated[
-    ReplaceImageRule | KeepRule | DeleteRule, Field(discriminator="action")
+    ImageReplaceRule | KeepRule | DeleteRule, Field(discriminator="action")
 ]
 
 
