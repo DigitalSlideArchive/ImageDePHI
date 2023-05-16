@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import asyncio
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
 import importlib.resources
 from pathlib import Path
 
@@ -18,7 +20,15 @@ def _load_template(template_name: str) -> str | None:
     return template_file.read_text() if template_file.is_file() else None
 
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    # Reset server state on startup, to support unit testing
+    shutdown_event.clear()
+
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
 templates = Jinja2Templates(
     # Jinja2Templates requires a "directory" argument, but it is effectively unused
     # if a custom loader is passed
@@ -55,12 +65,6 @@ def on_internal_error(request: Request, exc: Exception) -> PlainTextResponse:
     return PlainTextResponse(
         "Internal Server Error", status_code=500, background=BackgroundTask(shutdown_event.set)
     )
-
-
-@app.on_event("startup")
-def reset_shutdown_event() -> None:
-    # Important for unit testing, to reset the server state
-    shutdown_event.clear()
 
 
 @app.get("/", response_class=HTMLResponse)
