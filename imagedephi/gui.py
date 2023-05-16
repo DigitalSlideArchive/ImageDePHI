@@ -7,7 +7,7 @@ import importlib.resources
 from pathlib import Path
 
 from fastapi import BackgroundTasks, FastAPI, Form, HTTPException, Request
-from fastapi.responses import HTMLResponse, PlainTextResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from jinja2 import FunctionLoader
 from starlette.background import BackgroundTask
@@ -74,11 +74,25 @@ def on_internal_error(request: Request, exc: Exception) -> PlainTextResponse:
     )
 
 
-@app.get("/", response_class=HTMLResponse)
+@app.get("/", response_class=RedirectResponse)
+def home(request: Request) -> str:
+    # On Windows, there may be multiple roots, so pick the one that's an ancestor of the CWD
+    # On Linux, this should typically resolve to "/"
+    root_directory = Path.cwd().root
+
+    # TODO: FastAPI has a bug where a URL object can't be directly returned here
+    return str(
+        request.url_for("select_directory").include_query_params(
+            input_directory=str(root_directory), output_directory=str(root_directory)
+        )
+    )
+
+
+@app.get("/select-directory", response_class=HTMLResponse)
 def select_directory(
     request: Request,
-    input_directory: Path = Path("/"),  # noqa: B008
-    output_directory: Path = Path("/"),  # noqa: B008
+    input_directory: Path,
+    output_directory: Path,
 ):
     # TODO: if input_directory is specified but an empty string, it gets instantiated as the CWD
     if not input_directory.is_dir():

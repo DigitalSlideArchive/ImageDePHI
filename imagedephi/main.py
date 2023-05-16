@@ -8,6 +8,7 @@ from typing import TextIO
 import webbrowser
 
 import click
+from fastapi.datastructures import URL
 from hypercorn import Config
 from hypercorn.asyncio import serve
 import yaml
@@ -106,9 +107,11 @@ async def gui(port: int) -> None:
         # To avoid race conditions, ensure that the webserver is
         # actually running before launching the browser
         await wait_for_port(port)
-        url = f"http://{host}:{port}/"
-        click.echo(f"Server is running at {url} .")
-        webbrowser.open(url)
+        home_url = app.url_path_for("home").make_absolute_url(
+            URL(scheme="http", netloc=f"{host}:{port}")
+        )
+        click.echo(f"Server is running at {home_url} .")
+        webbrowser.open(str(home_url))
 
     async with asyncio.TaskGroup() as task_group:
         task_group.create_task(announce_ready())
