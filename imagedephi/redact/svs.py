@@ -70,7 +70,6 @@ class SvsRedactionPlan(TiffRedactionPlan):
             raise MalformedAperioFileError()
         del self.metadata_redaction_steps[image_description_tag.value]
 
-        self.description_redaction_steps = {}
         self.no_match_description_keys = set()
         ifds = self.tiff_info["ifds"]
         for tag, ifd in self._iter_tiff_tag_entries(ifds):
