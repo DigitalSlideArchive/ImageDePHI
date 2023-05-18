@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 import importlib.resources
 from pathlib import Path
 
-from fastapi import BackgroundTasks, FastAPI, Form, HTTPException, Request
+from fastapi import BackgroundTasks, FastAPI, Form, HTTPException, Request, Response
 from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from jinja2 import FunctionLoader
@@ -93,7 +93,7 @@ def select_directory(
     request: Request,
     input_directory: Path,
     output_directory: Path,
-):
+) -> Response:
     # TODO: if input_directory is specified but an empty string, it gets instantiated as the CWD
     if not input_directory.is_dir():
         raise HTTPException(status_code=404, detail="Input directory not a directory")
@@ -110,12 +110,12 @@ def select_directory(
     )
 
 
-@app.post("/redact/")
+@app.post("/redact", response_class=HTMLResponse)
 def redact(
     background_tasks: BackgroundTasks,
     input_directory: Path = Form(),  # noqa: B008
     output_directory: Path = Form(),  # noqa: B008
-):
+) -> str:
     if not input_directory.is_dir():
         raise HTTPException(status_code=404, detail="Input directory not found")
     if not output_directory.is_dir():
@@ -125,9 +125,7 @@ def redact(
 
     # Shutdown after the response is sent, as this is the terminal endpoint
     background_tasks.add_task(shutdown_event.set)
-    return {
-        "message": (
-            f"You chose this input directory: {input_directory} "
-            f"and this output directory: {output_directory}"
-        )
-    }
+    return (
+        f"You chose this input directory: {input_directory} "
+        f"and this output directory: {output_directory}"
+    )
