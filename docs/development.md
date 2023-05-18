@@ -20,9 +20,9 @@ imagedephi
 
 ### Developing the Web GUI
 While developing the web GUI, it may be useful to launch web server
-that auto-reloads code changes:
+that auto-reloads code changes and shows in-browser exception tracebacks:
 ```bash
-hypercorn --reload imagedephi.gui:app
+DEBUG=1 hypercorn --reload imagedephi.gui:app
 ```
 
 ## Auto-format Code Changes:
