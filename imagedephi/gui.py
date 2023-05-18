@@ -24,8 +24,14 @@ def _load_template(template_name: str) -> str | None:
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # Reset server state on startup, to support unit testing
     shutdown_event.clear()
+    app.state.last_exception = None
 
     yield
+
+    if app.state.last_exception is not None:
+        # This will cause a "lifespan.shutdown.failed" event to be sent. Hypercorn will re-raise
+        # this from "serve", allowing exceptions to propagate to the top level.
+        raise app.state.last_exception  # pyright: ignore [reportGeneralTypeIssues]
 
 
 app = FastAPI(lifespan=lifespan)
@@ -62,6 +68,7 @@ def on_internal_error(request: Request, exc: Exception) -> PlainTextResponse:
     # Unlike the default error response, this also shuts down the server.
     # A desktop application doesn't need to continue running through internal errors, and
     # continuing to run makes it harder for users and the test environment to detect fatal errors.
+    app.state.last_exception = exc
     return PlainTextResponse(
         "Internal Server Error", status_code=500, background=BackgroundTask(shutdown_event.set)
     )
