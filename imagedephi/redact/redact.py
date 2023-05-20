@@ -40,13 +40,14 @@ def iter_image_files(directory: Path) -> Generator[Path, None, None]:
 
 
 def create_redact_dir(base_output_dir: Path) -> Path:
+    """Given a directory return a timestamped directory created in the base directory."""
     time_stamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     redact_dir = base_output_dir / f"Redacted_{time_stamp}"
     try:
         redact_dir.mkdir(parents=True)
+        click.echo(f"Created redaction folder: {redact_dir}")
     except PermissionError:
-        "Cannnot create an output directory, permission error."
-    click.echo(f"Created redaction folder: {redact_dir}")
+        click.echo("Cannnot create an output directory, permission error.")
 
     return redact_dir
 
@@ -83,8 +84,13 @@ def redact_images(
             redaction_plan.report_missing_rules()
         else:
             redaction_plan.execute_plan()
-            output_path = _get_output_path(image_file, create_redact_dir(output_dir))
-            redaction_plan.save(output_path, overwrite)
+            try:
+                output_path = _get_output_path(image_file, create_redact_dir(output_dir))
+                redaction_plan.save(output_path, overwrite)
+            except FileNotFoundError:
+                click.echo(
+                    "Could not redact images, invalid output directory. Choose a writable directory"
+                )
 
 
 def show_redaction_plan(input_path: Path, override_rules: Ruleset | None = None) -> None:
