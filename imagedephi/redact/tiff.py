@@ -171,7 +171,7 @@ class TiffRedactionPlan(RedactionPlan):
         for tag_value, entry in old_ifd["tags"].items():
             if entry["datatype"] == tifftools.constants.Datatype.ASCII:
                 tag = get_tiff_tag(tag_value)
-                if "bytecounts" in tag:
+                if tag.get("bytecounts", None):
                     if tag_value not in new_ifd["tags"].keys():
                         new_entry: TagEntry = {
                             "datatype": entry["datatype"],

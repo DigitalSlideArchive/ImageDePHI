@@ -29,6 +29,7 @@ class TiffConstantSet(Generic[_TiffConstantT]):
 
 class TiffTag(TiffConstant):
     altnames: set[str] | None
+    bytecounts: str | None
     def isOffsetData(self) -> bool: ...
     def isIFD(self) -> bool: ...
 
