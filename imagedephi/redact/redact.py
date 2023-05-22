@@ -72,6 +72,7 @@ def redact_images(
     output_file_counter = 1
     output_file_max = len(images_to_redact)
     redact_dir = create_redact_dir(output_dir)
+    show_redaction_plan(input_path)
     for image_file in images_to_redact:
         if image_file.suffix not in FILE_EXTENSION_MAP:
             click.echo(f"Image format for {image_file.name} not supported. Skipping...")
