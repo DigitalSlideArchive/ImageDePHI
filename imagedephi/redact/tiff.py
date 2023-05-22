@@ -42,8 +42,7 @@ class TiffRedactionPlan(RedactionPlan):
     @staticmethod
     def is_tiled(ifd: IFD):
         """Determine if an IFD represents a tiled image."""
-        tile_width_tag = tifftools.constants.get_or_create_tag("TileWidth", tifftools.constants.Tag)
-        return tile_width_tag.value in ifd["tags"]
+        return tifftools.Tag.TileWidth.value in ifd["tags"]
 
     @staticmethod
     def _iter_ifds(
@@ -170,13 +169,18 @@ class TiffRedactionPlan(RedactionPlan):
 
     def update_new_ifd(self, old_ifd: IFD, new_ifd: IFD) -> None:
         for tag_value, entry in old_ifd["tags"].items():
-            if tag_value not in new_ifd["tags"].keys():
-                new_entry: TagEntry = {
-                    "datatype": entry["datatype"],
-                    "count": entry["count"],
-                    "data": entry["data"],
-                }
-                new_ifd["tags"][tag_value] = new_entry
+            if entry["datatype"] == tifftools.constants.Datatype.ASCII:
+                tag = get_tiff_tag(tag_value)
+                if "bytecounts" in tag:
+                    if tag_value not in new_ifd["tags"].keys():
+                        new_entry: TagEntry = {
+                            "datatype": entry["datatype"],
+                            "count": entry["count"],
+                            "data": entry["data"],
+                        }
+                        new_ifd["tags"][tag_value] = new_entry
+                    else:
+                        new_ifd["tags"][tag_value] = entry
 
     def replace_associated_image(
         self, ifds: list[IFD], index: int, rule: ImageReplaceRule, temp_dir: Path
