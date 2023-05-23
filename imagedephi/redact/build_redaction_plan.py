@@ -4,7 +4,7 @@ from imagedephi.rules import FileFormat, Ruleset
 
 from .redaction_plan import RedactionPlan
 from .svs import SvsRedactionPlan
-from .tiff import TiffRedactionPlan
+from .tiff import TiffMetadataRedactionPlan
 
 FILE_EXTENSION_MAP: dict[str, FileFormat] = {
     ".tif": FileFormat.TIFF,
@@ -22,7 +22,7 @@ def build_redaction_plan(
         if override_rules:
             merged_rules.metadata.update(override_rules.tiff.metadata)
 
-        return TiffRedactionPlan(image_path, merged_rules)
+        return TiffMetadataRedactionPlan(image_path, merged_rules)
     elif file_extension == FileFormat.SVS:
         merged_rules = base_rules.svs.copy()
         if override_rules:

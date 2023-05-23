@@ -8,7 +8,7 @@ import tifftools.constants
 
 from imagedephi.rules import ConcreteMetadataRule, FileFormat, SvsRules
 
-from .tiff import TiffRedactionPlan
+from .tiff import TiffMetadataRedactionPlan
 
 if TYPE_CHECKING:
     from tifftools.tifftools import IFD
@@ -41,7 +41,7 @@ class MalformedAperioFileError(Exception):
     ...
 
 
-class SvsRedactionPlan(TiffRedactionPlan):
+class SvsRedactionPlan(TiffMetadataRedactionPlan):
     """
     Represents a plan of action for redacting files in Aperio (.svs) format.
 

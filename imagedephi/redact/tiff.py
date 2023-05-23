@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     from tifftools.tifftools import IFD, TagEntry, TiffInfo
 
 
-class TiffRedactionPlan(RedactionPlan):
+class TiffMetadataRedactionPlan(RedactionPlan):
     """
     Represents a plan of action for redacting metadata from TIFF images.
 
@@ -62,7 +62,7 @@ class TiffRedactionPlan(RedactionPlan):
                     # entry['ifds'] contains a list of lists
                     # see tifftools.read_tiff
                     for sub_ifds in entry.get("ifds", []):
-                        yield from TiffRedactionPlan._iter_ifds(sub_ifds, tag.get("tagset"))
+                        yield from TiffMetadataRedactionPlan._iter_ifds(sub_ifds, tag.get("tagset"))
             yield ifd
 
     @staticmethod
@@ -83,7 +83,7 @@ class TiffRedactionPlan(RedactionPlan):
                     # entry['ifds'] contains a list of lists
                     # see tifftools.read_tiff
                     for sub_ifds in entry.get("ifds", []):
-                        yield from TiffRedactionPlan._iter_tiff_tag_entries(
+                        yield from TiffMetadataRedactionPlan._iter_tiff_tag_entries(
                             sub_ifds, tag.get("tagset")
                         )
 
@@ -114,8 +114,8 @@ class TiffRedactionPlan(RedactionPlan):
             else:
                 self.no_match_tags.append(tag)
 
-        for ifd in TiffRedactionPlan._iter_ifds(ifds):
-            if not TiffRedactionPlan.is_tiled(ifd):
+        for ifd in TiffMetadataRedactionPlan._iter_ifds(ifds):
+            if not TiffMetadataRedactionPlan.is_tiled(ifd):
                 associated_image_key = self.get_associated_image_key_for_ifd(ifd)
                 self.image_redaction_steps[ifd["offset"]] = rules.associated_images[
                     associated_image_key
