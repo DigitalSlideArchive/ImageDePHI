@@ -159,8 +159,10 @@ class TiffRedactionPlan(RedactionPlan):
     def create_new_image(self, ifd: IFD, rule: ImageReplaceRule, temp_dir: Path) -> Path:
         image = None
         if rule.replace_with == "blank_image":
-            width = int(ifd["tags"][256]["data"][0])
-            length = int(ifd["tags"][257]["data"][0])
+            image_width_tag = tifftools.constants.Tag["ImageWidth"]
+            image_height_tag = tifftools.constants.Tag["ImageHeight"]
+            width = int(ifd["tags"][image_width_tag.value]["data"][0])
+            length = int(ifd["tags"][image_height_tag.value]["data"][0])
             output_path = temp_dir / str(uuid.uuid4())
             image = Image.new("RGB", (width, length))
             image.save(output_path, "TIFF", compression="jpeg")

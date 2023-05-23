@@ -87,7 +87,8 @@ class SvsRedactionPlan(TiffRedactionPlan):
 
     def get_associated_image_key_for_ifd(self, ifd: IFD):
         """Attempt to match an associated image with a rule. Fallback to default rule."""
-        image_description = str(ifd["tags"][270]["data"])
+        tag = tifftools.constants.Tag["ImageDescription"]
+        image_description = str(ifd["tags"][tag.value]["data"])
         # we could do additional checks, like look for a macro based on dimensions
         for key in self.rules.associated_images:
             if key in image_description:
