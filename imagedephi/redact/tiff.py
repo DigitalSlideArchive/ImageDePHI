@@ -5,7 +5,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 import uuid
 
-from PIL import Image
+from PIL import Image, TiffTags
+from PIL.TiffImagePlugin import ImageFileDirectory_v2
 import tifftools
 import tifftools.constants
 
@@ -21,7 +22,7 @@ from imagedephi.utils.tiff import get_tiff_tag
 from .redaction_plan import RedactionPlan
 
 if TYPE_CHECKING:
-    from tifftools.tifftools import IFD, TagEntry, TiffInfo
+    from tifftools.tifftools import IFD, TiffInfo
 
 
 class TiffMetadataRedactionPlan(RedactionPlan):
@@ -165,26 +166,14 @@ class TiffMetadataRedactionPlan(RedactionPlan):
             length = int(ifd["tags"][image_height_tag.value]["data"][0])
             output_path = temp_dir / str(uuid.uuid4())
             image = Image.new("RGB", (width, length))
-            image.save(output_path, "TIFF", compression="jpeg")
+            ifd_ascii_tags = ImageFileDirectory_v2()
+            for tag_value, entry in ifd["tags"].items():
+                if entry["datatype"] == tifftools.constants.Datatype.ASCII:
+                    ifd_ascii_tags[tag_value] = entry["data"]
+                    ifd_ascii_tags.tagtype[tag_value] = TiffTags.ASCII
+            image.save(output_path, "TIFF", compression="jpeg", tiffinfo=ifd_ascii_tags)
             return output_path
         raise Exception("Redaction option not currently supported")
-
-    def update_new_ifd(self, old_ifd: IFD, new_ifd: IFD) -> None:
-        for tag_value, entry in old_ifd["tags"].items():
-            if (
-                tag_value not in new_ifd["tags"].keys()
-                and entry["datatype"] == tifftools.constants.Datatype.ASCII
-            ):
-                tag = get_tiff_tag(tag_value)
-                if tag.get("bytecounts", None):
-                    new_entry: TagEntry = {
-                        "datatype": entry["datatype"],
-                        "count": entry["count"],
-                        "data": entry["data"],
-                    }
-                    new_ifd["tags"][tag_value] = new_entry
-                else:
-                    new_ifd["tags"][tag_value] = entry
 
     def replace_associated_image(
         self, ifds: list[IFD], index: int, rule: ImageReplaceRule, temp_dir: Path
@@ -193,7 +182,6 @@ class TiffMetadataRedactionPlan(RedactionPlan):
         new_image_path = self.create_new_image(old_ifd, rule, temp_dir)
         replacement_tiff_info = tifftools.read_tiff(new_image_path)
         new_ifd = replacement_tiff_info["ifds"][0]
-        self.update_new_ifd(old_ifd, new_ifd)
         ifds[index] = new_ifd
 
     def _redact_associated_images(
