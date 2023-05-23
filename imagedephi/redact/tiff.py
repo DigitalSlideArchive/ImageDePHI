@@ -169,18 +169,20 @@ class TiffRedactionPlan(RedactionPlan):
 
     def update_new_ifd(self, old_ifd: IFD, new_ifd: IFD) -> None:
         for tag_value, entry in old_ifd["tags"].items():
-            if entry["datatype"] == tifftools.constants.Datatype.ASCII:
+            if (
+                tag_value not in new_ifd["tags"].keys()
+                and entry["datatype"] == tifftools.constants.Datatype.ASCII
+            ):
                 tag = get_tiff_tag(tag_value)
                 if tag.get("bytecounts", None):
-                    if tag_value not in new_ifd["tags"].keys():
-                        new_entry: TagEntry = {
-                            "datatype": entry["datatype"],
-                            "count": entry["count"],
-                            "data": entry["data"],
-                        }
-                        new_ifd["tags"][tag_value] = new_entry
-                    else:
-                        new_ifd["tags"][tag_value] = entry
+                    new_entry: TagEntry = {
+                        "datatype": entry["datatype"],
+                        "count": entry["count"],
+                        "data": entry["data"],
+                    }
+                    new_ifd["tags"][tag_value] = new_entry
+                else:
+                    new_ifd["tags"][tag_value] = entry
 
     def replace_associated_image(
         self, ifds: list[IFD], index: int, rule: ImageReplaceRule, temp_dir: Path
