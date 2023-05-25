@@ -4,6 +4,7 @@ from collections.abc import Generator
 import datetime
 import importlib.resources
 from pathlib import Path
+import sys
 
 import click
 import tifftools
@@ -45,11 +46,12 @@ def create_redact_dir(base_output_dir: Path) -> Path:
     redact_dir = base_output_dir / f"Redacted_{time_stamp}"
     try:
         redact_dir.mkdir(parents=True)
-        click.echo(f"Created redaction folder: {redact_dir}")
     except PermissionError:
         click.echo("Cannnot create an output directory, permission error.")
-
-    return redact_dir
+        raise
+    else:
+        click.echo(f"Created redaction folder: {redact_dir}")
+        return redact_dir
 
 
 def redact_images(
@@ -60,7 +62,13 @@ def redact_images(
 ) -> None:
     base_rules = get_base_rules()
     images_to_redact = iter_image_files(input_path) if input_path.is_dir() else [input_path]
-
+    try:
+        redact_dir = create_redact_dir(output_dir)
+    except PermissionError:
+        click.echo(
+            "Could not redact images, invalid output directory. Choose a writable directory"
+        )
+        sys.exit()
     for image_file in images_to_redact:
         if image_file.suffix not in FILE_EXTENSION_MAP:
             click.echo(f"Image format for {image_file.name} not supported. Skipping...")
@@ -84,13 +92,8 @@ def redact_images(
             redaction_plan.report_missing_rules()
         else:
             redaction_plan.execute_plan()
-            try:
-                output_path = _get_output_path(image_file, create_redact_dir(output_dir))
-                redaction_plan.save(output_path, overwrite)
-            except FileNotFoundError:
-                click.echo(
-                    "Could not redact images, invalid output directory. Choose a writable directory"
-                )
+            output_path = _get_output_path(image_file, redact_dir)
+            redaction_plan.save(output_path, overwrite)
 
 
 def show_redaction_plan(input_path: Path, override_rules: Ruleset | None = None) -> None:
