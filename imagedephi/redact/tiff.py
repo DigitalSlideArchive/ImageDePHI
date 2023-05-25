@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from tifftools.tifftools import IFD, TiffInfo
 
 
-class TiffMetadataRedactionPlan(RedactionPlan):
+class TiffRedactionPlan(RedactionPlan):
     """
     Represents a plan of action for redacting metadata from TIFF images.
 
@@ -48,7 +48,7 @@ class TiffMetadataRedactionPlan(RedactionPlan):
                     # entry['ifds'] contains a list of lists
                     # see tifftools.read_tiff
                     for sub_ifds in entry.get("ifds", []):
-                        yield from TiffMetadataRedactionPlan._iter_tiff_tag_entries(
+                        yield from TiffRedactionPlan._iter_tiff_tag_entries(
                             sub_ifds, tag.get("tagset")
                         )
 
