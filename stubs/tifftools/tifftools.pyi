@@ -27,7 +27,7 @@ class IFD(TypedDict):
 class TagEntry(TypedDict):
     datatype: int
     count: int
-    datapos: NotRequired[int]
+    datapos: int
     offset: NotRequired[int]
     ifds: NotRequired[list[list[IFD]]]
     data: str | bytes | list[int | float]
