@@ -11,39 +11,44 @@ def client() -> TestClient:
     return TestClient(app)
 
 
-def test_gui_home(client: TestClient) -> None:
+def test_gui_select_directory(client: TestClient) -> None:
     response = client.get("/")
 
     assert response.status_code == 200
     assert "Select Directory" in response.text
 
 
-def test_gui_navigate_success(
+def test_gui_select_directory_success(
     client: TestClient,
     tmp_path: Path,
 ) -> None:
     response = client.get(
-        "/", params={"input_directory": str(tmp_path), "output_directory": str(tmp_path)}
+        app.url_path_for("select_directory"),
+        params={"input_directory": str(tmp_path), "output_directory": str(tmp_path)},
     )
 
     assert response.status_code == 200
 
 
-def test_gui_navigate_input_not_found(
+def test_gui_select_directory_input_not_found(
     client: TestClient,
     tmp_path: Path,
 ) -> None:
-    response = client.get("/", params={"input_directory": str(tmp_path / "fake")})
+    response = client.get(
+        app.url_path_for("select_directory"), params={"input_directory": str(tmp_path / "fake")}
+    )
 
     assert response.status_code == 404
     assert response.json() == {"detail": "Input directory not a directory"}
 
 
-def test_gui_navigate_output_not_found(
+def test_gui_select_directory_output_not_found(
     client: TestClient,
     tmp_path: Path,
 ) -> None:
-    response = client.get("/", params={"output_directory": str(tmp_path / "fake")})
+    response = client.get(
+        app.url_path_for("select_directory"), params={"output_directory": str(tmp_path / "fake")}
+    )
 
     assert response.status_code == 404
     assert response.json() == {"detail": "Output directory not a directory"}
@@ -54,7 +59,7 @@ def test_gui_redact(
     tmp_path: Path,
 ) -> None:
     response = client.post(
-        "/redact/",
+        app.url_path_for("redact"),
         data={"input_directory": str(tmp_path), "output_directory": str(tmp_path)},
     )
 
@@ -71,7 +76,7 @@ def test_gui_redact_input_failure(
     tmp_path: Path,
 ) -> None:
     response = client.post(
-        "/redact/",
+        app.url_path_for("redact"),
         data={"input_directory": str(tmp_path / "fake"), "output_directory": str(tmp_path)},
     )
 
@@ -84,7 +89,7 @@ def test_gui_redact_output_failure(
     tmp_path: Path,
 ) -> None:
     response = client.post(
-        "/redact/",
+        app.url_path_for("redact"),
         data={"input_directory": str(tmp_path), "output_directory": str(tmp_path / "fake")},
     )
 

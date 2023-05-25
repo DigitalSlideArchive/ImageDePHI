@@ -1,13 +1,17 @@
 from __future__ import annotations
 
 import asyncio
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
 import importlib.resources
+import os
 from pathlib import Path
 
 from fastapi import BackgroundTasks, FastAPI, Form, HTTPException, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse
 from fastapi.templating import Jinja2Templates
 from jinja2 import FunctionLoader
+from starlette.background import BackgroundTask
 
 from imagedephi.redact import iter_image_files, redact_images
 
@@ -17,7 +21,28 @@ def _load_template(template_name: str) -> str | None:
     return template_file.read_text() if template_file.is_file() else None
 
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    # Reset server state on startup, to support unit testing
+    shutdown_event.clear()
+    app.state.last_exception = None
+
+    yield
+
+    if app.state.last_exception is not None:
+        # This will cause a "lifespan.shutdown.failed" event to be sent. Hypercorn will re-raise
+        # this from "serve", allowing exceptions to propagate to the top level.
+        raise app.state.last_exception  # pyright: ignore [reportGeneralTypeIssues]
+
+
+debug_mode = bool(os.environ.get("DEBUG"))
+app = FastAPI(
+    lifespan=lifespan,
+    # End users don't need access to the OpenAPI spec
+    openapi_url="/openapi.json" if debug_mode else None,
+    # FastAPI's debug flag will render exception tracebacks
+    debug=debug_mode,
+)
 templates = Jinja2Templates(
     # Jinja2Templates requires a "directory" argument, but it is effectively unused
     # if a custom loader is passed
@@ -45,10 +70,18 @@ class DirectoryData:
         self.child_images = list(iter_image_files(directory))
 
 
-@app.on_event("startup")
-def reset_shutdown_event() -> None:
-    # Important for unit testing, to reset the server state
-    shutdown_event.clear()
+# This exception handler not be used when FastAPI debug flag is enabled,
+# due to how ServerErrorMiddleware works.
+@app.exception_handler(500)
+def on_internal_error(request: Request, exc: Exception) -> PlainTextResponse:
+    """Return an error response and schedule the server for immediate shutdown."""
+    # Unlike the default error response, this also shuts down the server.
+    # A desktop application doesn't need to continue running through internal errors, and
+    # continuing to run makes it harder for users and the test environment to detect fatal errors.
+    app.state.last_exception = exc
+    return PlainTextResponse(
+        "Internal Server Error", status_code=500, background=BackgroundTask(shutdown_event.set)
+    )
 
 
 @app.get("/", response_class=HTMLResponse)
