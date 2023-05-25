@@ -63,7 +63,7 @@ class TiffRedactionPlan(RedactionPlan):
                     # entry['ifds'] contains a list of lists
                     # see tifftools.read_tiff
                     for sub_ifds in entry.get("ifds", []):
-                        yield from TiffMetadataRedactionPlan._iter_ifds(sub_ifds, tag.get("tagset"))
+                        yield from TiffRedactionPlan._iter_ifds(sub_ifds, tag.get("tagset"))
             yield ifd
 
     @staticmethod
@@ -115,8 +115,8 @@ class TiffRedactionPlan(RedactionPlan):
             else:
                 self.no_match_tags.append(tag)
 
-        for ifd in TiffMetadataRedactionPlan._iter_ifds(ifds):
-            if not TiffMetadataRedactionPlan.is_tiled(ifd):
+        for ifd in self._iter_ifds(ifds):
+            if not self.is_tiled(ifd):
                 associated_image_key = self.get_associated_image_key_for_ifd(ifd)
                 self.image_redaction_steps[ifd["offset"]] = rules.associated_images[
                     associated_image_key
