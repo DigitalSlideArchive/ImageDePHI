@@ -41,7 +41,7 @@ def iter_image_files(directory: Path) -> Generator[Path, None, None]:
 
 
 def create_redact_dir(base_output_dir: Path) -> Path:
-    """Given a directory return a timestamped directory created in the base directory."""
+    """Given a directory, create and return a timestamped sub-directory within it."""
     time_stamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     redact_dir = base_output_dir / f"Redacted_{time_stamp}"
     try:
@@ -65,9 +65,7 @@ def redact_images(
     try:
         redact_dir = create_redact_dir(output_dir)
     except PermissionError:
-        click.echo(
-            "Could not redact images, invalid output directory. Choose a writable directory"
-        )
+        click.echo("Could not redact images, invalid output directory. Choose a writable directory")
         sys.exit()
     for image_file in images_to_redact:
         if image_file.suffix not in FILE_EXTENSION_MAP:
