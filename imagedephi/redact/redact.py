@@ -12,6 +12,7 @@ import tifftools.constants
 import yaml
 
 from imagedephi.rules import Ruleset
+from imagedephi.utils.logger import logger
 
 from .build_redaction_plan import FILE_EXTENSION_MAP, build_redaction_plan
 from .svs import MalformedAperioFileError
@@ -101,20 +102,19 @@ def show_redaction_plan(input_path: Path, override_rules: Ruleset | None = None)
     base_rules = get_base_rules()
     for image_path in image_paths:
         if image_path.suffix not in FILE_EXTENSION_MAP:
-            click.echo(f"Image format for {image_path.name} not supported.", err=True)
+            logger.error(f"Image format for {image_path.name} not supported.")
             continue
         try:
             redaction_plan = build_redaction_plan(image_path, base_rules, override_rules)
         except tifftools.TifftoolsError:
-            click.echo(f"Could not open {image_path.name} as a tiff.", err=True)
+            logger.error(f"Could not open {image_path.name} as a tiff.")
             continue
         except MalformedAperioFileError:
-            click.echo(
-                f"{image_path.name} could not be processed as a valid Aperio file.", err=True
-            )
+            logger.error(
+                f"{image_path.name} could not be processed as a valid Aperio file.")
             continue
         except UnsupportedFileTypeError as e:
-            click.echo(f"{image_path.name} could not be processed. {e.args[0]}")
+            logger.error(f"{image_path.name} could not be processed. {e.args[0]}")
             continue
-        print(f"\nRedaction plan for {image_path.name}")
+        logger.info(f"Redaction plan for {image_path.name}")
         redaction_plan.report_plan()
