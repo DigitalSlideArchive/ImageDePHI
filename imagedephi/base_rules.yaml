@@ -789,3 +789,15 @@ svs:
       action: delete
     Webslide Files:
       action: delete
+    CalibrationAverageBlue:
+      action: keep
+    CalibrationAverageGreen:
+      action: keep
+    CalibrationAverageRed:
+      action: keep
+    ScannerType:
+      action: delete
+    SessionMode:
+      action: delete
+    Scan Warning:
+      action: delete
