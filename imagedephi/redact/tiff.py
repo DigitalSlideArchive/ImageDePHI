@@ -19,6 +19,7 @@ from imagedephi.rules import (
     RedactionOperation,
     TiffRules,
 )
+from imagedephi.utils.logger import logger
 from imagedephi.utils.tiff import get_tiff_tag
 
 from .redaction_plan import RedactionPlan
@@ -197,30 +198,31 @@ class TiffRedactionPlan(RedactionPlan):
 
     def report_missing_rules(self) -> None:
         if self.is_comprehensive():
-            print("This redaction plan is comprehensive.")
+            logger.info("This redaction plan is comprehensive.")
         else:
-            print("The following tags could not be redacted given the current set of rules.")
+            # keep this line in logger? Or should we restructure a bit
+            logger.error("The following tags could not be redacted given the current set of rules.")
             for tag in self.no_match_tags:
-                print(f"Missing tag (tiff): {tag.value} - {tag.name}")
+                logger.error(f"Missing tag (tiff): {tag.value} - {tag.name}")
 
     def report_plan(self) -> None:
-        print("Tiff Metadata Redaction Plan\n")
+        logger.info("Tiff Metadata Redaction Plan\n")
         offset = -1
         ifd_count = 0
         for tag, ifd in self._iter_tiff_tag_entries(self.tiff_info["ifds"]):
             if ifd["offset"] != offset:
                 offset = ifd["offset"]
                 ifd_count += 1
-                print(f"IFD {ifd_count}:")
+                logger.info(f"IFD {ifd_count}:")
             rule = self.metadata_redaction_steps[tag.value]
             operation = self.determine_redaction_operation(rule, ifd)
-            print(f"Tiff Tag {tag.value} - {rule.key_name}: {operation}")
+            logger.info(f"Tiff Tag {tag.value} - {rule.key_name}: {operation}")
         self.report_missing_rules()
-        print("Tiff Associated Image Redaction Plan\n")
-        print(f"Found {len(self.image_redaction_steps)} associated images")
+        logger.info("Tiff Associated Image Redaction Plan\n")
+        logger.info(f"Found {len(self.image_redaction_steps)} associated images")
         if self.image_redaction_steps:
             default_rule = list(self.image_redaction_steps.values())[0]
-            print(f"Redaction action: {default_rule.action}")
+            logger.info(f"Redaction action: {default_rule.action}")
 
     def create_new_image(self, ifd: IFD, rule: ImageReplaceRule) -> BytesIO:
         """
@@ -295,6 +297,7 @@ class TiffRedactionPlan(RedactionPlan):
         self.tiff_info["ifds"] = new_ifds
 
     def save(self, output_path: Path, overwrite: bool) -> None:
+        # do we still need this?
         if output_path.exists():
             if overwrite:
                 print(f"Found existing redaction for {self.image_path.name}. Overwriting...")
@@ -305,4 +308,5 @@ class TiffRedactionPlan(RedactionPlan):
                     "redacted files."
                 )
                 return
+
         tifftools.write_tiff(self.tiff_info, output_path, allowExisting=True)
