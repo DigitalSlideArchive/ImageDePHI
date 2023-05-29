@@ -5,7 +5,7 @@ import datetime
 import importlib.resources
 from pathlib import Path
 
-import click
+# import click
 import filetype
 import tifftools
 import tifftools.constants
@@ -54,11 +54,14 @@ def create_redact_dir(base_output_dir: Path) -> Path:
     """Given a directory, create and return a timestamped sub-directory within it."""
     time_stamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     redact_dir = base_output_dir / f"Redacted_{time_stamp}"
-
-    redact_dir.mkdir(parents=True)
-
-    click.echo(f"Created redaction folder: {redact_dir}")
-    return redact_dir
+    try:
+        redact_dir.mkdir(parents=True)
+    except PermissionError:
+        logger.error("Cannnot create an output directory, permission error.")
+        raise
+    else:
+        logger.info(f"Created redaction folder: {redact_dir}")
+        return redact_dir
 
 
 def redact_images(
@@ -76,13 +79,20 @@ def redact_images(
     output_file_counter = 1
     output_file_max = len(images_to_redact)
     redact_dir = create_redact_dir(output_dir)
+    try:
+        redact_dir = create_redact_dir(output_dir)
+    except PermissionError:
+        logger.error(
+            "Could not redact images, invalid output directory. Choose a writable directory"
+        )
+        sys.exit()
     show_redaction_plan(input_path)
     for image_file in images_to_redact:
-        click.echo(f"Redacting {image_file.name}...")
+        logger.info(f"Redacting {image_file.name}...")
         if image_file.suffix in FILE_EXTENSION_MAP:
             redaction_plan = build_redaction_plan(image_file, base_rules, override_rules)
             if not redaction_plan.is_comprehensive():
-                click.echo(f"Redaction could not be performed for {image_file.name}.")
+                logger.info(f"Redaction could not be performed for {image_file.name}.")
                 redaction_plan.report_missing_rules()
             else:
                 redaction_plan.execute_plan()
@@ -110,8 +120,7 @@ def show_redaction_plan(input_path: Path, override_rules: Ruleset | None = None)
             logger.error(f"Could not open {image_path.name} as a tiff.")
             continue
         except MalformedAperioFileError:
-            logger.error(
-                f"{image_path.name} could not be processed as a valid Aperio file.")
+            logger.error(f"{image_path.name} could not be processed as a valid Aperio file.")
             continue
         except UnsupportedFileTypeError as e:
             logger.error(f"{image_path.name} could not be processed. {e.args[0]}")
