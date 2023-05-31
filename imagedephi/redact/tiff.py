@@ -11,10 +11,12 @@ import tifftools
 import tifftools.constants
 
 from imagedephi.rules import (
+    CheckTypeMetadataRule,
     ConcreteImageRule,
     ConcreteMetadataRule,
     FileFormat,
     ImageReplaceRule,
+    MetadataReplaceRule,
     TiffRules,
 )
 from imagedephi.utils.tiff import get_tiff_tag
@@ -142,9 +144,26 @@ class TiffRedactionPlan(RedactionPlan):
     def apply(self, rule: ConcreteMetadataRule, ifd: IFD) -> None:
         tag = get_tiff_tag(rule.key_name)
         if rule.action == "delete":
-            del ifd["tags"][tag.value]
+            self._apply_delete_metadata_rule(ifd, tag)
         elif rule.action == "replace":
-            ifd["tags"][tag.value]["data"] = rule.new_value
+            self._apply_replace_metadata_rule(ifd, rule, tag)
+
+    def _apply_delete_metadata_rule(self, ifd: IFD, tag: tifftools.TiffTag):
+        del ifd["tags"][tag.value]
+
+    def _apply_replace_metadata_rule(self, ifd: IFD, rule: MetadataReplaceRule, tag: tifftools.TiffTag):
+        ifd["tags"][tag.value]["data"] = rule.new_value
+
+    def _apply_check_type_metadata_rule(self, ifd: IFD, rule: CheckTypeMetadataRule, tag: tifftools.TiffTag):
+        value = ifd["tags"][tag.value]["data"]
+        passes_check = False
+        if isinstance(value, list):
+            passes_check = len(value) == rule.expected_count and all(isinstance(item, rule.expected_type) for item in value)
+        else:
+            passes_check = isinstance(value, rule.expected_type)
+        if not passes_check:
+            self._apply_delete_metadata_rule(ifd, tag)
+
 
     def is_comprehensive(self) -> bool:
         return not self.no_match_tags
