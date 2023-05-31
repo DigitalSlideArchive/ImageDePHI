@@ -8,11 +8,15 @@ class FileFormat(Enum):
     TIFF = "tiff"
     SVS = "svs"
 
+class DataType(Enum):
+    NUMBER = 0
+    TEXT = 1
+
 
 class _Rule(BaseModel):
     # key_name is not set by users, but is availible internally
     key_name: str = Field(exclude=True)
-    action: Literal["keep", "delete", "replace"]
+    action: Literal["keep", "delete", "replace", "check_type"]
 
 
 class KeepRule(_Rule):
@@ -33,6 +37,12 @@ class MetadataReplaceRule(ReplaceRule):
 
 class ImageReplaceRule(ReplaceRule):
     replace_with: Literal["blank_image"]
+
+
+class CheckTypeMetadataRule(_MetadataRule):
+    action: Literal["check_type"]
+    expected_type: DataType
+    expected_count: int
 
 
 ConcreteMetadataRule = Annotated[
