@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any, Literal, Type
 
 from pydantic import BaseModel, Field, validator
 
@@ -8,9 +8,10 @@ class FileFormat(Enum):
     TIFF = "tiff"
     SVS = "svs"
 
-class DataType(Enum):
-    NUMBER = 0
-    TEXT = 1
+expected_type_map: dict[str, tuple[Type[Any]]] = {
+    "number": tuple([int, float]),
+    "text": (str,)
+}
 
 
 class _Rule(BaseModel):
@@ -39,14 +40,21 @@ class ImageReplaceRule(ReplaceRule):
     replace_with: Literal["blank_image"]
 
 
-class CheckTypeMetadataRule(_MetadataRule):
+class CheckTypeMetadataRule(_Rule):
     action: Literal["check_type"]
-    expected_type: DataType
+    expected_type: tuple[Type[Any]]
     expected_count: int
+
+    @validator("exptected_type", pre=True)
+    @classmethod
+    def set_expected_type(cls, expected_type: Any):
+        if (expected_type in expected_type_map):
+            return expected_type_map[expected_type]
+        raise Exception(f"Invalid value for expected_type: {expected_type}")
 
 
 ConcreteMetadataRule = Annotated[
-    MetadataReplaceRule | KeepRule | DeleteRule, Field(discriminator="action")
+    MetadataReplaceRule | KeepRule | DeleteRule | CheckTypeMetadataRule, Field(discriminator="action")
 ]
 
 ConcreteImageRule = Annotated[
