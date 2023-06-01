@@ -8,10 +8,17 @@ tiff:
     ImageDescription:
       action: replace
       new_value: Redacted by ImageDePHI
+    YCbCrSubsampling:
+      action: check_type
+      expected_type: number
+      expected_count: 2
 
 svs:
-  associated_images: {}
-  metadata: {}
+  metadata:
+    YCbCrSubsampling:
+      action: check_type
+      expected_type: number
+      expected_count: 2
   image_description:
     ICC Profile:
       action: delete
