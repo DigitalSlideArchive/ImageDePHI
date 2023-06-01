@@ -102,7 +102,7 @@ class SvsRedactionPlan(TiffRedactionPlan):
         return "default"
 
     def is_match(self, rule: ConcreteMetadataRule, data: tifftools.TiffTag | str) -> bool:
-        if rule.action in ["keep", "delete", "replace"]:
+        if rule.action in ["keep", "delete", "replace", "check_type"]:
             if isinstance(data, tifftools.TiffTag):
                 return super().is_match(rule, data)
             return rule.key_name == data

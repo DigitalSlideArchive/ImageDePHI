@@ -136,7 +136,7 @@ class TiffRedactionPlan(RedactionPlan):
                 ]
 
     def is_match(self, rule: ConcreteMetadataRule, tag: tifftools.TiffTag) -> bool:
-        if rule.action in ["keep", "delete", "replace"]:
+        if rule.action in ["keep", "delete", "replace", "check_type"]:
             rule_tag = get_tiff_tag(rule.key_name)
             return rule_tag.value == tag.value
         return False
@@ -156,11 +156,12 @@ class TiffRedactionPlan(RedactionPlan):
 
     def _apply_check_type_metadata_rule(self, ifd: IFD, rule: CheckTypeMetadataRule, tag: tifftools.TiffTag):
         value = ifd["tags"][tag.value]["data"]
+        valid_types = tuple(rule.expected_type)
         passes_check = False
         if isinstance(value, list):
-            passes_check = len(value) == rule.expected_count and all(isinstance(item, rule.expected_type) for item in value)
+            passes_check = len(value) == rule.expected_count and all(isinstance(item, valid_types) for item in value)
         else:
-            passes_check = isinstance(value, rule.expected_type)
+            passes_check = isinstance(value, valid_types)
         if not passes_check:
             self._apply_delete_metadata_rule(ifd, tag)
 
