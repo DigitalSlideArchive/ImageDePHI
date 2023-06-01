@@ -8,9 +8,9 @@ class FileFormat(Enum):
     TIFF = "tiff"
     SVS = "svs"
 
-expected_type_map: dict[str, tuple[Type[Any]]] = {
-    "number": tuple([int, float]),
-    "text": (str,)
+expected_type_map: dict[str, list[Type[Any]]] = {
+    "number": [int, float],
+    "text": [str]
 }
 
 
@@ -42,10 +42,10 @@ class ImageReplaceRule(ReplaceRule):
 
 class CheckTypeMetadataRule(_Rule):
     action: Literal["check_type"]
-    expected_type: tuple[Type[Any]]
+    expected_type: list[Type[Any]]
     expected_count: int
 
-    @validator("exptected_type", pre=True)
+    @validator("expected_type", pre=True)
     @classmethod
     def set_expected_type(cls, expected_type: Any):
         if (expected_type in expected_type_map):
