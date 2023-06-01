@@ -4,6 +4,7 @@ from collections.abc import Generator
 import datetime
 import importlib.resources
 from pathlib import Path
+from uuid import uuid4
 
 import click
 import tifftools
@@ -18,7 +19,8 @@ from .tiff import UnsupportedFileTypeError
 
 
 def _get_output_path(file_path: Path, output_dir: Path) -> Path:
-    return output_dir / f"REDACTED_{file_path.name}"
+    output_path = output_dir / f"{uuid4()}{file_path.suffix}"
+    return output_path
 
 
 def get_base_rules():
