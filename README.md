@@ -19,3 +19,5 @@ ImageDePHI is an application to redact personal data (PHI) from whole slide imag
 From a command line, execute the application to get full usage help.
 
 Alternatively **on Windows only**, directly open `imagdephi-Windows.exe` in Windows Explorer to launch the ImageDePHI GUI.
+
+If running on macOS, you may need to [add the executable to the list of trusted software](https://support.apple.com/guide/mac-help/apple-cant-check-app-for-malicious-software-mchleab3a043/mac) to launch ImageDePHI in the same way you would any other registered app.
