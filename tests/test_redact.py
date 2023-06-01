@@ -35,7 +35,8 @@ def test_create_redact_dir(tmp_path):
 def test_redact_svs(svs_input_path, tmp_path, override_rule_set):
     redact.redact_images(svs_input_path, tmp_path, override_rule_set)
 
-    output_file = tmp_path / "Redacted_2023-05-12_12-12-53" / "REDACTED_test_svs_image_blank.svs"
+    output_dir = tmp_path / "Redacted_2023-05-12_12-12-53"
+    output_file = [path for path in output_dir.iterdir()][0]
     svs_output_file_bytes = output_file.read_bytes()
     # verify our custom svs rule was applied
     assert b"ICC Profile" not in svs_output_file_bytes
