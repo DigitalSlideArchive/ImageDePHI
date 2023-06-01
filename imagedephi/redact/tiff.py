@@ -144,27 +144,21 @@ class TiffRedactionPlan(RedactionPlan):
     def apply(self, rule: ConcreteMetadataRule, ifd: IFD) -> None:
         tag = get_tiff_tag(rule.key_name)
         if rule.action == "delete":
-            self._apply_delete_metadata_rule(ifd, tag)
+            del ifd["tags"][tag.value]
         elif rule.action == "replace":
-            self._apply_replace_metadata_rule(ifd, rule, tag)
-
-    def _apply_delete_metadata_rule(self, ifd: IFD, tag: tifftools.TiffTag):
-        del ifd["tags"][tag.value]
-
-    def _apply_replace_metadata_rule(self, ifd: IFD, rule: MetadataReplaceRule, tag: tifftools.TiffTag):
-        ifd["tags"][tag.value]["data"] = rule.new_value
-
-    def _apply_check_type_metadata_rule(self, ifd: IFD, rule: CheckTypeMetadataRule, tag: tifftools.TiffTag):
-        value = ifd["tags"][tag.value]["data"]
-        valid_types = tuple(rule.expected_type)
-        passes_check = False
-        if isinstance(value, list):
-            passes_check = len(value) == rule.expected_count and all(isinstance(item, valid_types) for item in value)
-        else:
-            passes_check = isinstance(value, valid_types)
-        if not passes_check:
-            self._apply_delete_metadata_rule(ifd, tag)
-
+            ifd["tags"][tag.value]["data"] = rule.new_value
+        elif rule.action == "check_type":
+            value = ifd["tags"][tag.value]["data"]
+            valid_types = tuple(rule.expected_type)
+            passes_check = False
+            if isinstance(value, list):
+                passes_check = len(value) == rule.expected_count and all(
+                    isinstance(item, valid_types) for item in value
+                )
+            else:
+                passes_check = isinstance(value, valid_types)
+            if not passes_check:
+                del ifd["tags"][tag.value]
 
     def is_comprehensive(self) -> bool:
         return not self.no_match_tags
