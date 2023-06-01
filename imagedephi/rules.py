@@ -8,10 +8,8 @@ class FileFormat(Enum):
     TIFF = "tiff"
     SVS = "svs"
 
-expected_type_map: dict[str, list[Type[Any]]] = {
-    "number": [int, float],
-    "text": [str]
-}
+
+expected_type_map: dict[str, list[Type[Any]]] = {"number": [int, float], "text": [str]}
 
 
 class _Rule(BaseModel):
@@ -48,7 +46,7 @@ class CheckTypeMetadataRule(_Rule):
     @validator("expected_type", pre=True)
     @classmethod
     def set_expected_type(cls, expected_type: Any):
-        if (expected_type in expected_type_map):
+        if expected_type in expected_type_map:
             return expected_type_map[expected_type]
         raise Exception(f"Invalid value for expected_type: {expected_type}")
 
