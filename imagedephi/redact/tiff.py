@@ -16,6 +16,10 @@ if TYPE_CHECKING:
     from tifftools.tifftools import IFD, TiffInfo
 
 
+class UnsupportedFileTypeError(Exception):
+    """Thrown when a file can be opened by tifftools but not redacted."""
+
+
 class TiffRedactionPlan(RedactionPlan):
     """
     Represents a plan of action for redacting metadata from TIFF images.
@@ -65,6 +69,10 @@ class TiffRedactionPlan(RedactionPlan):
         ifds = self.tiff_info["ifds"]
 
         for tag, _ in self._iter_tiff_tag_entries(ifds):
+            if tag.value == tifftools.constants.Tag["ImageJMetadata"].value:
+                raise UnsupportedFileTypeError("Redaction for ImageJ files is not supported")
+            if tag.value == tifftools.constants.Tag["NDPI_FORMAT_FLAG"].value:
+                raise UnsupportedFileTypeError("Redaction for NDPI files is not supported")
             tag_rule = None
             for name in [tag.name] + list(tag.get("altnames", set())):
                 tag_rule = rules.metadata.get(name, None)
