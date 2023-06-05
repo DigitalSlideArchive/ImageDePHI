@@ -4,7 +4,6 @@ from collections.abc import Generator
 import datetime
 import importlib.resources
 from pathlib import Path
-import sys
 
 import click
 import tifftools
@@ -44,14 +43,11 @@ def create_redact_dir(base_output_dir: Path) -> Path:
     """Given a directory, create and return a timestamped sub-directory within it."""
     time_stamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     redact_dir = base_output_dir / f"Redacted_{time_stamp}"
-    try:
-        redact_dir.mkdir(parents=True)
-    except PermissionError:
-        click.echo("Cannnot create an output directory, permission error.")
-        raise
-    else:
-        click.echo(f"Created redaction folder: {redact_dir}")
-        return redact_dir
+
+    redact_dir.mkdir(parents=True)
+
+    click.echo(f"Created redaction folder: {redact_dir}")
+    return redact_dir
 
 
 def redact_images(
@@ -62,11 +58,7 @@ def redact_images(
 ) -> None:
     base_rules = get_base_rules()
     images_to_redact = iter_image_files(input_path) if input_path.is_dir() else [input_path]
-    try:
-        redact_dir = create_redact_dir(output_dir)
-    except PermissionError:
-        click.echo("Could not redact images, invalid output directory. Choose a writable directory")
-        sys.exit()
+    redact_dir = create_redact_dir(output_dir)
     for image_file in images_to_redact:
         if image_file.suffix not in FILE_EXTENSION_MAP:
             click.echo(f"Image format for {image_file.name} not supported. Skipping...")
