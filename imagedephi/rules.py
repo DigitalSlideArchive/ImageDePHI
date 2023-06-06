@@ -9,7 +9,11 @@ class FileFormat(Enum):
     SVS = "svs"
 
 
-expected_type_map: dict[str, list[Type[Any]]] = {"number": [int, float], "text": [str]}
+expected_type_map: dict[str, list[Type[Any]]] = {
+    "integer": [int],
+    "number": [int, float],
+    "text": [str],
+}
 
 
 class _Rule(BaseModel):
