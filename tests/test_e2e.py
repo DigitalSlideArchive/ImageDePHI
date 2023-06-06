@@ -5,6 +5,7 @@ from pathlib import Path
 import sys
 
 from click.testing import CliRunner
+from freezegun import freeze_time
 import httpx
 import pytest
 from pytest_mock import MockerFixture
@@ -20,6 +21,7 @@ def thread_executor() -> Generator[ThreadPoolExecutor, None, None]:
     executor.shutdown(cancel_futures=True)
 
 
+@freeze_time("2023-05-12 12:12:53")
 @pytest.mark.timeout(5)
 def test_e2e_run(cli_runner: CliRunner, data_dir: Path, rules_dir: Path, tmp_path: Path) -> None:
     result = cli_runner.invoke(
@@ -29,13 +31,13 @@ def test_e2e_run(cli_runner: CliRunner, data_dir: Path, rules_dir: Path, tmp_pat
             str(rules_dir / "example_user_rules.yml"),
             "run",
             str(data_dir / "input" / "tiff"),
+            "--output-dir",
             str(tmp_path),
         ],
     )
 
     assert result.exit_code == 0
-    output_file = tmp_path / "REDACTED_test_image.tif"
-    assert output_file.exists()
+    output_file = tmp_path / "Redacted_2023-05-12_12-12-53" / "REDACTED_test_image.tif"
     output_file_bytes = output_file.read_bytes()
     assert b"large_image_converter" not in output_file_bytes
     assert b"Redacted by ImageDePHI" in output_file_bytes
@@ -56,6 +58,7 @@ def test_e2e_plan(cli_runner: CliRunner, data_dir: Path, rules_dir: Path) -> Non
     assert result.exit_code == 0
 
 
+@freeze_time("2023-05-12 12:12:53")
 @pytest.mark.timeout(5)
 def test_e2e_gui(
     cli_runner: CliRunner,
@@ -98,8 +101,7 @@ def test_e2e_gui(
 
     assert cli_result.exit_code == 0
     webbrowser_open_mock.assert_called_once()
-    output_file = tmp_path / "REDACTED_test_image.tif"
-    assert output_file.exists()
+    output_file = tmp_path / "Redacted_2023-05-12_12-12-53" / "REDACTED_test_image.tif"
     output_file_bytes = output_file.read_bytes()
     assert b"large_image_converter" not in output_file_bytes
     assert f"127.0.0.1:{unused_tcp_port}" in webbrowser_open_mock.call_args.args[0]
