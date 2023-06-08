@@ -94,7 +94,7 @@ def show_redaction_plan(input_path: Path, override_rules: Ruleset | None = None)
             click.echo(f"Image format for {image_path.name} not supported.", err=True)
             continue
         try:
-            metadata_redaction_plan = build_redaction_plan(image_path, base_rules, override_rules)
+            redaction_plan = build_redaction_plan(image_path, base_rules, override_rules)
         except tifftools.TifftoolsError:
             click.echo(f"Could not open {image_path.name} as a tiff.", err=True)
             continue
@@ -107,4 +107,4 @@ def show_redaction_plan(input_path: Path, override_rules: Ruleset | None = None)
             click.echo(f"{image_path.name} could not be processed. {e.args[0]}")
             continue
         print(f"\nRedaction plan for {image_path.name}")
-        metadata_redaction_plan.report_plan()
+        redaction_plan.report_plan()

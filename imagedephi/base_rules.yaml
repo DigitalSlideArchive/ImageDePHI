@@ -3,6 +3,9 @@ description: These are the default rules for each potential piece of redactable 
   (metadata, image) to be used as a fallback if there are no user defined rules for
   a piece of redactable material.
 tiff:
+  associated_images:
+    default:
+      action: delete
   metadata:
     NewSubfileType:
       action: keep
@@ -335,6 +338,16 @@ tiff:
     GPSSatellites:
       action: delete
 svs:
+  associated_images:
+    macro:
+      action: delete
+    label:
+      action: replace
+      replace_with: blank_image
+    thumbnail:
+      action: keep
+    default:
+      action: keep
   metadata:
     NewSubfileType:
       action: keep

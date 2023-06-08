@@ -9,27 +9,38 @@ class FileFormat(Enum):
     SVS = "svs"
 
 
-class _MetadataRule(BaseModel):
+class _Rule(BaseModel):
     # key_name is not set by users, but is availible internally
     key_name: str = Field(exclude=True)
     action: Literal["keep", "delete", "replace"]
 
 
-class ReplaceMetadataRule(_MetadataRule):
-    action: Literal["replace"]
-    new_value: str
-
-
-class KeepMetadataRule(_MetadataRule):
+class KeepRule(_Rule):
     action: Literal["keep"]
 
 
-class DeleteMetadataRule(_MetadataRule):
+class DeleteRule(_Rule):
     action: Literal["delete"]
 
 
+class ReplaceRule(_Rule):
+    action: Literal["replace"]
+
+
+class MetadataReplaceRule(ReplaceRule):
+    new_value: str
+
+
+class ImageReplaceRule(ReplaceRule):
+    replace_with: Literal["blank_image"]
+
+
 ConcreteMetadataRule = Annotated[
-    ReplaceMetadataRule | KeepMetadataRule | DeleteMetadataRule, Field(discriminator="action")
+    MetadataReplaceRule | KeepRule | DeleteRule, Field(discriminator="action")
+]
+
+ConcreteImageRule = Annotated[
+    ImageReplaceRule | KeepRule | DeleteRule, Field(discriminator="action")
 ]
 
 
@@ -38,10 +49,11 @@ class BaseRules(BaseModel):
 
 
 class TiffRules(BaseModel):
+    associated_images: dict[str, ConcreteImageRule]
     metadata: dict[str, ConcreteMetadataRule]
 
     # TODO: is pre necessary?
-    @validator("metadata", pre=True)
+    @validator("metadata", "associated_images", pre=True)
     @classmethod
     def set_tag_name(cls, metadata: Any):
         if isinstance(metadata, dict):
@@ -55,7 +67,7 @@ class SvsRules(TiffRules):
     image_description: dict[str, ConcreteMetadataRule]
 
     # TODO: is pre necessary?
-    @validator("metadata", "image_description", pre=True)
+    @validator("metadata", "image_description", "associated_images", pre=True)
     @classmethod
     def set_tag_name(cls, metadata: Any):
         if isinstance(metadata, dict):

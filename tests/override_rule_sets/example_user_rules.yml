@@ -2,12 +2,14 @@
 name: Example user rules
 description: A set of reasonable rules used for testing
 tiff:
+  associated_images: {}
   metadata:
     ImageDescription:
       action: replace
       new_value: Redacted by ImageDePHI
 
 svs:
+  associated_images: {}
   metadata: {}
   image_description:
     ICC Profile:
