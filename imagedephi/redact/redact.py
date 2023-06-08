@@ -3,7 +3,6 @@ from __future__ import annotations
 from collections.abc import Generator
 import importlib.resources
 from pathlib import Path
-import tempfile
 
 import click
 import tifftools
@@ -66,10 +65,9 @@ def redact_images(
             click.echo(f"Redaction could not be performed for {image_file.name}.")
             redaction_plan.report_missing_rules()
         else:
-            with tempfile.TemporaryDirectory(prefix="imagedephi") as temp_dir:
-                redaction_plan.execute_plan(Path(temp_dir))
-                output_path = _get_output_path(image_file, output_dir)
-                redaction_plan.save(output_path, overwrite)
+            redaction_plan.execute_plan()
+            output_path = _get_output_path(image_file, output_dir)
+            redaction_plan.save(output_path, overwrite)
 
 
 def show_redaction_plan(input_path: Path, override_rules: Ruleset | None = None) -> None:

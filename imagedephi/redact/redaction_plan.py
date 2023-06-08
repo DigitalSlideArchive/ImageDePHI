@@ -12,7 +12,7 @@ class RedactionPlan:
         ...
 
     @abc.abstractmethod
-    def execute_plan(self, working_dir: Path) -> None:
+    def execute_plan(self) -> None:
         ...
 
     @abc.abstractmethod
