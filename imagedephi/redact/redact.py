@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Generator
+import datetime
 import importlib.resources
 from pathlib import Path
 
@@ -13,6 +14,7 @@ from imagedephi.rules import Ruleset
 
 from .build_redaction_plan import FILE_EXTENSION_MAP, build_redaction_plan
 from .svs import MalformedAperioFileError
+from .tiff import UnsupportedFileTypeError
 
 
 def _get_output_path(file_path: Path, output_dir: Path) -> Path:
@@ -37,6 +39,17 @@ def iter_image_files(directory: Path) -> Generator[Path, None, None]:
             yield child
 
 
+def create_redact_dir(base_output_dir: Path) -> Path:
+    """Given a directory, create and return a timestamped sub-directory within it."""
+    time_stamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    redact_dir = base_output_dir / f"Redacted_{time_stamp}"
+
+    redact_dir.mkdir(parents=True)
+
+    click.echo(f"Created redaction folder: {redact_dir}")
+    return redact_dir
+
+
 def redact_images(
     input_path: Path,
     output_dir: Path,
@@ -45,7 +58,7 @@ def redact_images(
 ) -> None:
     base_rules = get_base_rules()
     images_to_redact = iter_image_files(input_path) if input_path.is_dir() else [input_path]
-
+    redact_dir = create_redact_dir(output_dir)
     for image_file in images_to_redact:
         if image_file.suffix not in FILE_EXTENSION_MAP:
             click.echo(f"Image format for {image_file.name} not supported. Skipping...")
@@ -60,13 +73,16 @@ def redact_images(
                 f"{image_file.name} could not be processed as a valid Aperio file. Skipping..."
             )
             continue
+        except UnsupportedFileTypeError as e:
+            click.echo(f"{image_file.name} could not be processed. {e.args[0]}")
+            continue
         click.echo(f"Redacting {image_file.name}...")
         if not redaction_plan.is_comprehensive():
             click.echo(f"Redaction could not be performed for {image_file.name}.")
             redaction_plan.report_missing_rules()
         else:
             redaction_plan.execute_plan()
-            output_path = _get_output_path(image_file, output_dir)
+            output_path = _get_output_path(image_file, redact_dir)
             redaction_plan.save(output_path, overwrite)
 
 
@@ -86,6 +102,9 @@ def show_redaction_plan(input_path: Path, override_rules: Ruleset | None = None)
             click.echo(
                 f"{image_path.name} could not be processed as a valid Aperio file.", err=True
             )
+            continue
+        except UnsupportedFileTypeError as e:
+            click.echo(f"{image_path.name} could not be processed. {e.args[0]}")
             continue
         print(f"\nRedaction plan for {image_path.name}")
         redaction_plan.report_plan()
