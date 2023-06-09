@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Generator
 import datetime
 import importlib.resources
+import os
 from pathlib import Path
 
 import click
@@ -36,14 +37,11 @@ def get_base_rules():
 
 
 def iter_image_files(directory: Path) -> Generator[Path, None, None]:
-    """
-    Given a directory return an iterable of available images.
-
-    May raise a PermissionError if the directory is not readable.
-    """
+    """Given a directory return an iterable of available images."""
     for child in directory.iterdir():
-        if child.is_file() and filetype.is_image(child):
-            yield child
+        if child.is_file() and os.access(child, os.R_OK):
+            if filetype.is_image(child):
+                yield child
 
 
 def create_redact_dir(base_output_dir: Path) -> Path:
