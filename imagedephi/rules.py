@@ -80,5 +80,6 @@ class SvsRules(TiffRules):
 class Ruleset(BaseModel):
     name: str
     description: str
+    output_file_name: str
     tiff: TiffRules
     svs: SvsRules
