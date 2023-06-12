@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from loguru import logger
 import tifftools
 import tifftools.constants
 
@@ -13,7 +14,6 @@ from imagedephi.rules import (
     RedactionOperation,
     SvsRules,
 )
-from imagedephi.utils.logger import logger
 
 from .tiff import TiffRedactionPlan
 

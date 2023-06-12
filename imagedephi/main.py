@@ -10,6 +10,7 @@ import webbrowser
 import click
 from hypercorn import Config
 from hypercorn.asyncio import serve
+from loguru import logger
 import yaml
 
 from imagedephi.gui import app, shutdown_event
@@ -31,6 +32,27 @@ if sys.platform == "win32":
     # To avoid ambiguity with actual paths, only support this on Windows.
     CONTEXT_SETTINGS["help_option_names"].append("/?")
 
+# set default logger to warning level
+logger.remove()
+logger.add(sys.stderr, level="WARNING")
+
+
+def set_logging_level(v: int, q: bool):
+    if q:
+        logger.remove()
+        logger.add(sys.stderr, level="ERROR")
+    else:
+        match v:
+            case 0:
+                logger.remove()
+                logger.add(sys.stderr, level="WARNING")
+            case 1:
+                logger.remove()
+                logger.add(sys.stderr, level="INFO")
+            case 2:
+                logger.remove()
+                logger.add(sys.stderr, level="DEBUG")
+
 
 @click.group(
     cls=FallthroughGroup,
@@ -45,8 +67,20 @@ if sys.platform == "win32":
     type=click.File("r"),
     help="User-defined rules to override defaults.",
 )
+@click.option(
+    "-v",
+    "--verbose",
+    count=True,
+    help="""\b
+    Defaults to WARNING level logging
+    -v  Show INFO level logging
+    -vv Show DEBUG level logging""",
+)
+@click.option(
+    "-q", "--quiet", is_flag=True, default=False, help="Show ERROR and CRITICAL level logging"
+)
 @click.pass_context
-def imagedephi(ctx: click.Context, override_rules: TextIO | None) -> None:
+def imagedephi(ctx: click.Context, override_rules: TextIO | None, verbose, quiet) -> None:
     """Redact microscopy whole slide images."""
     obj = ImagedephiContext()
     # Store separately, to preserve the type of "obj"
@@ -54,6 +88,8 @@ def imagedephi(ctx: click.Context, override_rules: TextIO | None) -> None:
 
     if override_rules:
         obj.override_rule_set = Ruleset.parse_obj(yaml.safe_load(override_rules))
+
+    set_logging_level(verbose, quiet)
 
 
 @imagedephi.command
