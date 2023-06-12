@@ -92,7 +92,7 @@ def imagedephi(
     override_rules: TextIO | None,
     verbose: int,
     quiet: bool,
-    log_file: Path
+    log_file: Path,
 ) -> None:
     """Redact microscopy whole slide images."""
     obj = ImagedephiContext()
