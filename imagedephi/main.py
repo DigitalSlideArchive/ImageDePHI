@@ -37,21 +37,22 @@ logger.remove()
 logger.add(sys.stderr, level="WARNING")
 
 
-def set_logging_level(v: int, q: bool):
+def set_logging_level(v: int, q: bool, log_file):
+    log_output = log_file if log_file else sys.stderr
     if q:
         logger.remove()
-        logger.add(sys.stderr, level="ERROR")
+        logger.add(log_output, level="ERROR")
     else:
         match v:
             case 0:
                 logger.remove()
-                logger.add(sys.stderr, level="WARNING")
+                logger.add(log_output, level="WARNING")
             case 1:
                 logger.remove()
-                logger.add(sys.stderr, level="INFO")
+                logger.add(log_output, level="INFO")
             case 2:
                 logger.remove()
-                logger.add(sys.stderr, level="DEBUG")
+                logger.add(log_output, level="DEBUG")
 
 
 @click.group(
@@ -79,8 +80,20 @@ def set_logging_level(v: int, q: bool):
 @click.option(
     "-q", "--quiet", is_flag=True, default=False, help="Show ERROR and CRITICAL level logging"
 )
+@click.option(
+    "-l",
+    "--log-file",
+    help="Path where log file will be created",
+    type=click.Path(path_type=Path),
+)
 @click.pass_context
-def imagedephi(ctx: click.Context, override_rules: TextIO | None, verbose, quiet) -> None:
+def imagedephi(
+    ctx: click.Context,
+    override_rules: TextIO | None,
+    verbose: int,
+    quiet: bool,
+    log_file: Path
+) -> None:
     """Redact microscopy whole slide images."""
     obj = ImagedephiContext()
     # Store separately, to preserve the type of "obj"
@@ -89,7 +102,7 @@ def imagedephi(ctx: click.Context, override_rules: TextIO | None, verbose, quiet
     if override_rules:
         obj.override_rule_set = Ruleset.parse_obj(yaml.safe_load(override_rules))
 
-    set_logging_level(verbose, quiet)
+    set_logging_level(verbose, quiet, log_file)
 
 
 @imagedephi.command
