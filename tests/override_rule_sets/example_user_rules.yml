@@ -14,6 +14,7 @@ tiff:
       expected_count: 2
 
 svs:
+  associated_images: {}
   metadata:
     YCbCrSubsampling:
       action: check_type
