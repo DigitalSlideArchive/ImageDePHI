@@ -11,12 +11,10 @@ import tifftools
 import tifftools.constants
 
 from imagedephi.rules import (
-    CheckTypeMetadataRule,
     ConcreteImageRule,
     ConcreteMetadataRule,
     FileFormat,
     ImageReplaceRule,
-    MetadataReplaceRule,
     TiffRules,
 )
 from imagedephi.utils.tiff import get_tiff_tag

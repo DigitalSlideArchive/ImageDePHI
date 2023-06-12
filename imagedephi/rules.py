@@ -56,7 +56,8 @@ class CheckTypeMetadataRule(_Rule):
 
 
 ConcreteMetadataRule = Annotated[
-    MetadataReplaceRule | KeepRule | DeleteRule | CheckTypeMetadataRule, Field(discriminator="action")
+    MetadataReplaceRule | KeepRule | DeleteRule | CheckTypeMetadataRule,
+    Field(discriminator="action"),
 ]
 
 ConcreteImageRule = Annotated[
