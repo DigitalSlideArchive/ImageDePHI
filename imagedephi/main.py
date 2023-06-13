@@ -20,23 +20,24 @@ from imagedephi.utils.cli import FallthroughGroup, run_coroutine
 from imagedephi.utils.network import unused_tcp_port, wait_for_port
 from imagedephi.utils.os import launched_from_windows_explorer
 
-_global_test_options = [
-    click.option('--verbose', '-v', 'verbose', count=True, help='Verbose output'),
-    click.option('--quiet', '-q', 'quiet', count=True, help='Minimal output'),
+_global_options = [
+    click.option(
+        "-v",
+        "--verbose",
+        count=True,
+        help="""\b
+        Defaults to WARNING level logging
+        -v  Show INFO level logging
+        -vv Show DEBUG level logging""",
+    ),
+    click.option(
+        "-q", "--quiet", is_flag=True, default=False, help="Show ERROR and CRITICAL level logging"
+    ),
 ]
 
 
-def logging_level(verbose, quiet):
-    if verbose and quiet:
-        print("make up your mind!")
-    elif verbose > 0:
-        print("say all the things")
-    elif quiet > 0:
-        print("maybe say less things")
-
-
-def global_test_options(func):
-    for option in reversed(_global_test_options):
+def global_options(func):
+    for option in reversed(_global_options):
         func = option(func)
     return func
 
@@ -57,7 +58,7 @@ logger.remove()
 logger.add(sys.stderr, level="WARNING")
 
 
-def set_logging_level(v: int, q: bool, log_file):
+def set_logging_level(v: int, q: bool, log_file=None):
     log_output = log_file if log_file else sys.stderr
     if q:
         logger.remove()
@@ -89,24 +90,12 @@ def set_logging_level(v: int, q: bool, log_file):
     help="User-defined rules to override defaults.",
 )
 @click.option(
-    "-v",
-    "--verbose",
-    count=True,
-    help="""\b
-    Defaults to WARNING level logging
-    -v  Show INFO level logging
-    -vv Show DEBUG level logging""",
-)
-@click.option(
-    "-q", "--quiet", is_flag=True, default=False, help="Show ERROR and CRITICAL level logging"
-)
-@click.option(
     "-l",
     "--log-file",
     help="Path where log file will be created",
     type=click.Path(path_type=Path),
 )
-@global_test_options
+@global_options
 @click.pass_context
 def imagedephi(
     ctx: click.Context,
@@ -119,16 +108,14 @@ def imagedephi(
     obj = ImagedephiContext()
     # Store separately, to preserve the type of "obj"
     ctx.obj = obj
-    logging_level(verbose, quiet)
 
     if override_rules:
         obj.override_rule_set = Ruleset.parse_obj(yaml.safe_load(override_rules))
-
     set_logging_level(verbose, quiet, log_file)
 
 
 @imagedephi.command
-@global_test_options
+@global_options
 @click.argument("input-path", type=click.Path(exists=True, readable=True, path_type=Path))
 @click.option(
     "-o",
@@ -142,23 +129,24 @@ def imagedephi(
 def run(obj: ImagedephiContext, input_path: Path, output_dir: Path, verbose, quiet):
     """Perform the redaction of images."""
     redact_images(input_path, output_dir, obj.override_rule_set)
-    logging_level(verbose, quiet)
-
+    if verbose or quiet:
+        set_logging_level(verbose, quiet)
 
 
 @imagedephi.command
-@global_test_options
+@global_options
 @click.argument("input-path", type=click.Path(exists=True, readable=True, path_type=Path))
 @click.pass_obj
 def plan(obj: ImagedephiContext, input_path: Path, quiet, verbose) -> None:
     """Print the redaction plan for images."""
-    logging_level(verbose, quiet)
+    if verbose or quiet:
+        set_logging_level(verbose, quiet)
 
     show_redaction_plan(input_path, obj.override_rule_set)
 
 
 @imagedephi.command
-@global_test_options
+@global_options
 @click.option(
     "--port",
     type=click.IntRange(1, 65535),
