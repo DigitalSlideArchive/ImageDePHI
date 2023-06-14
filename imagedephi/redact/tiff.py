@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Generator
 from io import BytesIO
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 from PIL import Image, TiffTags
 from PIL.TiffImagePlugin import ImageFileDirectory_v2
@@ -15,6 +15,7 @@ from imagedephi.rules import (
     ConcreteMetadataRule,
     FileFormat,
     ImageReplaceRule,
+    MetadataRedactionStep,
     TiffRules,
 )
 from imagedephi.utils.tiff import get_tiff_tag
@@ -40,7 +41,7 @@ class TiffRedactionPlan(RedactionPlan):
     file_format = FileFormat.TIFF
     image_path: Path
     tiff_info: TiffInfo
-    metadata_redaction_steps: dict[int, ConcreteMetadataRule]
+    metadata_redaction_steps: dict[int, MetadataRedactionStep]
     image_redaction_steps: dict[int, ConcreteImageRule]
     no_match_tags: list[tifftools.TiffTag]
 
@@ -111,7 +112,7 @@ class TiffRedactionPlan(RedactionPlan):
         self.no_match_tags = []
         ifds = self.tiff_info["ifds"]
 
-        for tag, _ in self._iter_tiff_tag_entries(ifds):
+        for tag, ifd in self._iter_tiff_tag_entries(ifds):
             if tag.value == tifftools.constants.Tag["ImageJMetadata"].value:
                 raise UnsupportedFileTypeError("Redaction for ImageJ files is not supported")
             if tag.value == tifftools.constants.Tag["NDPI_FORMAT_FLAG"].value:
@@ -120,7 +121,10 @@ class TiffRedactionPlan(RedactionPlan):
             for name in [tag.name] + list(tag.get("altnames", set())):
                 tag_rule = rules.metadata.get(name, None)
                 if tag_rule and self.is_match(tag_rule, tag):
-                    self.metadata_redaction_steps[tag.value] = tag_rule
+                    self.metadata_redaction_steps[tag.value] = MetadataRedactionStep(
+                        rule=tag_rule,
+                        action=self.determine_redaction_action(tag_rule, ifd),
+                    )
                     break
             else:
                 self.no_match_tags.append(tag)
@@ -138,6 +142,32 @@ class TiffRedactionPlan(RedactionPlan):
             rule_tag = get_tiff_tag(rule.key_name)
             return rule_tag.value == tag.value
         return False
+
+    def determine_redaction_action(
+        self, rule: ConcreteMetadataRule, ifd: IFD
+    ) -> Literal["keep", "replace", "delete"]:
+        """
+        Given a rule and the IFD it applies to, return the actual action.
+
+        The "check_type" rules will either delete or do nothing to the metadata.
+        This function is used to determine which action will be applied, and is
+        useful for reporting.
+        """
+        if rule.action == "check_type":
+            tag = get_tiff_tag(rule.key_name)
+            value = ifd["tags"][tag.value]["data"]
+            valid_types = tuple(rule.expected_type)
+            passes_check = False
+            if isinstance(value, list):
+                passes_check = len(value) == rule.expected_count and all(
+                    isinstance(item, valid_types) for item in value
+                )
+            else:
+                passes_check = isinstance(value, valid_types)
+            return "keep" if passes_check else "delete"
+        if rule.action in ["keep", "replace", "delete"]:
+            return rule.action
+        return "delete"
 
     def apply(self, rule: ConcreteMetadataRule, ifd: IFD) -> None:
         tag = get_tiff_tag(rule.key_name)
@@ -254,9 +284,9 @@ class TiffRedactionPlan(RedactionPlan):
         ifds = self.tiff_info["ifds"]
         new_ifds = self._redact_associated_images(ifds)
         for tag, ifd in self._iter_tiff_tag_entries(new_ifds):
-            rule = self.metadata_redaction_steps.get(tag.value)
-            if rule is not None:
-                self.apply(rule, ifd)
+            redaction_step = self.metadata_redaction_steps.get(tag.value)
+            if redaction_step is not None:
+                self.apply(redaction_step.rule, ifd)
         self.tiff_info["ifds"] = new_ifds
 
     def save(self, output_path: Path, overwrite: bool) -> None:

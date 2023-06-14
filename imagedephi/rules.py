@@ -65,6 +65,11 @@ ConcreteImageRule = Annotated[
 ]
 
 
+class MetadataRedactionStep(BaseModel):
+    rule: ConcreteMetadataRule
+    action: Literal["keep", "delete", "replace"]
+
+
 class BaseRules(BaseModel):
     matches: list[str]
 

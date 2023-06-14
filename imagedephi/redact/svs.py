@@ -182,9 +182,9 @@ class SvsRedactionPlan(TiffRedactionPlan):
         new_ifds = self._redact_associated_images(ifds)
         image_description_tag = tifftools.constants.Tag["ImageDescription"]
         for tag, ifd in self._iter_tiff_tag_entries(new_ifds):
-            rule = self.metadata_redaction_steps.get(tag.value)
-            if rule is not None:
-                self.apply(rule, ifd)
+            redaction_step = self.metadata_redaction_steps.get(tag.value)
+            if redaction_step is not None:
+                self.apply(redaction_step.rule, ifd)
             elif tag.value == image_description_tag.value:
                 self._redact_svs_image_description(ifd)
         self.tiff_info["ifds"] = new_ifds
