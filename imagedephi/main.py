@@ -37,7 +37,7 @@ _global_options = [
 
 
 def global_options(func):
-    for option in reversed(_global_options):
+    for option in (_global_options):
         func = option(func)
     return func
 
