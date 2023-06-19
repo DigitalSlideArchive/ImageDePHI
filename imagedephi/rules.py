@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Annotated, Any, Literal, Type
+from typing import Annotated, Any, Literal, Type, TypeAlias
 
 from pydantic import BaseModel, Field, validator
 
@@ -14,6 +14,8 @@ expected_type_map: dict[str, list[Type[Any]]] = {
     "number": [int, float],
     "text": [str],
 }
+
+RedactionOperation: TypeAlias = Literal["keep", "delete", "replace"]
 
 
 class _Rule(BaseModel):
@@ -67,7 +69,7 @@ ConcreteImageRule = Annotated[
 
 class MetadataRedactionStep(BaseModel):
     rule: ConcreteMetadataRule
-    action: Literal["keep", "delete", "replace"]
+    operation: RedactionOperation
 
 
 class BaseRules(BaseModel):

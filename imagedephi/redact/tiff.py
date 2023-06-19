@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Generator
 from io import BytesIO
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING
 
 from PIL import Image, TiffTags
 from PIL.TiffImagePlugin import ImageFileDirectory_v2
@@ -16,6 +16,7 @@ from imagedephi.rules import (
     FileFormat,
     ImageReplaceRule,
     MetadataRedactionStep,
+    RedactionOperation,
     TiffRules,
 )
 from imagedephi.utils.tiff import get_tiff_tag
@@ -123,7 +124,7 @@ class TiffRedactionPlan(RedactionPlan):
                 if tag_rule and self.is_match(tag_rule, tag):
                     self.metadata_redaction_steps[tag.value] = MetadataRedactionStep(
                         rule=tag_rule,
-                        action=self.determine_redaction_action(tag_rule, ifd),
+                        operation=self.determine_redaction_action(tag_rule, ifd),
                     )
                     break
             else:
@@ -145,7 +146,7 @@ class TiffRedactionPlan(RedactionPlan):
 
     def determine_redaction_action(
         self, rule: ConcreteMetadataRule, ifd: IFD
-    ) -> Literal["keep", "replace", "delete"]:
+    ) -> RedactionOperation:
         """
         Given a rule and the IFD it applies to, return the actual action.
 
