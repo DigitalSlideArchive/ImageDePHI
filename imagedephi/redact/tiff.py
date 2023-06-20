@@ -16,6 +16,7 @@ from imagedephi.rules import (
     FileFormat,
     ImageReplaceRule,
     MetadataRedactionStep,
+    MetadataReplaceRule,
     RedactionOperation,
     TiffRules,
 )
@@ -172,22 +173,12 @@ class TiffRedactionPlan(RedactionPlan):
 
     def apply(self, rule: ConcreteMetadataRule, ifd: IFD) -> None:
         tag = get_tiff_tag(rule.key_name)
-        if rule.action == "delete":
+        operation = self.determine_redaction_action(rule, ifd)
+        if operation == "delete":
             del ifd["tags"][tag.value]
-        elif rule.action == "replace":
+        elif operation == "replace":
+            assert isinstance(rule, MetadataReplaceRule)
             ifd["tags"][tag.value]["data"] = rule.new_value
-        elif rule.action == "check_type":
-            value = ifd["tags"][tag.value]["data"]
-            valid_types = tuple(rule.expected_type)
-            passes_check = False
-            if isinstance(value, list):
-                passes_check = len(value) == rule.expected_count and all(
-                    isinstance(item, valid_types) for item in value
-                )
-            else:
-                passes_check = isinstance(value, valid_types)
-            if not passes_check:
-                del ifd["tags"][tag.value]
 
     def is_comprehensive(self) -> bool:
         return not self.no_match_tags
