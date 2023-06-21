@@ -1,6 +1,7 @@
 ---
 name: Example user rules
 description: A set of reasonable rules used for testing
+output_file_name: my_study_slide
 tiff:
   associated_images: {}
   metadata:

@@ -17,8 +17,14 @@ from .svs import MalformedAperioFileError
 from .tiff import UnsupportedFileTypeError
 
 
-def _get_output_path(file_path: Path, output_dir: Path) -> Path:
-    return output_dir / f"REDACTED_{file_path.name}"
+def _get_output_path(
+    file_path: Path,
+    output_dir: Path,
+    base_name: str,
+    count: int,
+    max: int,
+) -> Path:
+    return output_dir / f"{base_name}_{count:0{len(str(max))}}{file_path.suffix}"
 
 
 def get_base_rules():
@@ -57,7 +63,13 @@ def redact_images(
     overwrite: bool = False,
 ) -> None:
     base_rules = get_base_rules()
-    images_to_redact = iter_image_files(input_path) if input_path.is_dir() else [input_path]
+    output_file_name_base = (
+        override_rules.output_file_name if override_rules else base_rules.output_file_name
+    )
+    # Convert to a list in order to get the length
+    images_to_redact = list(iter_image_files(input_path) if input_path.is_dir() else [input_path])
+    output_file_counter = 1
+    output_file_max = len(images_to_redact)
     redact_dir = create_redact_dir(output_dir)
     for image_file in images_to_redact:
         if image_file.suffix not in FILE_EXTENSION_MAP:
@@ -82,8 +94,15 @@ def redact_images(
             redaction_plan.report_missing_rules()
         else:
             redaction_plan.execute_plan()
-            output_path = _get_output_path(image_file, redact_dir)
+            output_path = _get_output_path(
+                image_file,
+                redact_dir,
+                output_file_name_base,
+                output_file_counter,
+                output_file_max,
+            )
             redaction_plan.save(output_path, overwrite)
+            output_file_counter += 1
 
 
 def show_redaction_plan(input_path: Path, override_rules: Ruleset | None = None) -> None:
