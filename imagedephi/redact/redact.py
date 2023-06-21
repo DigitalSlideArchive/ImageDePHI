@@ -24,9 +24,7 @@ def _get_output_path(
     count: int,
     max: int,
 ) -> Path:
-    number_length = len(str(max))
-    number = str(count).zfill(number_length)
-    return output_dir / f"{base_name}_{number}{file_path.suffix}"
+    return output_dir / f"{base_name}_{count:0{len(str(max))}}{file_path.suffix}"
 
 
 def get_base_rules():
