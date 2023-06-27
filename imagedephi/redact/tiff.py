@@ -116,6 +116,7 @@ class TiffRedactionPlan(RedactionPlan):
         for tag, _ in self._iter_tiff_tag_entries(ifds):
             if tag.value == tifftools.constants.Tag["ImageJMetadata"].value:
                 raise UnsupportedFileTypeError("Redaction for ImageJ files is not supported")
+
             if tag.value == tifftools.constants.Tag["NDPI_FORMAT_FLAG"].value:
                 raise UnsupportedFileTypeError("Redaction for NDPI files is not supported")
             tag_rule = None

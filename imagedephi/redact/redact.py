@@ -3,11 +3,9 @@ from __future__ import annotations
 from collections.abc import Generator
 import datetime
 import importlib.resources
-import os
 from pathlib import Path
 
 import click
-import filetype
 import tifftools
 import tifftools.constants
 import yaml
@@ -39,9 +37,15 @@ def get_base_rules():
 def iter_image_files(directory: Path) -> Generator[Path, None, None]:
     """Given a directory return an iterable of available images."""
     for child in directory.iterdir():
-        if child.is_file() and os.access(child, os.R_OK):
-            if filetype.is_image(child):
-                yield child
+        # Use first four bits to check if its a tiff file
+        if child.is_file():
+            try:
+                data = open(child, "rb").read(4)
+            except PermissionError:
+                pass
+            else:
+                if data in (b"II\x2a\x00", b"MM\x00\x2a", b"II\x2b\x00", b"MM\x00\x2b"):
+                    yield child
 
 
 def create_redact_dir(base_output_dir: Path) -> Path:
@@ -81,12 +85,12 @@ def redact_images(
             else:
                 redaction_plan.execute_plan()
                 output_path = _get_output_path(
-                image_file,
-                redact_dir,
-                output_file_name_base,
-                output_file_counter,
-                output_file_max,
-            )
+                    image_file,
+                    redact_dir,
+                    output_file_name_base,
+                    output_file_counter,
+                    output_file_max,
+                )
                 redaction_plan.save(output_path, overwrite)
             output_file_counter += 1
 

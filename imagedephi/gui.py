@@ -65,7 +65,10 @@ class DirectoryData:
         self.ancestors = list(reversed(directory.parents))
         self.ancestors.append(directory)
 
-        self.child_directories = [child for child in directory.iterdir() if child.is_dir()]
+        self.child_directories = [
+            child for child in directory.iterdir() if child.is_dir() and os.access(child, os.R_OK)
+        ]
+
         self.child_images = list(iter_image_files(directory))
 
 
