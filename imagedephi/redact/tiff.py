@@ -61,9 +61,7 @@ class TiffRedactionPlan(RedactionPlan):
                     tagSet=tag_set,
                     datatype=tifftools.Datatype[entry["datatype"]],
                 )
-                if not tag.isIFD():
-                    yield ifd
-                else:
+                if tag.isIFD():
                     # entry['ifds'] contains a list of lists
                     # see tifftools.read_tiff
                     for sub_ifds in entry.get("ifds", []):
