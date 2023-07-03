@@ -136,10 +136,21 @@ class SvsRedactionPlan(TiffRedactionPlan):
 
     def report_plan(self) -> None:
         print("Aperio (.svs) Metadata Redaction Plan\n")
-        for tag_value, rule in self.metadata_redaction_steps.items():
-            print(f"Tiff Tag {tag_value} - {rule.key_name}: {rule.action}")
-        for key_name, rule in self.description_redaction_steps.items():
-            print(f"SVS Image Description - {key_name}: {rule.action}")
+        offset = -1
+        ifd_count = 0
+        for tag, ifd in self._iter_tiff_tag_entries(self.tiff_info["ifds"]):
+            if ifd["offset"] != offset:
+                offset = ifd["offset"]
+                ifd_count += 1
+                print(f"IFD {ifd_count}:")
+            if tag.value == tifftools.constants.Tag["ImageDescription"]:
+                image_description = SvsDescription(str(ifd["tags"][tag.value]["data"]))
+                for key_name, _data in image_description.metadata.items():
+                    rule = self.description_redaction_steps[key_name]
+                    print(f"SVS Image Description - {key_name}: {rule.action}")
+                continue
+            rule = self.metadata_redaction_steps[tag.value]
+            print(f"Tiff Tag {tag.value} - {rule.key_name}: {rule.action}")
         self.report_missing_rules()
         print("Aperio (.svs) Associated Image Redaction Plan\n")
         match_counts = {}

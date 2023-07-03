@@ -159,8 +159,15 @@ class TiffRedactionPlan(RedactionPlan):
 
     def report_plan(self) -> None:
         print("Tiff Metadata Redaction Plan\n")
-        for tag_value, rule in self.metadata_redaction_steps.items():
-            print(f"Tiff Tag {tag_value} - {rule.key_name}: {rule.action}")
+        offset = -1
+        ifd_count = 0
+        for tag, ifd in self._iter_tiff_tag_entries(self.tiff_info["ifds"]):
+            if ifd["offset"] != offset:
+                offset = ifd["offset"]
+                ifd_count += 1
+                print(f"IFD {ifd_count}:")
+            rule = self.metadata_redaction_steps[tag.value]
+            print(f"Tiff Tag {tag.value} - {rule.key_name}: {rule.action}")
         self.report_missing_rules()
         print("Tiff Associated Image Redaction Plan\n")
         print(f"Found {len(self.image_redaction_steps)} associated images")
