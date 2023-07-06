@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING
 
 import tifftools
 import tifftools.constants
-from tifftools.tifftools import IFD
 
 from imagedephi.rules import ConcreteMetadataRule, FileFormat, RedactionOperation, SvsRules
 
@@ -109,12 +108,15 @@ class SvsRedactionPlan(TiffRedactionPlan):
             return rule.key_name == data
         return False
 
-    def determine_redaction_action(self, rule: ConcreteMetadataRule, data: SvsDescription | IFD) -> RedactionOperation:
+    def determine_redaction_action(
+        self, rule: ConcreteMetadataRule, data: SvsDescription | IFD
+    ) -> RedactionOperation:
         if isinstance(data, SvsDescription):
             if rule.action == "check_type":
-                valid_types = tuple(rule.valid_data_type)
                 value = data.metadata[rule.key_name]
-                passes_check = self.passes_type_check(value, valid_types, rule.expected_count)
+                passes_check = self.passes_type_check(
+                    value, rule.valid_data_types, rule.expected_count
+                )
                 return "keep" if passes_check else "delete"
             if rule.action in ["keep", "replace", "delete"]:
                 return rule.action
