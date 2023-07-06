@@ -13,6 +13,7 @@ expected_type_map: dict[str, list[Type[Any]]] = {
     "integer": [int],
     "number": [int, float],
     "text": [str],
+    "rational": [int]
 }
 
 RedactionOperation: TypeAlias = Literal["keep", "delete", "replace"]
@@ -46,15 +47,19 @@ class ImageReplaceRule(ReplaceRule):
 
 class CheckTypeMetadataRule(_Rule):
     action: Literal["check_type"]
-    expected_type: list[Type[Any]]
+    expected_type: Literal["number", "integer", "text", "rational"]
+    valid_data_type: list[Type[Any]] = []
     expected_count: int
 
-    @validator("expected_type", pre=True)
+    @validator("valid_data_type", pre=True, always=True)
     @classmethod
-    def set_expected_type(cls, expected_type: Any):
-        if expected_type in expected_type_map:
-            return expected_type_map[expected_type]
-        raise Exception(f"Invalid value for expected_type: {expected_type}")
+    def set_valid_data_type(
+        cls,
+        valid_data_type: list[Type[Any]],
+        values: dict[str, Any]
+    ) -> list[Type[Any]]:
+        valid_data_type = expected_type_map[values["expected_type"]]
+        return valid_data_type
 
 
 ConcreteMetadataRule = Annotated[
