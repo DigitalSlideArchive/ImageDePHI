@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Generator
 from io import BytesIO
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from PIL import Image, TiffTags
 from PIL.TiffImagePlugin import ImageFileDirectory_v2
@@ -141,6 +141,16 @@ class TiffRedactionPlan(RedactionPlan):
             return rule_tag.value == tag.value
         return False
 
+    def passes_type_check(self, metadata_value: Any, valid_types: tuple[type], expected_count: int) -> bool:
+        passes_check = False
+        if isinstance(metadata_value, list):
+            return len(metadata_value) == expected_count and all(
+                isinstance(item, valid_types) for item in metadata_value
+            )
+        else:
+            return isinstance(metadata_value, valid_types)
+
+
     def determine_redaction_action(
         self, rule: ConcreteMetadataRule, ifd: IFD
     ) -> RedactionOperation:
@@ -154,14 +164,9 @@ class TiffRedactionPlan(RedactionPlan):
         if rule.action == "check_type":
             tag = get_tiff_tag(rule.key_name)
             value = ifd["tags"][tag.value]["data"]
-            valid_types = tuple(rule.expected_type)
-            passes_check = False
-            if isinstance(value, list):
-                passes_check = len(value) == rule.expected_count and all(
-                    isinstance(item, valid_types) for item in value
-                )
-            else:
-                passes_check = isinstance(value, valid_types)
+            valid_types = tuple(rule.valid_data_type)
+            expected_count = 2 * rule.expected_count if rule.expected_type == "rational" else rule.expected_count
+            passes_check = self.passes_type_check(value, valid_types, expected_count)
             return "keep" if passes_check else "delete"
         if rule.action in ["keep", "replace", "delete"]:
             return rule.action
