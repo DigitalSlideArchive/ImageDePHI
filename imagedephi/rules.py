@@ -67,11 +67,6 @@ ConcreteImageRule = Annotated[
 ]
 
 
-class MetadataRedactionStep(BaseModel):
-    rule: ConcreteMetadataRule
-    operation: RedactionOperation
-
-
 class BaseRules(BaseModel):
     matches: list[str]
 

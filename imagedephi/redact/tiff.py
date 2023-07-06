@@ -15,7 +15,6 @@ from imagedephi.rules import (
     ConcreteMetadataRule,
     FileFormat,
     ImageReplaceRule,
-    MetadataRedactionStep,
     MetadataReplaceRule,
     RedactionOperation,
     TiffRules,
@@ -43,7 +42,7 @@ class TiffRedactionPlan(RedactionPlan):
     file_format = FileFormat.TIFF
     image_path: Path
     tiff_info: TiffInfo
-    metadata_redaction_steps: dict[int, MetadataRedactionStep]
+    metadata_redaction_steps: dict[int, ConcreteMetadataRule]
     image_redaction_steps: dict[int, ConcreteImageRule]
     no_match_tags: list[tifftools.TiffTag]
 
@@ -114,7 +113,7 @@ class TiffRedactionPlan(RedactionPlan):
         self.no_match_tags = []
         ifds = self.tiff_info["ifds"]
 
-        for tag, ifd in self._iter_tiff_tag_entries(ifds):
+        for tag, _ifd in self._iter_tiff_tag_entries(ifds):
             if tag.value == tifftools.constants.Tag["ImageJMetadata"].value:
                 raise UnsupportedFileTypeError("Redaction for ImageJ files is not supported")
             if tag.value == tifftools.constants.Tag["NDPI_FORMAT_FLAG"].value:
@@ -123,10 +122,7 @@ class TiffRedactionPlan(RedactionPlan):
             for name in [tag.name] + list(tag.get("altnames", set())):
                 tag_rule = rules.metadata.get(name, None)
                 if tag_rule and self.is_match(tag_rule, tag):
-                    self.metadata_redaction_steps[tag.value] = MetadataRedactionStep(
-                        rule=tag_rule,
-                        operation=self.determine_redaction_action(tag_rule, ifd),
-                    )
+                    self.metadata_redaction_steps[tag.value] = tag_rule
                     break
             else:
                 self.no_match_tags.append(tag)
@@ -276,9 +272,9 @@ class TiffRedactionPlan(RedactionPlan):
         ifds = self.tiff_info["ifds"]
         new_ifds = self._redact_associated_images(ifds)
         for tag, ifd in self._iter_tiff_tag_entries(new_ifds):
-            redaction_step = self.metadata_redaction_steps.get(tag.value)
-            if redaction_step is not None:
-                self.apply(redaction_step.rule, ifd)
+            rule = self.metadata_redaction_steps.get(tag.value)
+            if rule is not None:
+                self.apply(rule, ifd)
         self.tiff_info["ifds"] = new_ifds
 
     def save(self, output_path: Path, overwrite: bool) -> None:
