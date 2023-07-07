@@ -23,3 +23,6 @@ svs:
   image_description:
     ICC Profile:
       action: delete
+    Filename:
+      action: check_type
+      expected_type: number
