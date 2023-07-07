@@ -203,7 +203,8 @@ class TiffRedactionPlan(RedactionPlan):
                 ifd_count += 1
                 print(f"IFD {ifd_count}:")
             rule = self.metadata_redaction_steps[tag.value]
-            print(f"Tiff Tag {tag.value} - {rule.key_name}: {rule.action}")
+            operation = self.determine_redaction_operation(rule, ifd)
+            print(f"Tiff Tag {tag.value} - {rule.key_name}: {operation}")
         self.report_missing_rules()
         print("Tiff Associated Image Redaction Plan\n")
         print(f"Found {len(self.image_redaction_steps)} associated images")

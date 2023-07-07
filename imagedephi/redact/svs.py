@@ -171,10 +171,12 @@ class SvsRedactionPlan(TiffRedactionPlan):
                 image_description = SvsDescription(str(ifd["tags"][tag.value]["data"]))
                 for key_name, _data in image_description.metadata.items():
                     rule = self.description_redaction_steps[key_name]
-                    print(f"SVS Image Description - {key_name}: {rule.action}")
+                    operation = self.determine_redaction_operation(rule, image_description)
+                    print(f"SVS Image Description - {key_name}: {operation}")
                 continue
             rule = self.metadata_redaction_steps[tag.value]
-            print(f"Tiff Tag {tag.value} - {rule.key_name}: {rule.action}")
+            operation = self.determine_redaction_operation(rule, ifd)
+            print(f"Tiff Tag {tag.value} - {rule.key_name}: {operation}")
         self.report_missing_rules()
         print("Aperio (.svs) Associated Image Redaction Plan\n")
         match_counts = {}
