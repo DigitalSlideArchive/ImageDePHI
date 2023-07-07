@@ -49,7 +49,7 @@ class CheckTypeMetadataRule(_Rule):
     action: Literal["check_type"]
     expected_type: Literal["number", "integer", "text", "rational"]
     valid_data_types: list[Type[Any]] = []
-    expected_count: int
+    expected_count: int = 1
 
     @validator("valid_data_types", pre=True, always=True)
     @classmethod
