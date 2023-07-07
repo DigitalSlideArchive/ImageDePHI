@@ -25,6 +25,7 @@ class SvsDescription:
     metadata: dict[str, str | int | float]
 
     def try_get_numeric_value(self, value: str) -> str | int | float:
+        """Given an ImageDescription value, return a number version of it if applicable."""
         try:
             int(value)
             return int(value)

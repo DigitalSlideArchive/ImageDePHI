@@ -113,7 +113,7 @@ class TiffRedactionPlan(RedactionPlan):
         self.no_match_tags = []
         ifds = self.tiff_info["ifds"]
 
-        for tag, _ifd in self._iter_tiff_tag_entries(ifds):
+        for tag, _ in self._iter_tiff_tag_entries(ifds):
             if tag.value == tifftools.constants.Tag["ImageJMetadata"].value:
                 raise UnsupportedFileTypeError("Redaction for ImageJ files is not supported")
             if tag.value == tifftools.constants.Tag["NDPI_FORMAT_FLAG"].value:
@@ -144,6 +144,15 @@ class TiffRedactionPlan(RedactionPlan):
     def passes_type_check(
         self, metadata_value: Any, valid_types: list[type], expected_count: int
     ) -> bool:
+        """
+        Determine if a metadata value passes is of the expected type.
+
+        Given a metadata value, a list of expected types, and a number of expected values,
+        return True if the metadata value either
+            a) is of the expected type or types or
+            b) is a list whose length is equal to the expected count, and each element of
+               said list is of the expected type or types.
+        """
         if isinstance(metadata_value, list):
             return len(metadata_value) == expected_count and all(
                 isinstance(item, tuple(valid_types)) for item in metadata_value
