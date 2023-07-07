@@ -151,7 +151,7 @@ class TiffRedactionPlan(RedactionPlan):
         else:
             return isinstance(metadata_value, tuple(valid_types))
 
-    def determine_redaction_action(
+    def determine_redaction_operation(
         self, rule: ConcreteMetadataRule, ifd: IFD
     ) -> RedactionOperation:
         """
@@ -175,7 +175,7 @@ class TiffRedactionPlan(RedactionPlan):
 
     def apply(self, rule: ConcreteMetadataRule, ifd: IFD) -> None:
         tag = get_tiff_tag(rule.key_name)
-        operation = self.determine_redaction_action(rule, ifd)
+        operation = self.determine_redaction_operation(rule, ifd)
         if operation == "delete":
             del ifd["tags"][tag.value]
         elif operation == "replace":

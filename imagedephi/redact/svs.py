@@ -6,7 +6,13 @@ from typing import TYPE_CHECKING
 import tifftools
 import tifftools.constants
 
-from imagedephi.rules import ConcreteMetadataRule, FileFormat, RedactionOperation, SvsRules
+from imagedephi.rules import (
+    ConcreteMetadataRule,
+    FileFormat,
+    MetadataReplaceRule,
+    RedactionOperation,
+    SvsRules,
+)
 
 from .tiff import TiffRedactionPlan
 
@@ -108,7 +114,7 @@ class SvsRedactionPlan(TiffRedactionPlan):
             return rule.key_name == data
         return False
 
-    def determine_redaction_action(
+    def determine_redaction_operation(
         self, rule: ConcreteMetadataRule, data: SvsDescription | IFD
     ) -> RedactionOperation:
         if isinstance(data, SvsDescription):
@@ -121,14 +127,16 @@ class SvsRedactionPlan(TiffRedactionPlan):
             if rule.action in ["keep", "replace", "delete"]:
                 return rule.action
         else:
-            return super().determine_redaction_action(rule, data)
+            return super().determine_redaction_operation(rule, data)
         return "delete"
 
     def apply(self, rule: ConcreteMetadataRule, data: SvsDescription | IFD) -> None:
         if isinstance(data, SvsDescription):
-            if rule.action == "delete":
+            redaction_operation = self.determine_redaction_operation(rule, data)
+            if redaction_operation == "delete":
                 del data.metadata[rule.key_name]
-            elif rule.action == "replace":
+            elif redaction_operation == "replace":
+                assert isinstance(rule, MetadataReplaceRule)
                 data.metadata[rule.key_name] = rule.new_value
             return
         return super().apply(rule, data)
