@@ -22,7 +22,18 @@ if TYPE_CHECKING:
 
 class SvsDescription:
     prefix: str
-    metadata: dict[str, str]
+    metadata: dict[str, str | int | float]
+
+    def try_get_numeric_value(self, value: str) -> str | int | float:
+        try:
+            int(value)
+            return int(value)
+        except ValueError:
+            try:
+                float(value)
+                return float(value)
+            except ValueError:
+                return value
 
     def __init__(self, svs_description_string: str):
         description_components = svs_description_string.split("|")
@@ -31,12 +42,12 @@ class SvsDescription:
         self.metadata = {}
         for metadata_component in description_components[1:]:
             key, value = [token.strip() for token in metadata_component.split("=")]
-            self.metadata[key] = value
+            self.metadata[key] = self.try_get_numeric_value(value)
 
     def __str__(self) -> str:
         components = [self.prefix]
         components = components + [
-            " = ".join([key, self.metadata[key]]) for key in self.metadata.keys()
+            " = ".join([key, str(self.metadata[key])]) for key in self.metadata.keys()
         ]
         return "|".join(components)
 
