@@ -11,8 +11,8 @@ def client() -> TestClient:
     return TestClient(app)
 
 
-def test_gui_select_directory(client: TestClient) -> None:
-    response = client.get("/")
+def test_gui_home(client: TestClient) -> None:
+    response = client.get(app.url_path_for("home"), follow_redirects=True)
 
     assert response.status_code == 200
     assert "Select Directory" in response.text
@@ -35,7 +35,8 @@ def test_gui_select_directory_input_not_found(
     tmp_path: Path,
 ) -> None:
     response = client.get(
-        app.url_path_for("select_directory"), params={"input_directory": str(tmp_path / "fake")}
+        app.url_path_for("select_directory"),
+        params={"input_directory": str(tmp_path / "fake"), "output_directory": str(tmp_path)},
     )
 
     assert response.status_code == 404
@@ -47,7 +48,8 @@ def test_gui_select_directory_output_not_found(
     tmp_path: Path,
 ) -> None:
     response = client.get(
-        app.url_path_for("select_directory"), params={"output_directory": str(tmp_path / "fake")}
+        app.url_path_for("select_directory"),
+        params={"input_directory": str(tmp_path), "output_directory": str(tmp_path / "fake")},
     )
 
     assert response.status_code == 404
