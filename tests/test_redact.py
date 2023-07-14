@@ -49,3 +49,4 @@ def test_plan_svs(capsys, svs_input_path, override_rule_set):
     captured = capsys.readouterr()
     assert "Aperio (.svs) Metadata Redaction Plan" in captured.out
     assert "ICC Profile: delete" in captured.out
+    assert "Filename: keep" in captured.out

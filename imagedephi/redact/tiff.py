@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Generator
 from io import BytesIO
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from PIL import Image, TiffTags
 from PIL.TiffImagePlugin import ImageFileDirectory_v2
@@ -15,6 +15,8 @@ from imagedephi.rules import (
     ConcreteMetadataRule,
     FileFormat,
     ImageReplaceRule,
+    MetadataReplaceRule,
+    RedactionOperation,
     TiffRules,
 )
 from imagedephi.utils.tiff import get_tiff_tag
@@ -134,16 +136,59 @@ class TiffRedactionPlan(RedactionPlan):
                 ]
 
     def is_match(self, rule: ConcreteMetadataRule, tag: tifftools.TiffTag) -> bool:
-        if rule.action in ["keep", "delete", "replace"]:
+        if rule.action in ["keep", "delete", "replace", "check_type"]:
             rule_tag = get_tiff_tag(rule.key_name)
             return rule_tag.value == tag.value
         return False
 
+    def passes_type_check(
+        self, metadata_value: Any, valid_types: list[type], expected_count: int
+    ) -> bool:
+        """
+        Determine if a metadata value passes is of the expected type.
+
+        Given a metadata value, a list of expected types, and a number of expected values,
+        return True if the metadata value either
+            a) is of the expected type or types or
+            b) is a list whose length is equal to the expected count, and each element of
+               said list is of the expected type or types.
+        """
+        if isinstance(metadata_value, list):
+            return len(metadata_value) == expected_count and all(
+                isinstance(item, tuple(valid_types)) for item in metadata_value
+            )
+        else:
+            return isinstance(metadata_value, tuple(valid_types))
+
+    def determine_redaction_operation(
+        self, rule: ConcreteMetadataRule, ifd: IFD
+    ) -> RedactionOperation:
+        """
+        Given a rule and the IFD it applies to, return the actual action.
+
+        The "check_type" rules will either delete or do nothing to the metadata.
+        This function is used to determine which action will be applied, and is
+        useful for reporting.
+        """
+        if rule.action == "check_type":
+            tag = get_tiff_tag(rule.key_name)
+            value = ifd["tags"][tag.value]["data"]
+            expected_count = (
+                2 * rule.expected_count if rule.expected_type == "rational" else rule.expected_count
+            )
+            passes_check = self.passes_type_check(value, rule.valid_data_types, expected_count)
+            return "keep" if passes_check else "delete"
+        if rule.action in ["keep", "replace", "delete"]:
+            return rule.action
+        return "delete"
+
     def apply(self, rule: ConcreteMetadataRule, ifd: IFD) -> None:
         tag = get_tiff_tag(rule.key_name)
-        if rule.action == "delete":
+        operation = self.determine_redaction_operation(rule, ifd)
+        if operation == "delete":
             del ifd["tags"][tag.value]
-        elif rule.action == "replace":
+        elif operation == "replace":
+            assert isinstance(rule, MetadataReplaceRule)
             ifd["tags"][tag.value]["data"] = rule.new_value
 
     def is_comprehensive(self) -> bool:
@@ -167,7 +212,8 @@ class TiffRedactionPlan(RedactionPlan):
                 ifd_count += 1
                 print(f"IFD {ifd_count}:")
             rule = self.metadata_redaction_steps[tag.value]
-            print(f"Tiff Tag {tag.value} - {rule.key_name}: {rule.action}")
+            operation = self.determine_redaction_operation(rule, ifd)
+            print(f"Tiff Tag {tag.value} - {rule.key_name}: {operation}")
         self.report_missing_rules()
         print("Tiff Associated Image Redaction Plan\n")
         print(f"Found {len(self.image_redaction_steps)} associated images")

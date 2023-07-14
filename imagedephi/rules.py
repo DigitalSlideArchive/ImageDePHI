@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any, Literal, Type, TypeAlias
 
 from pydantic import BaseModel, Field, validator
 
@@ -9,10 +9,20 @@ class FileFormat(Enum):
     SVS = "svs"
 
 
+expected_type_map: dict[str, list[Type[Any]]] = {
+    "integer": [int],
+    "number": [int, float],
+    "text": [str],
+    "rational": [int],
+}
+
+RedactionOperation: TypeAlias = Literal["keep", "delete", "replace"]
+
+
 class _Rule(BaseModel):
     # key_name is not set by users, but is availible internally
     key_name: str = Field(exclude=True)
-    action: Literal["keep", "delete", "replace"]
+    action: Literal["keep", "delete", "replace", "check_type"]
 
 
 class KeepRule(_Rule):
@@ -35,8 +45,24 @@ class ImageReplaceRule(ReplaceRule):
     replace_with: Literal["blank_image"]
 
 
+class CheckTypeMetadataRule(_Rule):
+    action: Literal["check_type"]
+    expected_type: Literal["number", "integer", "text", "rational"]
+    valid_data_types: list[Type[Any]] = []
+    expected_count: int = 1
+
+    @validator("valid_data_types", pre=True, always=True)
+    @classmethod
+    def set_valid_data_types(
+        cls, valid_data_types: list[Type[Any]], values: dict[str, Any]
+    ) -> list[Type[Any]]:
+        valid_data_types = expected_type_map[values["expected_type"]]
+        return valid_data_types
+
+
 ConcreteMetadataRule = Annotated[
-    MetadataReplaceRule | KeepRule | DeleteRule, Field(discriminator="action")
+    MetadataReplaceRule | KeepRule | DeleteRule | CheckTypeMetadataRule,
+    Field(discriminator="action"),
 ]
 
 ConcreteImageRule = Annotated[

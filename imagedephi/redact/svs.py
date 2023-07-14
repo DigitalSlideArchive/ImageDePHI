@@ -6,7 +6,13 @@ from typing import TYPE_CHECKING
 import tifftools
 import tifftools.constants
 
-from imagedephi.rules import ConcreteMetadataRule, FileFormat, SvsRules
+from imagedephi.rules import (
+    ConcreteMetadataRule,
+    FileFormat,
+    MetadataReplaceRule,
+    RedactionOperation,
+    SvsRules,
+)
 
 from .tiff import TiffRedactionPlan
 
@@ -16,7 +22,19 @@ if TYPE_CHECKING:
 
 class SvsDescription:
     prefix: str
-    metadata: dict[str, str]
+    metadata: dict[str, str | int | float]
+
+    def try_get_numeric_value(self, value: str) -> str | int | float:
+        """Given an ImageDescription value, return a number version of it if applicable."""
+        try:
+            int(value)
+            return int(value)
+        except ValueError:
+            try:
+                float(value)
+                return float(value)
+            except ValueError:
+                return value
 
     def __init__(self, svs_description_string: str):
         description_components = svs_description_string.split("|")
@@ -25,12 +43,12 @@ class SvsDescription:
         self.metadata = {}
         for metadata_component in description_components[1:]:
             key, value = [token.strip() for token in metadata_component.split("=")]
-            self.metadata[key] = value
+            self.metadata[key] = self.try_get_numeric_value(value)
 
     def __str__(self) -> str:
         components = [self.prefix]
         components = components + [
-            " = ".join([key, self.metadata[key]]) for key in self.metadata.keys()
+            " = ".join([key, str(self.metadata[key])]) for key in self.metadata.keys()
         ]
         return "|".join(components)
 
@@ -102,17 +120,35 @@ class SvsRedactionPlan(TiffRedactionPlan):
         return "default"
 
     def is_match(self, rule: ConcreteMetadataRule, data: tifftools.TiffTag | str) -> bool:
-        if rule.action in ["keep", "delete", "replace"]:
+        if rule.action in ["keep", "delete", "replace", "check_type"]:
             if isinstance(data, tifftools.TiffTag):
                 return super().is_match(rule, data)
             return rule.key_name == data
         return False
 
+    def determine_redaction_operation(
+        self, rule: ConcreteMetadataRule, data: SvsDescription | IFD
+    ) -> RedactionOperation:
+        if isinstance(data, SvsDescription):
+            if rule.action == "check_type":
+                value = data.metadata[rule.key_name]
+                passes_check = self.passes_type_check(
+                    value, rule.valid_data_types, rule.expected_count
+                )
+                return "keep" if passes_check else "delete"
+            if rule.action in ["keep", "replace", "delete"]:
+                return rule.action
+        else:
+            return super().determine_redaction_operation(rule, data)
+        return "delete"
+
     def apply(self, rule: ConcreteMetadataRule, data: SvsDescription | IFD) -> None:
         if isinstance(data, SvsDescription):
-            if rule.action == "delete":
+            redaction_operation = self.determine_redaction_operation(rule, data)
+            if redaction_operation == "delete":
                 del data.metadata[rule.key_name]
-            elif rule.action == "replace":
+            elif redaction_operation == "replace":
+                assert isinstance(rule, MetadataReplaceRule)
                 data.metadata[rule.key_name] = rule.new_value
             return
         return super().apply(rule, data)
@@ -147,10 +183,12 @@ class SvsRedactionPlan(TiffRedactionPlan):
                 image_description = SvsDescription(str(ifd["tags"][tag.value]["data"]))
                 for key_name, _data in image_description.metadata.items():
                     rule = self.description_redaction_steps[key_name]
-                    print(f"SVS Image Description - {key_name}: {rule.action}")
+                    operation = self.determine_redaction_operation(rule, image_description)
+                    print(f"SVS Image Description - {key_name}: {operation}")
                 continue
             rule = self.metadata_redaction_steps[tag.value]
-            print(f"Tiff Tag {tag.value} - {rule.key_name}: {rule.action}")
+            operation = self.determine_redaction_operation(rule, ifd)
+            print(f"Tiff Tag {tag.value} - {rule.key_name}: {operation}")
         self.report_missing_rules()
         print("Aperio (.svs) Associated Image Redaction Plan\n")
         match_counts = {}
