@@ -35,14 +35,17 @@ def get_base_rules():
 
 
 def iter_image_files(directory: Path) -> Generator[Path, None, None]:
-    """
-    Given a directory return an iterable of available images.
-
-    May raise a PermissionError if the directory is not readable.
-    """
+    """Given a directory return an iterable of available images."""
     for child in directory.iterdir():
-        if child.suffix in FILE_EXTENSION_MAP:
-            yield child
+        # Use first four bits to check if its a tiff file
+        if child.is_file():
+            try:
+                data = open(child, "rb").read(4)
+            except PermissionError:
+                pass
+            else:
+                if data in (b"II\x2a\x00", b"MM\x00\x2a", b"II\x2b\x00", b"MM\x00\x2b"):
+                    yield child
 
 
 def create_redact_dir(base_output_dir: Path) -> Path:
@@ -71,37 +74,24 @@ def redact_images(
     output_file_counter = 1
     output_file_max = len(images_to_redact)
     redact_dir = create_redact_dir(output_dir)
+    show_redaction_plan(input_path)
     for image_file in images_to_redact:
-        if image_file.suffix not in FILE_EXTENSION_MAP:
-            click.echo(f"Image format for {image_file.name} not supported. Skipping...")
-            continue
-        try:
-            redaction_plan = build_redaction_plan(image_file, base_rules, override_rules)
-        except tifftools.TifftoolsError:
-            click.echo(f"Could not open {image_file.name} as a tiff. Skipping...")
-            continue
-        except MalformedAperioFileError:
-            click.echo(
-                f"{image_file.name} could not be processed as a valid Aperio file. Skipping..."
-            )
-            continue
-        except UnsupportedFileTypeError as e:
-            click.echo(f"{image_file.name} could not be processed. {e.args[0]}")
-            continue
         click.echo(f"Redacting {image_file.name}...")
-        if not redaction_plan.is_comprehensive():
-            click.echo(f"Redaction could not be performed for {image_file.name}.")
-            redaction_plan.report_missing_rules()
-        else:
-            redaction_plan.execute_plan()
-            output_path = _get_output_path(
-                image_file,
-                redact_dir,
-                output_file_name_base,
-                output_file_counter,
-                output_file_max,
-            )
-            redaction_plan.save(output_path, overwrite)
+        if image_file.suffix in FILE_EXTENSION_MAP:
+            redaction_plan = build_redaction_plan(image_file, base_rules, override_rules)
+            if not redaction_plan.is_comprehensive():
+                click.echo(f"Redaction could not be performed for {image_file.name}.")
+                redaction_plan.report_missing_rules()
+            else:
+                redaction_plan.execute_plan()
+                output_path = _get_output_path(
+                    image_file,
+                    redact_dir,
+                    output_file_name_base,
+                    output_file_counter,
+                    output_file_max,
+                )
+                redaction_plan.save(output_path, overwrite)
             output_file_counter += 1
 
 

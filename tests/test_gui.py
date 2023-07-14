@@ -12,7 +12,7 @@ def client() -> TestClient:
 
 
 def test_gui_select_directory(client: TestClient) -> None:
-    response = client.get("/")
+    response = client.get(app.url_path_for("select_directory"))
 
     assert response.status_code == 200
     assert "Select Directory" in response.text
