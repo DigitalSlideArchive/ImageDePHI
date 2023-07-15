@@ -13,6 +13,7 @@ import urllib.parse
 from PIL import Image, UnidentifiedImageError
 from fastapi import BackgroundTasks, FastAPI, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, PlainTextResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from jinja2 import FunctionLoader
 from starlette.background import BackgroundTask
@@ -62,6 +63,8 @@ templates = Jinja2Templates(
 )
 
 shutdown_event = asyncio.Event()
+
+app.mount("/assets", StaticFiles(directory="imagedephi/assets"), name='assets')
 
 
 class DirectoryData:
@@ -233,6 +236,11 @@ def get_associated_image(file_name: str = "", image_key: str = ""):
     if not ifd:
         raise HTTPException(status_code=404, detail=f"No {image_key} image found for {file_name}")
     return get_image_response_from_ifd(ifd, file_name)
+
+
+@app.get("/home", response_class=HTMLResponse)
+def home_page(request: Request):
+    return templates.TemplateResponse("HomePage.html.j2", {"request": request})
 
 
 @app.post("/redact/")
