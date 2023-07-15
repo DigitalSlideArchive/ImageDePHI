@@ -77,7 +77,6 @@ def redact_images(
     images_to_redact = list(iter_image_files(input_path) if input_path.is_dir() else [input_path])
     output_file_counter = 1
     output_file_max = len(images_to_redact)
-    redact_dir = create_redact_dir(output_dir)
     try:
         redact_dir = create_redact_dir(output_dir)
     except PermissionError:
