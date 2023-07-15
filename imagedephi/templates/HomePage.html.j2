@@ -84,32 +84,11 @@
             </a>
           </div>
         </div>
-        <div class="w-96 h-[136px] pt-2.5 bg-white flex-col justify-start items-start inline-flex">
-          <div class="self-stretch px-4 py-3 bg-white justify-start items-center gap-2.5 inline-flex">
-            <div class="w-6 h-6 bg-rose-100 rounded-[100px] justify-center items-center flex">
-              <div class="w-6 h-6 text-red-400 text-sm font-semibold flex flex-wrap justify-center content-center">1
-              </div>
-            </div>
-            <div class="grow shrink basis-0">
-              <div class="grow shrink basis-0 flex flex-col">
-                <span class="text-purple-900 text-sm font-semibold uppercase tracking-widest">Input
-                  directory</span>
-                <span class="text-gray-500 text-xs font-normal tracking-wide">Location of the
-                  images you’d
-                  like to process.</span>
-              </div>
-            </div>
-            <div class="btn btn-sm btn-ghost bg-secondaryContent btn-square">
-              <i class="ri-folder-open-fill text-secondary text-lg">
-
-              </i>
-            </div>
-          </div>
-          <div
-            class="self-stretch h-[74px] px-5 pt-6 pb-10 bg-white border-b border-neutral-200 flex-col justify-start items-center flex">
-            <div class="text-center text-gray-500 text-[14px] font-normal">No directory selected</div>
-          </div>
+        <div class="flex flex-col">
+          {% include "SidebarInputStep.html.j2" %}
+          {% include "SidebarOutputStep.html.j2" %}
         </div>
+
       </div>
     </div>
     {# make into a separate component #}
