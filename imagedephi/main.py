@@ -37,7 +37,7 @@ _global_options = [
 
 
 def global_options(func):
-    for option in (_global_options):
+    for option in _global_options:
         func = option(func)
     return func
 
@@ -146,7 +146,6 @@ def plan(obj: ImagedephiContext, input_path: Path, quiet, verbose) -> None:
 
 
 @imagedephi.command
-@global_options
 @click.option(
     "--port",
     type=click.IntRange(1, 65535),
