@@ -4,9 +4,8 @@ from collections.abc import Generator
 import datetime
 import importlib.resources
 from pathlib import Path
+import sys
 
-# import click
-import filetype
 from loguru import logger
 import tifftools
 import tifftools.constants
