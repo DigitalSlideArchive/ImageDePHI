@@ -30,22 +30,9 @@ jobs:
       - name: Build binary
         run: |
           tox -e binary
-      - name: Uniquely name binary (non-Windows)
+      - name: Zip and upload binary
         run: |
-          mv ./dist/imagedephi ./dist/imagedephi-${{ runner.os }}
-        if: runner.os != 'Windows'
-      # It's difficult to rename conditionally on the ".exe" suffix
-      - name: Uniquely name binary (Windows)
-        run: |
-          mv ./dist/imagedephi.exe ./dist/imagedephi-${{ runner.os }}.exe
-        if: runner.os == 'Windows'
-      - name: Upload binary to release
-        run: |
-          gh release upload \
-            ${{ github.event.release.tag_name }} \
-            "./$(ls)#${{ runner.os }} executable" \
-        # Command substitution requires bash on Windows
+          .github/zip_and_upload_package.sh ${{ runner.os }} ${{ github.event.release.tag_name }}
         shell: bash
-        working-directory: dist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
