@@ -4,17 +4,27 @@ import asyncio
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 import importlib.resources
+from io import BytesIO
 import os
 from pathlib import Path
+from typing import TYPE_CHECKING, Literal
+import urllib.parse
 
+from PIL import Image
 from fastapi import BackgroundTasks, FastAPI, Form, HTTPException, Request
-from fastapi.responses import HTMLResponse, PlainTextResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
 from jinja2 import FunctionLoader
 from starlette.background import BackgroundTask
+import tifftools
 
 from imagedephi.redact import iter_image_files, redact_images
+from imagedephi.utils.tiff import get_associated_image_svs
 
+if TYPE_CHECKING:
+    from tifftools.tifftools import IFD
+
+MAX_ASSOCIATED_IMAGE_HEIGHT = 160
 
 def _load_template(template_name: str) -> str | None:
     template_file = importlib.resources.files("imagedephi") / "templates" / template_name
@@ -98,14 +108,58 @@ def select_directory(
     if not output_directory.is_dir():
         raise HTTPException(status_code=404, detail="Output directory not a directory")
 
+    def label_image_url(path: str) -> str:
+        return "label/?file_name=" + urllib.parse.quote(str(input_directory / path), safe="")
+
+    def macro_image_url(path: str) -> str:
+        return "macro/?file_name=" + urllib.parse.quote(str(input_directory / path), safe="")
+
     return templates.TemplateResponse(
         "DirectorySelector.html.j2",
         {
             "request": request,
             "input_directory_data": DirectoryData(input_directory),
             "output_directory_data": DirectoryData(output_directory),
+            "label_image_url": label_image_url,
+            "macro_image_url": macro_image_url,
         },
     )
+
+
+def get_associated_image_response(associated_image_key: Literal["label"] | Literal["macro"], file_name: str):
+    # image key should be either macro or label
+    ifd: IFD | None = get_associated_image_svs(Path(file_name), associated_image_key)
+    if not ifd:
+        return HTTPException(status_code=404, detail=f"No {associated_image_key} image found for {file_name}")
+
+    # use tifftools and PIL to create a jpeg of the associated image, sized for the browser
+    tiff_buffer = BytesIO()
+    jpeg_buffer = BytesIO()
+    tifftools.write_tiff(ifd, tiff_buffer)
+    image = Image.open(tiff_buffer)
+
+    scale_factor = MAX_ASSOCIATED_IMAGE_HEIGHT / image.size[1]
+    new_size = (int(image.size[0] * scale_factor), int(image.size[1] * scale_factor))
+    image.thumbnail(new_size, Image.LANCZOS)
+    image.save(jpeg_buffer, "JPEG")
+    jpeg_buffer.seek(0)
+
+    # return an image response
+    return StreamingResponse(jpeg_buffer, media_type="image/jpeg")
+
+@app.get("/label/")
+def get_label_image(file_name: str = ""):
+    if not file_name:
+        return HTTPException(status_code=404, detail="Could not find a label image. No input image provided.")
+
+    return get_associated_image_response("label", file_name)
+
+
+@app.get("/macro/")
+def get_macro_image(file_name: str = ""):
+    if not file_name:
+        return HTTPException(status_code=404, detail="Could not find a macro image. No input image provided.")
+    return get_associated_image_response("macro", file_name)
 
 
 @app.post("/redact/")
