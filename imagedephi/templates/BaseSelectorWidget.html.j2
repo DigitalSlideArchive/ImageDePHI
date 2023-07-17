@@ -36,6 +36,8 @@
     <li>
       <i class="mdi mdi-image text-sky-800"></i>
       {{ child_image.name }}
+      <img src="{{ label_image_url(child_image.name) }}" alt="label image"/>
+      <img src="{{ macro_image_url(child_image.name) }}" alt="macro image"/>
     </li>
   {% endfor %}
   {% if directory_data.child_images|length > 10 %}
