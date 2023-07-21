@@ -34,10 +34,12 @@
 <ul>
   {% for child_image in directory_data.child_images[:10] %}
     <li>
-      <i class="mdi mdi-image text-sky-800"></i>
-      {{ child_image.name }}
-      <img src="{{ label_image_url(child_image.name) }}" alt="label image"/>
-      <img src="{{ macro_image_url(child_image.name) }}" alt="macro image"/>
+      <div class="inline-flex">
+        <img src="{{ label_image_url(child_image.name) }}" alt="label image"/>
+        <img src="{{ macro_image_url(child_image.name) }}" alt="macro image"/>
+        <i class="mdi mdi-image text-sky-800"></i>
+        {{ child_image.name }}
+      </div>
     </li>
   {% endfor %}
   {% if directory_data.child_images|length > 10 %}
