@@ -18,16 +18,20 @@
         </span>
       </div>
     </div>
-    <div class="btn btn-sm btn-ghost bg-secondaryContent btn-square">
-      {# TODO make optional for third step #}
-      {# TODO open to directory selector modal #}
-      <i class="ri-folder-open-fill text-secondary text-lg"></i>
+    {% block test %}
+    {% endblock test %}
+    {# TODO figure out how to keep modal open until user clicks select #}
+    <div class="modal">
+      <div class="modal-box w-11/12 max-w-5xl">
+        <h3 class="font-bold text-lg">
+          {% block directory %}
+          {% endblock directory %}</h3>
+      </div>
     </div>
   </div>
   <div
     class="self-stretch h-[74px] px-5 pt-6 pb-10 bg-white border-b border-neutral-200 flex-col justify-start items-center flex">
-    {# TODO make optional for third step #}
-    {# TODO Replace with path when chosen or just directory/file name? #}
-    <div class="text-center text-gray-500 text-[14px] font-normal">No directory selected</div>
+    {% block selected_path %}
+    {% endblock selected_path %}
   </div>
 </div>

@@ -117,7 +117,7 @@ def select_directory(
         return "image/?" + urllib.parse.urlencode(params, safe="")
 
     return templates.TemplateResponse(
-        "DirectorySelector.html.j2",
+        "HomePage.html.j2",
         {
             "request": request,
             "input_directory_data": DirectoryData(input_directory),

@@ -8,3 +8,20 @@ Output Directory
 {% block step_help_text %}
 Location of the images after they are processed.
 {% endblock step_help_text %}
+{% block test %}
+<label for="output-modal" class="btn btn-sm btn-ghost bg-secondaryContent btn-square" x-on:click="open = ! open">
+
+  <i class="ri-folder-open-fill text-secondary text-lg"></i>
+</label>
+<input type="checkbox" id="output-modal" class="modal-toggle" />
+{% endblock test %}
+{% block directory %}
+Output Directory
+<p>{% include "OutputSelectorWidget.html.j2" %}</p>
+<div class="modal-action">
+  <label for="output-modal" class="btn">Select</label>
+</div>
+{% endblock directory %}
+{% block selected_path %}
+<div class="text-center text-gray-500 text-[14px] font-normal">No directory selected</div>
+{% endblock selected_path %}
