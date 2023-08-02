@@ -23,12 +23,12 @@ Alternatively **on Windows only**, directly open `imagdephi-Windows.exe` in Wind
 If running on macOS, you may need to [add the executable to the list of trusted software](https://support.apple.com/guide/mac-help/apple-cant-check-app-for-malicious-software-mchleab3a043/mac) to launch ImageDePHI in the same way you would any other registered app.
 
 # Rules
-Image redaction is determined by a set of rules. Each run of the program can use a different set of rules, depending on how the command was run. By default, the base set of rules are used. These rules are provided by the `imagedephi` package and can be found [here](https://github.com/DigitalSlideArchive/ImageDePHI/blob/main/imagedephi/base_rules.yaml).
+Image redaction is determined by a set of rules. By default, the base set of rules are used. These rules are provided by the `imagedephi` package and can be found [here](https://github.com/DigitalSlideArchive/ImageDePHI/blob/main/imagedephi/base_rules.yaml).
 
 ## Rule Application
 All runs of `imagedephi` use the provided base set of rules as a foundation. End users can use the ruleset framework to buld custom rulesets that handle additional or custom metadata not covered by the base rules, or override the behavior of the base rule set.
 
-These override rule sets can be specified by using the `-r my_ruleset.yml` or `--override-rules my_ruleset.yml` flag. This flag is available for both the `imagedephi run` and `imagedephi plan` subcommands.
+Override rule sets can be specified by using the `-r my_ruleset.yml` or `--override-rules my_ruleset.yml` option. This option is available for both the `imagedephi run` and `imagedephi plan` commands. Override rules sets are not provided by `imagedephi`, and must de defined by the end user.
 
 When `imagedephi` determines the steps to redact a file, it checks each piece of metadata in the file. For each piece of metadata found this way, it will first consult the override rule set, if present, for an applicable rule. If the override rule set does not contain a rule for that piece of metadata, the program will check the base ruleset.
 
@@ -39,7 +39,7 @@ If neither the override rule set or base rule set cover a piece of metadata, red
 In order to read the base rules and build your own custom rule sets, it is important to understand the format in which rulesets are specified. Rulesets are defined by `.yml` files (one ruleset per file), and are a dictionary with the following top-level tags: `name`, `description`, `output_file_name`, `tiff`, and `svs`.
 
 ### Generic Properties
-The following three properties belong to the rulesets themselve, and don't influence redaction behavior. Redaction behavior is specified by file type.
+The following three properties belong to the rulesets themselve, and don't influence redaction behavior.
 
 #### `name`
 Provide a name for a ruleset. This is used by the `imagedephi plan` command to specify which ruleset is being used to redact a particular piece of metadata.
@@ -91,7 +91,7 @@ Where `image_key` identifies a particular associated image. For a catch-all rule
 Image rules can have the following actions:
 
 * `replace`: Replace an image with another. If specified, a value for `replace_with` must also be provided
-* `keep`: Does nothing. This image is included in the output file
+* `keep`: Does nothing. The associated image matching this key will be included in the output file
 * `delete`: The image will not be included in the output file
 
 For image rules, the only supported value of `replace_with` is `blank_image`.
@@ -105,13 +105,13 @@ Metadata rules take the following form:
     action:
 ```
 
-Where `metadata_key` identifies a piece of metadata. Its possible values depend on the type of metadata being redacted. For example, rules listed under
+Where `metadata_key` identifies a piece of metadata. Possible values for this key depend on the type of metadata being redacted. For example, rules listed under
 
 ```yaml
 tiff:
     metadata:
 ```
-have `metadata_keys` for particular tiff tags (e.g. `ImageDescription`).
+have `metadata_keys` for particular tiff tags (e.g. `ImageDescription`, `ImageWidth`).
 
 Available actions for metadata rules are:
 
@@ -121,7 +121,7 @@ Available actions for metadata rules are:
 * `check_type`: the metadata will appear in the output file if it is of the expected type. Requires additional fields
 
 ##### `replace` rules
-Require the additional property `replace_with`.
+Require the additional property `replace_with`. The value specified by the `replace_with` key will be used to override the metadata in the output image.
 
 ##### `check_type` rules
 Use the additional properties:
