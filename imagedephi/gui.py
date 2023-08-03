@@ -105,6 +105,7 @@ def select_directory(
     request: Request,
     input_directory: Path = Path("/"),  # noqa: B008
     output_directory: Path = Path("/"),  # noqa: B008
+    modal='',
 ):
     # TODO: if input_directory is specified but an empty string, it gets instantiated as the CWD
     if not input_directory.is_dir():
@@ -123,6 +124,7 @@ def select_directory(
             "input_directory_data": DirectoryData(input_directory),
             "output_directory_data": DirectoryData(output_directory),
             "image_url": image_url,
+            "modal": modal
         },
     )
 

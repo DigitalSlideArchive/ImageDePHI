@@ -70,7 +70,7 @@
 
 <body class="bg-base-300">
   <div class="drawer drawer-mobile">
-    {# <form method="post" action="{{ url_for(" redact") }}"> #}
+    <form method="post" action="{{ url_for('redact') }}">
       <input type="hidden" value="{{ input_directory_data.directory }}" name="input_directory" />
       <input type="hidden" value="{{ output_directory_data.directory }}" name="output_directory" />
       <input type="checkbox" class="drawer-toggle" id="side-drawer" />
@@ -98,8 +98,8 @@
       </div>
       {# make into a separate component #}
       <div class="drawer-content flex flex-col px-8 py-4"></div>
-      {#
-    </form> #}
+
+    </form>
   </div>
 
 </body>
