@@ -21,9 +21,7 @@ def iter_ifds(
                 tagSet=tag_set,
                 datatype=tifftools.Datatype[entry["datatype"]],
             )
-            if not tag.isIFD():
-                yield ifd
-            else:
+            if tag.isIFD():
                 # entry['ifds'] contains a list of lists
                 # see tifftools.read_tiff
                 for sub_ifds in entry.get("ifds", []):
@@ -46,9 +44,12 @@ def get_tiff_tag(tag_name: str) -> tifftools.TiffTag:
 
 def get_associated_image_svs(
         image_path: Path,
-        image_key: Literal["macro"] | Literal["label"]
+        image_key: str
     ) -> IFD | None:
     """Given a path to an SVS image, return the IFD for a given associated label or macro image."""
+    if image_key not in ["macro", "label"]:
+        raise ValueError("image_key must be one of macro, label")
+
     image_info = tifftools.read_tiff(image_path)
     image_description_tag = tifftools.constants.Tag["ImageDescription"]
     ifds = image_info["ifds"]
@@ -61,3 +62,31 @@ def get_associated_image_svs(
         if image_key in str(ifd["tags"][image_description_tag.value]["data"]):
             return ifd
     return None
+
+
+def get_ifd_for_thumbnail(image_path: Path) -> IFD | None:
+    """Given a path to a TIFF image, return the IFD for the lowest resolution tiled image."""
+    image_info = tifftools.read_tiff(image_path)
+
+    min_width = float('inf')
+    lowest_res_ifd = None
+    for ifd in iter_ifds(image_info["ifds"]):
+        # We are interested in the lowest res tiled image.
+        if not tifftools.Tag.TileWidth.value in ifd["tags"]:
+            continue
+        # PIL can only read JPEG-compressed tiff images
+        if ifd["tags"][tifftools.Tag.Compression.value] != tifftools.constants.Compression.JPEG:
+            continue
+
+        image_width = int(ifd["tags"][tifftools.Tag.ImageWidth.value]["data"][0])
+        if image_width and (not min_width or image_width < min_width):
+            min_width = int(image_width)
+            lowest_res_ifd = ifd
+
+    return lowest_res_ifd
+
+
+def get_is_svs(image_path: Path) -> bool:
+    image_info = tifftools.read_tiff(image_path)
+    image_description = image_info["ifds"][0]["tags"].get(tifftools.Tag.ImageDescription.value, {}).get("data", "")
+    return "aperio" in str(image_description).lower()

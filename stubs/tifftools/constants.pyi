@@ -33,6 +33,8 @@ class TiffTag(TiffConstant):
 
 Tag: TiffConstantSet[TiffTag]
 
+Compression: TiffConstantSet
+
 GPSTag: TiffConstantSet[TiffTag]
 
 EXIFTag: TiffConstantSet[TiffTag]

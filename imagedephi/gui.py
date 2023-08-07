@@ -19,7 +19,7 @@ from starlette.background import BackgroundTask
 import tifftools
 
 from imagedephi.redact import iter_image_files, redact_images
-from imagedephi.utils.tiff import get_associated_image_svs
+from imagedephi.utils.tiff import get_associated_image_svs, get_ifd_for_thumbnail, get_is_svs
 
 if TYPE_CHECKING:
     from tifftools.tifftools import IFD
@@ -114,6 +114,16 @@ def select_directory(
     def macro_image_url(path: str) -> str:
         return "macro/?file_name=" + urllib.parse.quote(str(input_directory / path), safe="")
 
+    def image_url(path: str, key: str) -> str:
+        params = {
+            "file_name": str(input_directory / path),
+            "image_key": key
+        }
+        url = "image/?" + urllib.parse.urlencode(params, safe="")
+        print(url)
+        return url
+        # return "image/?file_name=" + urllib.parse.quote(str(input_directory / path), safe="") + "&image_key=" + key
+
     return templates.TemplateResponse(
         "DirectorySelector.html.j2",
         {
@@ -122,16 +132,12 @@ def select_directory(
             "output_directory_data": DirectoryData(output_directory),
             "label_image_url": label_image_url,
             "macro_image_url": macro_image_url,
+            "image_url": image_url,
         },
     )
 
 
-def get_associated_image_response(associated_image_key: Literal["label"] | Literal["macro"], file_name: str):
-    # image key should be either macro or label
-    ifd: IFD | None = get_associated_image_svs(Path(file_name), associated_image_key)
-    if not ifd:
-        return HTTPException(status_code=404, detail=f"No {associated_image_key} image found for {file_name}")
-
+def get_image_response_from_ifd(ifd: IFD):
     # use tifftools and PIL to create a jpeg of the associated image, sized for the browser
     tiff_buffer = BytesIO()
     jpeg_buffer = BytesIO()
@@ -149,17 +155,66 @@ def get_associated_image_response(associated_image_key: Literal["label"] | Liter
 
 @app.get("/label/")
 def get_label_image(file_name: str = ""):
+    associated_image_key = "label"
     if not file_name:
         return HTTPException(status_code=404, detail="Could not find a label image. No input image provided.")
+    ifd: IFD | None = get_associated_image_svs(Path(file_name), associated_image_key)
+    if not ifd:
+        return HTTPException(status_code=404, detail=f"No {associated_image_key} image found for {file_name}")
 
-    return get_associated_image_response("label", file_name)
+    return get_image_response_from_ifd(ifd)
 
 
 @app.get("/macro/")
 def get_macro_image(file_name: str = ""):
+    associated_image_key = "macro"
     if not file_name:
-        return HTTPException(status_code=404, detail="Could not find a macro image. No input image provided.")
-    return get_associated_image_response("macro", file_name)
+        return HTTPException(status_code=404, detail="Could not find a label image. No input image provided.")
+    ifd: IFD | None = get_associated_image_svs(Path(file_name), associated_image_key)
+    if not ifd:
+        return HTTPException(status_code=404, detail=f"No {associated_image_key} image found for {file_name}")
+
+    return get_image_response_from_ifd(ifd)
+
+@app.get("/thumbnail/")
+def get_thumbnail_image(file_name: str = ""):
+    if not file_name:
+        return HTTPException(status_code=404, detail="Could not find a thumbnail image. No input image provided.")
+
+    ifd: IFD | None = get_ifd_for_thumbnail(Path(file_name))
+    if not ifd:
+        return HTTPException(status_code=404, detail=f"Could not generate thumbnail image for {file_name}")
+    return get_image_response_from_ifd(ifd)
+
+
+@app.get("/image/")
+def get_associated_image(file_name: str = "", image_key: str = ""):
+    print(f"file_name: {file_name}, image_key: {image_key}")
+    if not file_name:
+        return HTTPException(status_code=400, detail="file_name is a required parameter")
+
+    if image_key not in ["macro", "label", "thumbnail"]:
+        return HTTPException(status_code=400, detail=f"{image_key} is not a supported associated image key for {file_name}.")
+
+    if image_key == "thumbnail":
+        print("thumbnail")
+        ifd: IFD | None = get_ifd_for_thumbnail(Path(file_name))
+        if not ifd:
+            return HTTPException(status_code=404, detail=f"Could not generate thumbnail image for {file_name}")
+        return get_image_response_from_ifd(ifd)
+
+    # image key is one of "macro", "label"
+    if not get_is_svs(Path(file_name)):
+        return HTTPException(status_code=404, detail=f"Image key {image_key} is not supported to {file_name}")
+
+    ifd: IFD | None = get_associated_image_svs(Path(file_name), image_key)
+    if not ifd:
+        return HTTPException(status_code=404, detail=f"No {image_key} image found for {file_name}")
+    return get_image_response_from_ifd(ifd)
+
+
+
+
 
 
 @app.post("/redact/")

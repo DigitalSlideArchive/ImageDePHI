@@ -35,8 +35,9 @@
   {% for child_image in directory_data.child_images[:10] %}
     <li>
       <div class="inline-flex">
-        <img src="{{ label_image_url(child_image.name) }}" alt="label image"/>
-        <img src="{{ macro_image_url(child_image.name) }}" alt="macro image"/>
+        <img src="{{ image_url(child_image.name, 'label') }}" alt="label image"/>
+        <img src="{{ image_url(child_image.name, 'macro') }}" alt="macro image"/>
+        <img src="{{ image_url(child_image.name, 'thumbnail') }}" alt="thumbnail image"/>
         <i class="mdi mdi-image text-sky-800"></i>
         {{ child_image.name }}
       </div>
