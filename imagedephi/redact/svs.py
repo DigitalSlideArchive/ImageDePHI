@@ -112,7 +112,7 @@ class SvsRedactionPlan(TiffRedactionPlan):
         This will return `"default`" if no semantics can be determined.
         """
         image_description_tag = tifftools.constants.Tag["ImageDescription"]
-        image_description = str(ifd["tags"][image_description_tag.value]["data"])
+        image_description = str(ifd["tags"].get(image_description_tag.value, {}).get("data", ''))
         # we could do additional checks, like look for a macro based on dimensions
         for key in self.rules.associated_images:
             if key in image_description:
