@@ -39,7 +39,7 @@ If neither the override rule set or base rule set cover a piece of metadata, red
 In order to read the base rules and build your own custom rule sets, it is important to understand the format in which rulesets are specified. Rulesets are defined by `.yml` files (one ruleset per file), and are a dictionary with the following top-level tags: `name`, `description`, `output_file_name`, `tiff`, and `svs`.
 
 ### Generic Properties
-The following three properties belong to the rulesets themselve, and don't influence redaction behavior.
+The following three properties belong to the rulesets themselves, and don't influence redaction behavior.
 
 #### `name`
 Provide a name for a ruleset. This is used by the `imagedephi plan` command to specify which ruleset is being used to redact a particular piece of metadata.
@@ -48,7 +48,7 @@ Provide a name for a ruleset. This is used by the `imagedephi plan` command to s
 You can add a description to your custom rulesets. This is not used by the program, but can be helpful to communicate what cases your custom rulesets are designed for.
 
 #### `output_file_name`
-Specify how the output files should be names here. The base ruleset contains the value `study_slide`. In this case, if my input slides are named: `john_smith_lung.svs` and `john_smith_pancreas.svs`, the redacted output images will be named `study_slide_1.svs` and `study_slide_2.svs`.
+Specify how the output files should be named here. The base ruleset contains the value `study_slide`. In this case, if the input slides are named: `john_smith_lung.svs` and `john_smith_pancreas.svs`, the redacted output images will be named `study_slide_1.svs` and `study_slide_2.svs`.
 
 ### File Format Rules
 Redaction behavior is specified per file type. Currently pure `tiff` files and Aperio (`.svs`) files are supported. Each image type has its own groups of data that can be redacted. For example, Aperio images have `tiff` metadata, certain associated images, and additional metadata specified in the `ImageDescription` tag. `svs` rulesets take the following shape:
