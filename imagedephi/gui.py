@@ -7,7 +7,7 @@ import importlib.resources
 from io import BytesIO
 import os
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING
 import urllib.parse
 
 from PIL import Image
@@ -25,6 +25,7 @@ if TYPE_CHECKING:
     from tifftools.tifftools import IFD
 
 MAX_ASSOCIATED_IMAGE_HEIGHT = 160
+
 
 def _load_template(template_name: str) -> str | None:
     template_file = importlib.resources.files("imagedephi") / "templates" / template_name
@@ -109,10 +110,7 @@ def select_directory(
         raise HTTPException(status_code=404, detail="Output directory not a directory")
 
     def image_url(path: str, key: str) -> str:
-        params = {
-            "file_name": str(input_directory / path),
-            "image_key": key
-        }
+        params = {"file_name": str(input_directory / path), "image_key": key}
         return "image/?" + urllib.parse.urlencode(params, safe="")
 
     return templates.TemplateResponse(
@@ -150,20 +148,27 @@ def get_associated_image(file_name: str = "", image_key: str = ""):
         return HTTPException(status_code=400, detail="file_name is a required parameter")
 
     if image_key not in ["macro", "label", "thumbnail"]:
-        return HTTPException(status_code=400, detail=f"{image_key} is not a supported associated image key for {file_name}.")
-
+        return HTTPException(
+            status_code=400,
+            detail=f"{image_key} is not a supported associated image key for {file_name}.",
+        )
+    ifd: IFD | None = None
     if image_key == "thumbnail":
         print("thumbnail")
-        ifd: IFD | None = get_ifd_for_thumbnail(Path(file_name))
+        ifd = get_ifd_for_thumbnail(Path(file_name))
         if not ifd:
-            return HTTPException(status_code=404, detail=f"Could not generate thumbnail image for {file_name}")
+            return HTTPException(
+                status_code=404, detail=f"Could not generate thumbnail image for {file_name}"
+            )
         return get_image_response_from_ifd(ifd)
 
     # image key is one of "macro", "label"
     if not get_is_svs(Path(file_name)):
-        return HTTPException(status_code=404, detail=f"Image key {image_key} is not supported to {file_name}")
+        return HTTPException(
+            status_code=404, detail=f"Image key {image_key} is not supported to {file_name}"
+        )
 
-    ifd: IFD | None = get_associated_image_svs(Path(file_name), image_key)
+    ifd = get_associated_image_svs(Path(file_name), image_key)
     if not ifd:
         return HTTPException(status_code=404, detail=f"No {image_key} image found for {file_name}")
     return get_image_response_from_ifd(ifd)

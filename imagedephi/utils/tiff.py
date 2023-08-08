@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Generator
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING
 
 import tifftools
 
@@ -28,6 +28,7 @@ def iter_ifds(
                     yield from iter_ifds(sub_ifds, tag.get("tagset"))
         yield ifd
 
+
 def get_tiff_tag(tag_name: str) -> tifftools.TiffTag:
     """Given the name of a TIFF tag, attempt to return the TIFF tag from tifftools."""
     # This function checks TagSet objects from tifftools for a given tag. If the tag is not found
@@ -42,10 +43,7 @@ def get_tiff_tag(tag_name: str) -> tifftools.TiffTag:
     return tifftools.constants.get_or_create_tag(tag_name)
 
 
-def get_associated_image_svs(
-        image_path: Path,
-        image_key: str
-    ) -> IFD | None:
+def get_associated_image_svs(image_path: Path, image_key: str) -> IFD | None:
     """Given a path to an SVS image, return the IFD for a given associated label or macro image."""
     if image_key not in ["macro", "label"]:
         raise ValueError("image_key must be one of macro, label")
@@ -75,11 +73,11 @@ def get_ifd_for_thumbnail(image_path: Path) -> IFD | None:
     """Given a path to a TIFF image, return the IFD for the lowest resolution tiled image."""
     image_info = tifftools.read_tiff(image_path)
 
-    min_width = float('inf')
+    min_width = float("inf")
     lowest_res_ifd = None
     for ifd in iter_ifds(image_info["ifds"]):
         # We are interested in the lowest res tiled image.
-        if not tifftools.Tag.TileWidth.value in ifd["tags"]:
+        if tifftools.Tag.TileWidth.value not in ifd["tags"]:
             continue
         # PIL can only read JPEG-compressed tiff images
         if ifd["tags"][tifftools.Tag.Compression.value] != tifftools.constants.Compression.JPEG:
@@ -95,5 +93,7 @@ def get_ifd_for_thumbnail(image_path: Path) -> IFD | None:
 
 def get_is_svs(image_path: Path) -> bool:
     image_info = tifftools.read_tiff(image_path)
-    image_description = image_info["ifds"][0]["tags"].get(tifftools.Tag.ImageDescription.value, {}).get("data", "")
+    if tifftools.Tag.ImageDescription.value not in image_info["ifds"][0]:
+        return False
+    image_description = image_info["ifds"][0]["tags"][tifftools.Tag.ImageDescription.value]["data"]
     return "aperio" in str(image_description).lower()
