@@ -108,21 +108,12 @@ def select_directory(
     if not output_directory.is_dir():
         raise HTTPException(status_code=404, detail="Output directory not a directory")
 
-    def label_image_url(path: str) -> str:
-        return "label/?file_name=" + urllib.parse.quote(str(input_directory / path), safe="")
-
-    def macro_image_url(path: str) -> str:
-        return "macro/?file_name=" + urllib.parse.quote(str(input_directory / path), safe="")
-
     def image_url(path: str, key: str) -> str:
         params = {
             "file_name": str(input_directory / path),
             "image_key": key
         }
-        url = "image/?" + urllib.parse.urlencode(params, safe="")
-        print(url)
-        return url
-        # return "image/?file_name=" + urllib.parse.quote(str(input_directory / path), safe="") + "&image_key=" + key
+        return "image/?" + urllib.parse.urlencode(params, safe="")
 
     return templates.TemplateResponse(
         "DirectorySelector.html.j2",
@@ -130,8 +121,6 @@ def select_directory(
             "request": request,
             "input_directory_data": DirectoryData(input_directory),
             "output_directory_data": DirectoryData(output_directory),
-            "label_image_url": label_image_url,
-            "macro_image_url": macro_image_url,
             "image_url": image_url,
         },
     )
@@ -152,39 +141,6 @@ def get_image_response_from_ifd(ifd: IFD):
 
     # return an image response
     return StreamingResponse(jpeg_buffer, media_type="image/jpeg")
-
-@app.get("/label/")
-def get_label_image(file_name: str = ""):
-    associated_image_key = "label"
-    if not file_name:
-        return HTTPException(status_code=404, detail="Could not find a label image. No input image provided.")
-    ifd: IFD | None = get_associated_image_svs(Path(file_name), associated_image_key)
-    if not ifd:
-        return HTTPException(status_code=404, detail=f"No {associated_image_key} image found for {file_name}")
-
-    return get_image_response_from_ifd(ifd)
-
-
-@app.get("/macro/")
-def get_macro_image(file_name: str = ""):
-    associated_image_key = "macro"
-    if not file_name:
-        return HTTPException(status_code=404, detail="Could not find a label image. No input image provided.")
-    ifd: IFD | None = get_associated_image_svs(Path(file_name), associated_image_key)
-    if not ifd:
-        return HTTPException(status_code=404, detail=f"No {associated_image_key} image found for {file_name}")
-
-    return get_image_response_from_ifd(ifd)
-
-@app.get("/thumbnail/")
-def get_thumbnail_image(file_name: str = ""):
-    if not file_name:
-        return HTTPException(status_code=404, detail="Could not find a thumbnail image. No input image provided.")
-
-    ifd: IFD | None = get_ifd_for_thumbnail(Path(file_name))
-    if not ifd:
-        return HTTPException(status_code=404, detail=f"Could not generate thumbnail image for {file_name}")
-    return get_image_response_from_ifd(ifd)
 
 
 @app.get("/image/")
@@ -211,10 +167,6 @@ def get_associated_image(file_name: str = "", image_key: str = ""):
     if not ifd:
         return HTTPException(status_code=404, detail=f"No {image_key} image found for {file_name}")
     return get_image_response_from_ifd(ifd)
-
-
-
-
 
 
 @app.post("/redact/")
