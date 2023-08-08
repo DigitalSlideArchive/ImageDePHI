@@ -51,16 +51,23 @@ def get_associated_image_svs(
         raise ValueError("image_key must be one of macro, label")
 
     image_info = tifftools.read_tiff(image_path)
-    image_description_tag = tifftools.constants.Tag["ImageDescription"]
     ifds = image_info["ifds"]
 
-    if "Aperio" not in str(ifds[0]["tags"][image_description_tag.value]["data"]):
+    image_description_tag = tifftools.constants.Tag["ImageDescription"]
+    newsubfiletype_tag = tifftools.constants.Tag["NewSubfileType"]
+
+    if "aperio" not in str(ifds[0]["tags"][image_description_tag.value]["data"]).lower():
         # raise ValueError(f"{image_path} is not an svs image")
         return None
 
     for ifd in iter_ifds(ifds):
-        if image_key in str(ifd["tags"][image_description_tag.value]["data"]):
-            return ifd
+        if image_description_tag.value in ifd["tags"]:
+            if image_key in str(ifd["tags"][image_description_tag.value]["data"]):
+                return ifd
+        if newsubfiletype_tag.value in ifd["tags"]:
+            newsubfiletype = ifd["tags"][newsubfiletype_tag.value]["data"][0]
+            if int(newsubfiletype) & 8 and image_key == "macro":
+                return ifd
     return None
 
 
