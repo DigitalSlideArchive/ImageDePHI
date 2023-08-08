@@ -118,7 +118,7 @@ Available actions for metadata rules are:
 * `delete`: the metadata will not appear in the output file
 * `keep`: the metadata will appear unchanged in the output file
 * `replace`: replace the metadata with a specified value. If this is the `action`, additional fields are required.
-* `check_type`: the metadata will appear in the output file if it is of the expected type. Requires additional fields
+* `check_type`: This will either keep the metadata if the type matches or delete the metadata if the type does not match. Requires additional fields
 
 ##### `replace` rules
 Require the additional property `replace_with`. The value specified by the `replace_with` key will be used to override the metadata in the output image.
@@ -126,7 +126,7 @@ Require the additional property `replace_with`. The value specified by the `repl
 ##### `check_type` rules
 Use the additional properties:
 * `expected_type`: one of `integer`, `number`, `text`, `rational`
-* `expected_count` (optional): if the piece of metadata can contain multiple values, specify how many are expected using this property. Defaults to `1`
+* `expected_count` (optional): if the piece of metadata can contain multiple values, specify how many are expected using this property. Defaults to `1`. If the `expected_type` is `rational`, this should be the expected number of rationals. That is, an `expected_count` of 1 would match with 2 integer values in the metadata.
 
 ### Supported Formats
 Currently, `imagedephi` supports redaction of pure `tiff` files as well as Aperio (.svs) files.
@@ -156,6 +156,6 @@ svs:
         ...
 ```
 
-The keys for the `metadata` rules are the names of tiff tags defined by the tiff standard.
+The keys for the `metadata` rules are the names of tiff tags defined by the tiff standard. Names are case insensitive and common variations are accepted, e.g. `GrayResponseUnit` and `GreyResponseUnit` are both accepted
 
 For Aperio files, additional metadata is stored as key-value pairs in the `ImageDescription` tag. See more information about this [here](https://openslide.org/formats/aperio/). Each key in the `image_description` section is a key found in this `ImageDescription` string.
