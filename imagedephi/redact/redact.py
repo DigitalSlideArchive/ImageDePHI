@@ -6,7 +6,6 @@ import importlib.resources
 from pathlib import Path
 import sys
 
-from loguru import logger
 import tifftools
 import tifftools.constants
 import yaml

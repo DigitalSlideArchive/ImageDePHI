@@ -10,7 +10,6 @@ import webbrowser
 import click
 from hypercorn import Config
 from hypercorn.asyncio import serve
-from loguru import logger
 import yaml
 
 from imagedephi.gui import app, shutdown_event
@@ -31,7 +30,7 @@ _global_options = [
         -vv Show DEBUG level logging""",
     ),
     click.option(
-        "-q", "--quiet", is_flag=True, default=False, help="Show ERROR and CRITICAL level logging"
+        "-q", "--quiet", count=True, help="Show ERROR and CRITICAL level logging"
     ),
 ]
 
@@ -58,22 +57,24 @@ logger.remove()
 logger.add(sys.stderr, level="WARNING")
 
 
-def set_logging_level(v: int, q: bool, log_file=None):
+def set_logging_level(v: int, q: int, log_file: Path | None = None):
     log_output = log_file if log_file else sys.stderr
-    if q:
-        logger.remove()
-        logger.add(log_output, level="ERROR")
-    else:
-        match v:
-            case 0:
-                logger.remove()
-                logger.add(log_output, level="WARNING")
-            case 1:
-                logger.remove()
-                logger.add(log_output, level="INFO")
-            case 2:
-                logger.remove()
-                logger.add(log_output, level="DEBUG")
+    logger.remove()
+
+    # if q:
+    #     logger.remove()
+    #     logger.add(log_output, level="ERROR")
+    # else:
+    #     match v:
+    #         case 0:
+    #             logger.remove()
+    #             logger.add(log_output, level="WARNING")
+    #         case 1:
+    #             logger.remove()
+    #             logger.add(log_output, level="INFO")
+    #         case 2:
+    #             logger.remove()
+    #             logger.add(log_output, level="DEBUG")
 
 
 @click.group(
@@ -101,7 +102,7 @@ def imagedephi(
     ctx: click.Context,
     override_rules: TextIO | None,
     verbose: int,
-    quiet: bool,
+    quiet: int,
     log_file: Path,
 ) -> None:
     """Redact microscopy whole slide images."""
@@ -138,7 +139,7 @@ def run(obj: ImagedephiContext, input_path: Path, output_dir: Path, verbose, qui
 @click.argument("input-path", type=click.Path(exists=True, readable=True, path_type=Path))
 @click.pass_obj
 def plan(obj: ImagedephiContext, input_path: Path, quiet, verbose) -> None:
-    """Print the redaction plan for images."""
+    # """Print the redaction plan for images."""
     if verbose or quiet:
         set_logging_level(verbose, quiet)
 

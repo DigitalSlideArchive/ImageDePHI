@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING, Any
 
 from PIL import Image, TiffTags
 from PIL.TiffImagePlugin import ImageFileDirectory_v2
-from loguru import logger
 import tifftools
 import tifftools.constants
 
