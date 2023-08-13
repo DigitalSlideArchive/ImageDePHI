@@ -10,6 +10,7 @@ from PIL.TiffImagePlugin import ImageFileDirectory_v2
 import tifftools
 import tifftools.constants
 
+from imagedephi import logger
 from imagedephi.rules import (
     ConcreteImageRule,
     ConcreteMetadataRule,

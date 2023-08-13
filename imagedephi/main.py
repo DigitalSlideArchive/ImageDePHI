@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import dataclass
+import logging
 from pathlib import Path
 import sys
 from typing import TextIO
@@ -12,6 +13,7 @@ from hypercorn import Config
 from hypercorn.asyncio import serve
 import yaml
 
+from imagedephi import logger
 from imagedephi.gui import app, shutdown_event
 from imagedephi.redact import redact_images, show_redaction_plan
 from imagedephi.rules import Ruleset
@@ -52,29 +54,21 @@ if sys.platform == "win32":
     # To avoid ambiguity with actual paths, only support this on Windows.
     CONTEXT_SETTINGS["help_option_names"].append("/?")
 
-# set default logger to warning level
-logger.remove()
-logger.add(sys.stderr, level="WARNING")
-
 
 def set_logging_level(v: int, q: int, log_file: Path | None = None):
     log_output = log_file if log_file else sys.stderr
-    logger.remove()
 
-    # if q:
-    #     logger.remove()
-    #     logger.add(log_output, level="ERROR")
-    # else:
-    #     match v:
-    #         case 0:
-    #             logger.remove()
-    #             logger.add(log_output, level="WARNING")
-    #         case 1:
-    #             logger.remove()
-    #             logger.add(log_output, level="INFO")
-    #         case 2:
-    #             logger.remove()
-    #             logger.add(log_output, level="DEBUG")
+    if q:
+
+        logger.setLevel(logging.CRITICAL)
+    else:
+        match v:
+            case 0:
+                logger.setLevel(logging.WARNING)
+            case 1:
+                logger.setLevel(logging.INFO)
+            case 2:
+                logger.setLevel(logging.DEBUG)
 
 
 @click.group(
