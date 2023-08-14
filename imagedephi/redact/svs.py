@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING
 import tifftools
 import tifftools.constants
 
-from imagedephi import logger
 from imagedephi.rules import (
     ConcreteMetadataRule,
     FileFormat,
@@ -14,6 +13,7 @@ from imagedephi.rules import (
     RedactionOperation,
     SvsRules,
 )
+from imagedephi.utils.logger import logger
 
 from .tiff import TiffRedactionPlan
 

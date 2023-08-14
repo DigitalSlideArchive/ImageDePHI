@@ -13,11 +13,11 @@ from hypercorn import Config
 from hypercorn.asyncio import serve
 import yaml
 
-from imagedephi import logger
 from imagedephi.gui import app, shutdown_event
 from imagedephi.redact import redact_images, show_redaction_plan
 from imagedephi.rules import Ruleset
 from imagedephi.utils.cli import FallthroughGroup, run_coroutine
+from imagedephi.utils.logger import logger
 from imagedephi.utils.network import unused_tcp_port, wait_for_port
 from imagedephi.utils.os import launched_from_windows_explorer
 
@@ -31,9 +31,7 @@ _global_options = [
         -v  Show INFO level logging
         -vv Show DEBUG level logging""",
     ),
-    click.option(
-        "-q", "--quiet", count=True, help="Show ERROR and CRITICAL level logging"
-    ),
+    click.option("-q", "--quiet", count=True, help="Show ERROR and CRITICAL level logging"),
 ]
 
 
@@ -55,20 +53,27 @@ if sys.platform == "win32":
     CONTEXT_SETTINGS["help_option_names"].append("/?")
 
 
-def set_logging_level(v: int, q: int, log_file: Path | None = None):
-    log_output = log_file if log_file else sys.stderr
+# def set_logging_level(v: int, q: int, log_file: Path | None = None):
+#     # log_output = log_file if log_file else sys.stderr
+#     # test = max(1, logging.WARNING + 10 * (v - q))
+#     # print(test)
+#     # print(logging.WARNING)
+#     # logger.setLevel(max(10, logging.WARNING + 10 * (v - q)))
+#     logger.fatal('test')
+#     print(logger.getEffectiveLevel())
+#     print(logger.name)
+#     if q:
 
-    if q:
-
-        logger.setLevel(logging.CRITICAL)
-    else:
-        match v:
-            case 0:
-                logger.setLevel(logging.WARNING)
-            case 1:
-                logger.setLevel(logging.INFO)
-            case 2:
-                logger.setLevel(logging.DEBUG)
+#         logger.setLevel(logging.CRITICAL)
+#     else:
+#         match v:
+#             case 0:
+#                 logger.setLevel(logging.WARNING)
+#             case 1:
+#                 logger.setLevel(logging.INFO)
+#             case 2:
+#                 logger.setLevel(logging.DEBUG)
+#     print(logger.level)
 
 
 @click.group(
@@ -106,7 +111,8 @@ def imagedephi(
 
     if override_rules:
         obj.override_rule_set = Ruleset.parse_obj(yaml.safe_load(override_rules))
-    set_logging_level(verbose, quiet, log_file)
+    # if verbose or quiet:
+    #     set_logging_level(verbose, quiet, log_file)
 
 
 @imagedephi.command
@@ -124,8 +130,8 @@ def imagedephi(
 def run(obj: ImagedephiContext, input_path: Path, output_dir: Path, verbose, quiet):
     """Perform the redaction of images."""
     redact_images(input_path, output_dir, obj.override_rule_set)
-    if verbose or quiet:
-        set_logging_level(verbose, quiet)
+    # if verbose or quiet:
+    #     set_logging_level(verbose, quiet)
 
 
 @imagedephi.command
@@ -134,8 +140,8 @@ def run(obj: ImagedephiContext, input_path: Path, output_dir: Path, verbose, qui
 @click.pass_obj
 def plan(obj: ImagedephiContext, input_path: Path, quiet, verbose) -> None:
     # """Print the redaction plan for images."""
-    if verbose or quiet:
-        set_logging_level(verbose, quiet)
+    # if verbose or quiet:
+    #     set_logging_level(verbose, quiet)
 
     show_redaction_plan(input_path, obj.override_rule_set)
 

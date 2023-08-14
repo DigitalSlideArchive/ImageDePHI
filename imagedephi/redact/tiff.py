@@ -10,7 +10,6 @@ from PIL.TiffImagePlugin import ImageFileDirectory_v2
 import tifftools
 import tifftools.constants
 
-from imagedephi import logger
 from imagedephi.rules import (
     ConcreteImageRule,
     ConcreteMetadataRule,
@@ -20,6 +19,7 @@ from imagedephi.rules import (
     RedactionOperation,
     TiffRules,
 )
+from imagedephi.utils.logger import logger
 from imagedephi.utils.tiff import get_tiff_tag
 
 from .redaction_plan import RedactionPlan

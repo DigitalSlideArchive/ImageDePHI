@@ -10,8 +10,8 @@ import tifftools
 import tifftools.constants
 import yaml
 
-from imagedephi import logger
 from imagedephi.rules import Ruleset
+from imagedephi.utils.logger import logger
 
 from .build_redaction_plan import FILE_EXTENSION_MAP, build_redaction_plan
 from .svs import MalformedAperioFileError
