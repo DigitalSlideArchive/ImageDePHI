@@ -51,3 +51,17 @@ def test_plan_svs(caplog, svs_input_path, override_rule_set):
 
     assert "Aperio (.svs) Metadata Redaction Plan" in caplog.text
     assert "ICC Profile: delete" in caplog.text
+
+
+@freeze_time("2023-05-12 12:12:53")
+def test_remove_orphaned_metadata(data_dir, tmp_path, override_rule_set):
+    input_path = data_dir / "input" / "tiff" / "secret_metadata.tiff"
+    input_bytes = input_path.read_bytes()
+
+    redact.redact_images(input_path, tmp_path, override_rule_set)
+
+    output_file = tmp_path / "Redacted_2023-05-12_12-12-53" / "my_study_slide_1.tiff"
+    output_bytes = output_file.read_bytes()
+
+    assert b"Secret" in input_bytes
+    assert b"Secret" not in output_bytes

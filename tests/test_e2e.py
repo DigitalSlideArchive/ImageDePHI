@@ -37,7 +37,7 @@ def test_e2e_run(cli_runner: CliRunner, data_dir: Path, rules_dir: Path, tmp_pat
     )
 
     assert result.exit_code == 0
-    output_file = tmp_path / "Redacted_2023-05-12_12-12-53" / "my_study_slide_1.tif"
+    output_file = tmp_path / "Redacted_2023-05-12_12-12-53" / "my_study_slide_2.tif"
     output_file_bytes = output_file.read_bytes()
     assert b"large_image_converter" not in output_file_bytes
     assert b"Redacted by ImageDePHI" in output_file_bytes
@@ -101,7 +101,7 @@ def test_e2e_gui(
 
     assert cli_result.exit_code == 0
     webbrowser_open_mock.assert_called_once()
-    output_file = tmp_path / "Redacted_2023-05-12_12-12-53" / "study_slide_1.tif"
+    output_file = tmp_path / "Redacted_2023-05-12_12-12-53" / "study_slide_2.tif"
     output_file_bytes = output_file.read_bytes()
     assert b"large_image_converter" not in output_file_bytes
     assert f"127.0.0.1:{unused_tcp_port}" in webbrowser_open_mock.call_args.args[0]
