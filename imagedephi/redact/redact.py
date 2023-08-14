@@ -4,7 +4,6 @@ from collections.abc import Generator
 import datetime
 import importlib.resources
 from pathlib import Path
-import sys
 
 import tifftools
 import tifftools.constants
@@ -77,13 +76,7 @@ def redact_images(
     images_to_redact = list(iter_image_files(input_path) if input_path.is_dir() else [input_path])
     output_file_counter = 1
     output_file_max = len(images_to_redact)
-    try:
-        redact_dir = create_redact_dir(output_dir)
-    except PermissionError:
-        logger.error(
-            "Could not redact images, invalid output directory. Choose a writable directory"
-        )
-        sys.exit()
+    redact_dir = create_redact_dir(output_dir)
     show_redaction_plan(input_path)
     for image_file in images_to_redact:
         logger.info(f"Redacting {image_file.name}...")
