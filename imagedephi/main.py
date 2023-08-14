@@ -53,27 +53,9 @@ if sys.platform == "win32":
     CONTEXT_SETTINGS["help_option_names"].append("/?")
 
 
-# def set_logging_level(v: int, q: int, log_file: Path | None = None):
-#     # log_output = log_file if log_file else sys.stderr
-#     # test = max(1, logging.WARNING + 10 * (v - q))
-#     # print(test)
-#     # print(logging.WARNING)
-#     # logger.setLevel(max(10, logging.WARNING + 10 * (v - q)))
-#     logger.fatal('test')
-#     print(logger.getEffectiveLevel())
-#     print(logger.name)
-#     if q:
-
-#         logger.setLevel(logging.CRITICAL)
-#     else:
-#         match v:
-#             case 0:
-#                 logger.setLevel(logging.WARNING)
-#             case 1:
-#                 logger.setLevel(logging.INFO)
-#             case 2:
-#                 logger.setLevel(logging.DEBUG)
-#     print(logger.level)
+def set_logging_level(v: int, q: int, log_file: Path | None = None):
+    logger.setLevel(max(1, logging.WARNING - 10 * (v - q)))
+    # log_output = log_file if log_file else sys.stderr
 
 
 @click.group(
@@ -111,8 +93,8 @@ def imagedephi(
 
     if override_rules:
         obj.override_rule_set = Ruleset.parse_obj(yaml.safe_load(override_rules))
-    # if verbose or quiet:
-    #     set_logging_level(verbose, quiet, log_file)
+    if verbose or quiet:
+        set_logging_level(verbose, quiet, log_file)
 
 
 @imagedephi.command
@@ -130,8 +112,8 @@ def imagedephi(
 def run(obj: ImagedephiContext, input_path: Path, output_dir: Path, verbose, quiet):
     """Perform the redaction of images."""
     redact_images(input_path, output_dir, obj.override_rule_set)
-    # if verbose or quiet:
-    #     set_logging_level(verbose, quiet)
+    if verbose or quiet:
+        set_logging_level(verbose, quiet)
 
 
 @imagedephi.command
@@ -140,8 +122,8 @@ def run(obj: ImagedephiContext, input_path: Path, output_dir: Path, verbose, qui
 @click.pass_obj
 def plan(obj: ImagedephiContext, input_path: Path, quiet, verbose) -> None:
     # """Print the redaction plan for images."""
-    # if verbose or quiet:
-    #     set_logging_level(verbose, quiet)
+    if verbose or quiet:
+        set_logging_level(verbose, quiet)
 
     show_redaction_plan(input_path, obj.override_rule_set)
 
