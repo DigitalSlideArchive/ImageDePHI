@@ -32,6 +32,12 @@ _global_options = [
         -vv Show DEBUG level logging""",
     ),
     click.option("-q", "--quiet", count=True, help="Show ERROR and CRITICAL level logging"),
+    click.option(
+        "-l",
+        "--log-file",
+        help="Path where log file will be created",
+        type=click.Path(path_type=Path),
+    ),
 ]
 
 
@@ -53,9 +59,12 @@ if sys.platform == "win32":
     CONTEXT_SETTINGS["help_option_names"].append("/?")
 
 
-def set_logging_level(v: int, q: int, log_file: Path | None = None):
+def set_logging_config(v: int, q: int, log_file: Path | None = None):
     logger.setLevel(max(1, logging.WARNING - 10 * (v - q)))
-    # log_output = log_file if log_file else sys.stderr
+    if log_file:
+        logger.handlers.clear()
+        file_handler = logging.FileHandler(log_file)
+        logger.addHandler(file_handler)
 
 
 @click.group(
@@ -70,12 +79,6 @@ def set_logging_level(v: int, q: int, log_file: Path | None = None):
     "--override-rules",
     type=click.File("r"),
     help="User-defined rules to override defaults.",
-)
-@click.option(
-    "-l",
-    "--log-file",
-    help="Path where log file will be created",
-    type=click.Path(path_type=Path),
 )
 @global_options
 @click.pass_context
@@ -93,8 +96,8 @@ def imagedephi(
 
     if override_rules:
         obj.override_rule_set = Ruleset.parse_obj(yaml.safe_load(override_rules))
-    if verbose or quiet:
-        set_logging_level(verbose, quiet, log_file)
+    if verbose or quiet or log_file:
+        set_logging_config(verbose, quiet, log_file)
 
 
 @imagedephi.command
@@ -109,21 +112,21 @@ def imagedephi(
     type=click.Path(exists=True, file_okay=False, readable=True, writable=True, path_type=Path),
 )
 @click.pass_obj
-def run(obj: ImagedephiContext, input_path: Path, output_dir: Path, verbose, quiet):
+def run(obj: ImagedephiContext, input_path: Path, output_dir: Path, verbose, quiet, log_file):
     """Perform the redaction of images."""
     redact_images(input_path, output_dir, obj.override_rule_set)
-    if verbose or quiet:
-        set_logging_level(verbose, quiet)
+    if verbose or quiet or log_file:
+        set_logging_config(verbose, quiet, log_file)
 
 
 @imagedephi.command
 @global_options
 @click.argument("input-path", type=click.Path(exists=True, readable=True, path_type=Path))
 @click.pass_obj
-def plan(obj: ImagedephiContext, input_path: Path, quiet, verbose) -> None:
+def plan(obj: ImagedephiContext, input_path: Path, quiet, verbose, log_file) -> None:
     # """Print the redaction plan for images."""
-    if verbose or quiet:
-        set_logging_level(verbose, quiet)
+    if verbose or quiet or log_file:
+        set_logging_config(verbose, quiet, log_file)
 
     show_redaction_plan(input_path, obj.override_rule_set)
 
