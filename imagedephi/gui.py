@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 import urllib.parse
 
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 from fastapi import BackgroundTasks, FastAPI, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, PlainTextResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
@@ -129,48 +129,49 @@ def get_image_response_from_ifd(ifd: IFD):
     tiff_buffer = BytesIO()
     jpeg_buffer = BytesIO()
     tifftools.write_tiff(ifd, tiff_buffer)
-    image = Image.open(tiff_buffer)
+    try:
+        image = Image.open(tiff_buffer)
 
-    scale_factor = MAX_ASSOCIATED_IMAGE_HEIGHT / image.size[1]
-    new_size = (int(image.size[0] * scale_factor), int(image.size[1] * scale_factor))
-    image.thumbnail(new_size, Image.LANCZOS)
-    image.save(jpeg_buffer, "JPEG")
-    jpeg_buffer.seek(0)
+        scale_factor = MAX_ASSOCIATED_IMAGE_HEIGHT / image.size[1]
+        new_size = (int(image.size[0] * scale_factor), int(image.size[1] * scale_factor))
+        image.thumbnail(new_size, Image.LANCZOS)
+        image.save(jpeg_buffer, "JPEG")
+        jpeg_buffer.seek(0)
 
-    # return an image response
-    return StreamingResponse(jpeg_buffer, media_type="image/jpeg")
+        # return an image response
+        return StreamingResponse(jpeg_buffer, media_type="image/jpeg")
+    except UnidentifiedImageError:
+        raise HTTPException(status_code=404)
 
 
 @app.get("/image/")
 def get_associated_image(file_name: str = "", image_key: str = ""):
-    print(f"file_name: {file_name}, image_key: {image_key}")
     if not file_name:
-        return HTTPException(status_code=400, detail="file_name is a required parameter")
+        raise HTTPException(status_code=400, detail="file_name is a required parameter")
 
     if image_key not in ["macro", "label", "thumbnail"]:
-        return HTTPException(
+        raise HTTPException(
             status_code=400,
             detail=f"{image_key} is not a supported associated image key for {file_name}.",
         )
     ifd: IFD | None = None
     if image_key == "thumbnail":
-        print("thumbnail")
         ifd = get_ifd_for_thumbnail(Path(file_name))
         if not ifd:
-            return HTTPException(
+            raise HTTPException(
                 status_code=404, detail=f"Could not generate thumbnail image for {file_name}"
             )
         return get_image_response_from_ifd(ifd)
 
     # image key is one of "macro", "label"
     if not get_is_svs(Path(file_name)):
-        return HTTPException(
-            status_code=404, detail=f"Image key {image_key} is not supported to {file_name}"
+        raise HTTPException(
+            status_code=404, detail=f"Image key {image_key} is not supported for {file_name}"
         )
 
     ifd = get_associated_image_svs(Path(file_name), image_key)
     if not ifd:
-        return HTTPException(status_code=404, detail=f"No {image_key} image found for {file_name}")
+        raise HTTPException(status_code=404, detail=f"No {image_key} image found for {file_name}")
     return get_image_response_from_ifd(ifd)
 
 
