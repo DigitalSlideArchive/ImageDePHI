@@ -15,13 +15,15 @@ Location of the images you’d like to process.
 </label>
 <input type="checkbox" id="input-modal" class="modal-toggle" />
 <div class="modal {{ 'modal-open' if modal=='input_modal'}}" id="input_modal">
-  <div class="modal-box w-11/12 max-w-5xl">
-    <h3 class="font-bold text-lg">
-      <p>{% include "InputSelectorWidget.html.j2" %}</p>
-    </h3>
-    <a href="{{ request.url.include_query_params(input_directory=input_directory_data.directory, modal='') }}">
-      <button class="btn bg-primary float-right" type="button">Select</button>
-    </a>
+  <div class="w-full max-w-5xl h-4/5 rounded-xl overflow-hidden">
+    <div class="modal-box w-full max-w-5xl h-full overflow-auto">
+      <h3 class="font-bold text-lg">
+        <p>{% include "InputSelectorWidget.html.j2" %}</p>
+      </h3>
+      <a href="{{ request.url.include_query_params(input_directory=input_directory_data.directory, modal='') }}">
+        <button class="btn bg-primary float-right" type="button">Select</button>
+      </a>
+    </div>
   </div>
 </div>
 
