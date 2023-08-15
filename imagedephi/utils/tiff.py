@@ -79,9 +79,6 @@ def get_ifd_for_thumbnail(image_path: Path) -> IFD | None:
         # We are interested in the lowest res tiled image.
         if tifftools.Tag.TileWidth.value not in ifd["tags"]:
             continue
-        # PIL can only read JPEG-compressed tiff images
-        if ifd["tags"][tifftools.Tag.Compression.value] != tifftools.constants.Compression.JPEG:
-            continue
 
         image_width = int(ifd["tags"][tifftools.Tag.ImageWidth.value]["data"][0])
         if image_width and (not min_width or image_width < min_width):
@@ -93,7 +90,7 @@ def get_ifd_for_thumbnail(image_path: Path) -> IFD | None:
 
 def get_is_svs(image_path: Path) -> bool:
     image_info = tifftools.read_tiff(image_path)
-    if tifftools.Tag.ImageDescription.value not in image_info["ifds"][0]:
+    if tifftools.Tag.ImageDescription.value not in image_info["ifds"][0]["tags"]:
         return False
     image_description = image_info["ifds"][0]["tags"][tifftools.Tag.ImageDescription.value]["data"]
     return "aperio" in str(image_description).lower()
