@@ -9,18 +9,36 @@ Input Directory
 Location of the images you’d like to process.
 {% endblock step_help_text %}
 {% block test %}
-<label for="input-modal" class="btn btn-sm btn-ghost bg-secondaryContent btn-square" x-on:click="open = ! open">
+<label for="input-modal" class="btn btn-sm btn-ghost bg-secondaryContent btn-square">
 
   <i class="ri-folder-open-fill text-secondary text-lg"></i>
 </label>
 <input type="checkbox" id="input-modal" class="modal-toggle" />
-{% endblock test %}
-{% block directory %}
-<p>{% include "InputSelectorWidget.html.j2" %}</p>
-<div class="modal-action">
-  <label for="input-modal" class="btn">Select</label>
+<div class="modal {{ 'modal-open' if modal=='input_modal'}}" id="input_modal">
+  <div class="modal-box w-11/12 max-w-5xl">
+    <h3 class="font-bold text-lg">
+      <p>{% include "InputSelectorWidget.html.j2" %}</p>
+    </h3>
+    <a href="{{ request.url.include_query_params(input_directory=input_directory_data.directory, modal='') }}">
+      <button class="btn bg-primary float-right" type="button">Select</button>
+    </a>
+  </div>
 </div>
-{% endblock directory %}
+
+
+
+{% endblock test %}
 {% block selected_path %}
-<div class="text-center text-gray-500 text-[14px] font-normal">No directory selected</div>
+{% if input_directory_data.directory.name %}
+<div class="text-center text-gray-500 text-[14px] font-bold">
+  Selected directory:
+</div>
+<div class="text-center text-primary text-[16px] font-normal break-all">
+  {{input_directory_data.directory}}
+</div>
+{% else %}
+<div class="text-center text-gray-500 text-[14px] font-normal">
+  No directory selected
+</div>
+{% endif %}
 {% endblock selected_path %}
