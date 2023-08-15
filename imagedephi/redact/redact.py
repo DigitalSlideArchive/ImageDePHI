@@ -5,12 +5,12 @@ import datetime
 import importlib.resources
 from pathlib import Path
 
-import click
 import tifftools
 import tifftools.constants
 import yaml
 
 from imagedephi.rules import Ruleset
+from imagedephi.utils.logger import logger
 
 from .build_redaction_plan import FILE_EXTENSION_MAP, build_redaction_plan
 from .svs import MalformedAperioFileError
@@ -52,11 +52,14 @@ def create_redact_dir(base_output_dir: Path) -> Path:
     """Given a directory, create and return a timestamped sub-directory within it."""
     time_stamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     redact_dir = base_output_dir / f"Redacted_{time_stamp}"
-
-    redact_dir.mkdir(parents=True)
-
-    click.echo(f"Created redaction folder: {redact_dir}")
-    return redact_dir
+    try:
+        redact_dir.mkdir(parents=True)
+    except PermissionError:
+        logger.error("Cannnot create an output directory, permission error.")
+        raise
+    else:
+        logger.info(f"Created redaction folder: {redact_dir}")
+        return redact_dir
 
 
 def redact_images(
@@ -76,11 +79,11 @@ def redact_images(
     redact_dir = create_redact_dir(output_dir)
     show_redaction_plan(input_path)
     for image_file in images_to_redact:
-        click.echo(f"Redacting {image_file.name}...")
+        logger.info(f"Redacting {image_file.name}...")
         if image_file.suffix in FILE_EXTENSION_MAP:
             redaction_plan = build_redaction_plan(image_file, base_rules, override_rules)
             if not redaction_plan.is_comprehensive():
-                click.echo(f"Redaction could not be performed for {image_file.name}.")
+                logger.info(f"Redaction could not be performed for {image_file.name}.")
                 redaction_plan.report_missing_rules()
             else:
                 redaction_plan.execute_plan()
@@ -100,20 +103,18 @@ def show_redaction_plan(input_path: Path, override_rules: Ruleset | None = None)
     base_rules = get_base_rules()
     for image_path in image_paths:
         if image_path.suffix not in FILE_EXTENSION_MAP:
-            click.echo(f"Image format for {image_path.name} not supported.", err=True)
+            logger.error(f"Image format for {image_path.name} not supported.")
             continue
         try:
             redaction_plan = build_redaction_plan(image_path, base_rules, override_rules)
         except tifftools.TifftoolsError:
-            click.echo(f"Could not open {image_path.name} as a tiff.", err=True)
+            logger.error(f"Could not open {image_path.name} as a tiff.")
             continue
         except MalformedAperioFileError:
-            click.echo(
-                f"{image_path.name} could not be processed as a valid Aperio file.", err=True
-            )
+            logger.error(f"{image_path.name} could not be processed as a valid Aperio file.")
             continue
         except UnsupportedFileTypeError as e:
-            click.echo(f"{image_path.name} could not be processed. {e.args[0]}")
+            logger.error(f"{image_path.name} could not be processed. {e.args[0]}")
             continue
-        print(f"\nRedaction plan for {image_path.name}")
+        logger.info(f"Redaction plan for {image_path.name}")
         redaction_plan.report_plan()

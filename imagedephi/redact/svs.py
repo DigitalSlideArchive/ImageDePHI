@@ -13,6 +13,7 @@ from imagedephi.rules import (
     RedactionOperation,
     SvsRules,
 )
+from imagedephi.utils.logger import logger
 
 from .tiff import TiffRedactionPlan
 
@@ -168,39 +169,39 @@ class SvsRedactionPlan(TiffRedactionPlan):
 
     def report_missing_rules(self) -> None:
         if self.is_comprehensive():
-            print("The redaction plan is comprehensive.")
+            logger.info("The redaction plan is comprehensive.")
         else:
             if self.no_match_tags:
                 super().report_missing_rules()
             if self.no_match_description_keys:
-                print(
+                logger.error(
                     "The following keys were found in Aperio ImageDescription strings "
                     "and could not be redacted given the current set of rules."
                 )
                 for key in self.no_match_description_keys:
-                    print(f"Missing key (Aperio ImageDescription): {key}")
+                    logger.error(f"Missing key (Aperio ImageDescription): {key}")
 
     def report_plan(self) -> None:
-        print("Aperio (.svs) Metadata Redaction Plan\n")
+        logger.info("Aperio (.svs) Metadata Redaction Plan\n")
         offset = -1
         ifd_count = 0
         for tag, ifd in self._iter_tiff_tag_entries(self.tiff_info["ifds"]):
             if ifd["offset"] != offset:
                 offset = ifd["offset"]
                 ifd_count += 1
-                print(f"IFD {ifd_count}:")
+                logger.info(f"IFD {ifd_count}:")
             if tag.value == tifftools.constants.Tag["ImageDescription"]:
                 image_description = SvsDescription(str(ifd["tags"][tag.value]["data"]))
                 for key_name, _data in image_description.metadata.items():
                     rule = self.description_redaction_steps[key_name]
                     operation = self.determine_redaction_operation(rule, image_description)
-                    print(f"SVS Image Description - {key_name}: {operation}")
+                    logger.info(f"SVS Image Description - {key_name}: {operation}")
                 continue
             rule = self.metadata_redaction_steps[tag.value]
             operation = self.determine_redaction_operation(rule, ifd)
-            print(f"Tiff Tag {tag.value} - {rule.key_name}: {operation}")
+            logger.info(f"Tiff Tag {tag.value} - {rule.key_name}: {operation}")
         self.report_missing_rules()
-        print("Aperio (.svs) Associated Image Redaction Plan\n")
+        logger.info("Aperio (.svs) Associated Image Redaction Plan\n")
         match_counts = {}
         for _, image_rule in self.image_redaction_steps.items():
             if image_rule.key_name not in match_counts:
@@ -208,7 +209,7 @@ class SvsRedactionPlan(TiffRedactionPlan):
             else:
                 match_counts[image_rule.key_name] = match_counts[image_rule.key_name] + 1
         for key in match_counts:
-            print(
+            logger.info(
                 f"{match_counts[key]} image(s) match rule:"
                 f" {key} - {self.rules.associated_images[key].action}"
             )

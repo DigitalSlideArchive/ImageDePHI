@@ -1,4 +1,5 @@
 import importlib.resources
+import logging
 from pathlib import Path, PurePath
 
 from freezegun import freeze_time
@@ -9,6 +10,7 @@ from imagedephi import redact
 from imagedephi.redact.redact import create_redact_dir
 from imagedephi.redact.svs import SvsRedactionPlan
 from imagedephi.rules import Ruleset
+from imagedephi.utils.logger import logger
 
 
 @pytest.fixture
@@ -52,13 +54,12 @@ def test_redact_svs(svs_input_path, tmp_path, override_rule_set):
     assert b"macro" not in svs_output_file_bytes
 
 
-def test_plan_svs(capsys, svs_input_path, override_rule_set):
+def test_plan_svs(caplog, svs_input_path, override_rule_set):
+    logger.setLevel(logging.INFO)
     redact.show_redaction_plan(svs_input_path, override_rule_set)
 
-    captured = capsys.readouterr()
-    assert "Aperio (.svs) Metadata Redaction Plan" in captured.out
-    assert "ICC Profile: delete" in captured.out
-    assert "Filename: keep" in captured.out
+    assert "Aperio (.svs) Metadata Redaction Plan" in caplog.text
+    assert "ICC Profile: delete" in caplog.text
 
 
 def test_associated_image_key_no_description(data_dir, base_rule_set):

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import dataclass
+import logging
 from pathlib import Path
 import sys
 from typing import TextIO
@@ -16,8 +17,34 @@ from imagedephi.gui import app, shutdown_event
 from imagedephi.redact import redact_images, show_redaction_plan
 from imagedephi.rules import Ruleset
 from imagedephi.utils.cli import FallthroughGroup, run_coroutine
+from imagedephi.utils.logger import logger
 from imagedephi.utils.network import unused_tcp_port, wait_for_port
 from imagedephi.utils.os import launched_from_windows_explorer
+
+_global_options = [
+    click.option(
+        "-v",
+        "--verbose",
+        count=True,
+        help="""\b
+        Defaults to WARNING level logging
+        -v  Show INFO level logging
+        -vv Show DEBUG level logging""",
+    ),
+    click.option("-q", "--quiet", count=True, help="Show ERROR and CRITICAL level logging"),
+    click.option(
+        "-l",
+        "--log-file",
+        help="Path where log file will be created",
+        type=click.Path(path_type=Path),
+    ),
+]
+
+
+def global_options(func):
+    for option in _global_options:
+        func = option(func)
+    return func
 
 
 @dataclass
@@ -30,6 +57,14 @@ if sys.platform == "win32":
     # Allow Windows users to get help via "/?".
     # To avoid ambiguity with actual paths, only support this on Windows.
     CONTEXT_SETTINGS["help_option_names"].append("/?")
+
+
+def set_logging_config(v: int, q: int, log_file: Path | None = None):
+    logger.setLevel(max(1, logging.WARNING - 10 * (v - q)))
+    if log_file:
+        logger.handlers.clear()
+        file_handler = logging.FileHandler(log_file)
+        logger.addHandler(file_handler)
 
 
 @click.group(
@@ -45,8 +80,15 @@ if sys.platform == "win32":
     type=click.File("r"),
     help="User-defined rules to override defaults.",
 )
+@global_options
 @click.pass_context
-def imagedephi(ctx: click.Context, override_rules: TextIO | None) -> None:
+def imagedephi(
+    ctx: click.Context,
+    override_rules: TextIO | None,
+    verbose: int,
+    quiet: int,
+    log_file: Path,
+) -> None:
     """Redact microscopy whole slide images."""
     obj = ImagedephiContext()
     # Store separately, to preserve the type of "obj"
@@ -54,9 +96,12 @@ def imagedephi(ctx: click.Context, override_rules: TextIO | None) -> None:
 
     if override_rules:
         obj.override_rule_set = Ruleset.parse_obj(yaml.safe_load(override_rules))
+    if verbose or quiet or log_file:
+        set_logging_config(verbose, quiet, log_file)
 
 
 @imagedephi.command
+@global_options
 @click.argument("input-path", type=click.Path(exists=True, readable=True, path_type=Path))
 @click.option(
     "-o",
@@ -67,16 +112,22 @@ def imagedephi(ctx: click.Context, override_rules: TextIO | None) -> None:
     type=click.Path(exists=True, file_okay=False, readable=True, writable=True, path_type=Path),
 )
 @click.pass_obj
-def run(obj: ImagedephiContext, input_path: Path, output_dir: Path):
+def run(obj: ImagedephiContext, input_path: Path, output_dir: Path, verbose, quiet, log_file):
     """Perform the redaction of images."""
     redact_images(input_path, output_dir, obj.override_rule_set)
+    if verbose or quiet or log_file:
+        set_logging_config(verbose, quiet, log_file)
 
 
 @imagedephi.command
+@global_options
 @click.argument("input-path", type=click.Path(exists=True, readable=True, path_type=Path))
 @click.pass_obj
-def plan(obj: ImagedephiContext, input_path: Path) -> None:
-    """Print the redaction plan for images."""
+def plan(obj: ImagedephiContext, input_path: Path, quiet, verbose, log_file) -> None:
+    # """Print the redaction plan for images."""
+    if verbose or quiet or log_file:
+        set_logging_config(verbose, quiet, log_file)
+
     show_redaction_plan(input_path, obj.override_rule_set)
 
 
