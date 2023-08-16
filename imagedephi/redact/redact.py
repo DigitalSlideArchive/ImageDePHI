@@ -36,7 +36,7 @@ def get_base_rules():
 
 def iter_image_files(directory: Path) -> Generator[Path, None, None]:
     """Given a directory return an iterable of available images."""
-    for child in directory.iterdir():
+    for child in sorted(directory.iterdir()):
         # Use first four bits to check if its a tiff file
         if child.is_file():
             try:
