@@ -37,6 +37,8 @@ GPSTag: TiffConstantSet[TiffTag]
 
 EXIFTag: TiffConstantSet[TiffTag]
 
+NewSubfileType: TiffConstantSet
+
 class TiffDatatype(TiffConstant): ...
 
 Datatype: TiffConstantSet[TiffDatatype]
