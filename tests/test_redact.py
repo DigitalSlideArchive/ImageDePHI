@@ -55,7 +55,7 @@ def test_plan_svs(caplog, svs_input_path, override_rule_set):
 
 @freeze_time("2023-05-12 12:12:53")
 def test_remove_orphaned_metadata(data_dir, tmp_path, override_rule_set):
-    input_path = data_dir / "input" / "tiff" / "secret_metadata.tiff"
+    input_path = data_dir / "input" / "secret_metadata.tiff"
     input_bytes = input_path.read_bytes()
 
     redact.redact_images(input_path, tmp_path, override_rule_set)
