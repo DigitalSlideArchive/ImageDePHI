@@ -112,12 +112,22 @@ class SvsRedactionPlan(TiffRedactionPlan):
 
         This will return `"default`" if no semantics can be determined.
         """
+        # Check image description, it may contain 'macro' or 'label'
         image_description_tag = tifftools.constants.Tag["ImageDescription"]
-        image_description = str(ifd["tags"][image_description_tag.value]["data"])
-        # we could do additional checks, like look for a macro based on dimensions
-        for key in self.rules.associated_images:
-            if key in image_description:
-                return key
+        if image_description_tag.value in ifd["tags"]:
+            image_description = str(ifd["tags"][image_description_tag.value]["data"])
+            for key in self.rules.associated_images:
+                if key in image_description:
+                    return key
+
+        # Check NewSubFileType bitmask. 'macro' could be encoded here
+        newsubfiletype_tag = tifftools.constants.Tag["NewSubfileType"]
+        if newsubfiletype_tag.value in ifd["tags"]:
+            newsubfiletype = ifd["tags"][newsubfiletype_tag.value]["data"][0]
+            reduced_image_bit = tifftools.constants.NewSubfileType["ReducedImage"].value
+            macro_bit = tifftools.constants.NewSubfileType["Macro"].value
+            if newsubfiletype & reduced_image_bit and newsubfiletype & macro_bit:
+                return "macro"
         return "default"
 
     def is_match(self, rule: ConcreteMetadataRule, data: tifftools.TiffTag | str) -> bool:

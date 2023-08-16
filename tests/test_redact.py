@@ -1,3 +1,4 @@
+import importlib.resources
 import logging
 from pathlib import Path, PurePath
 
@@ -7,8 +8,16 @@ import yaml
 
 from imagedephi import redact
 from imagedephi.redact.redact import create_redact_dir
+from imagedephi.redact.svs import SvsRedactionPlan
 from imagedephi.rules import Ruleset
 from imagedephi.utils.logger import logger
+
+
+@pytest.fixture
+def base_rule_set():
+    base_rules_path = importlib.resources.files("imagedephi") / "base_rules.yaml"
+    with base_rules_path.open() as base_rules_stream:
+        return Ruleset.parse_obj(yaml.safe_load(base_rules_stream))
 
 
 @pytest.fixture
@@ -51,6 +60,32 @@ def test_plan_svs(caplog, svs_input_path, override_rule_set):
 
     assert "Aperio (.svs) Metadata Redaction Plan" in caplog.text
     assert "ICC Profile: delete" in caplog.text
+
+
+def test_associated_image_key_no_description(data_dir, base_rule_set):
+    input_image = data_dir / "input" / "svs" / "test_svs_image_blank.svs"
+    svs_redaction_plan = SvsRedactionPlan(input_image, base_rule_set.svs)
+    test_tags = {
+        254: {
+            "datatype": 4,
+            "count": 1,
+            "datapos": 0,
+            "data": [9],
+        }
+    }
+    test_ifd = {
+        "offset": 0,
+        "tags": test_tags,
+        "path_or_fobj": "",
+        "size": 0,
+        "bigEndian": False,
+        "bigtiff": False,
+        "tagcount": 1,
+    }
+    associated_image_key = svs_redaction_plan.get_associated_image_key_for_ifd(
+        test_ifd,  # type: ignore
+    )
+    assert associated_image_key == "macro"
 
 
 @freeze_time("2023-05-12 12:12:53")
