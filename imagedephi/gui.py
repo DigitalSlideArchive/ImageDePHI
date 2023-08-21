@@ -64,7 +64,7 @@ templates = Jinja2Templates(
 
 shutdown_event = asyncio.Event()
 
-app.mount("/assets", StaticFiles(directory="imagedephi/assets"), name='assets')
+app.mount("/assets", StaticFiles(directory="imagedephi/assets"), name="assets")
 
 
 class DirectoryData:
@@ -105,7 +105,7 @@ def select_directory(
     request: Request,
     input_directory: Path = Path("/"),  # noqa: B008
     output_directory: Path = Path("/"),  # noqa: B008
-    modal='',
+    modal="",
 ):
     # TODO: if input_directory is specified but an empty string, it gets instantiated as the CWD
     if not input_directory.is_dir():
@@ -125,7 +125,7 @@ def select_directory(
             "output_directory_data": DirectoryData(output_directory),
             "image_url": image_url,
             "modal": modal,
-            "redacted": False
+            "redacted": False,
         },
     )
 
@@ -263,9 +263,11 @@ def redact(
     # Shutdown after the response is sent, as this is the terminal endpoint
     background_tasks.add_task(shutdown_event.set)
     return templates.TemplateResponse(
-        "HomePage.html.j2", {
+        "HomePage.html.j2",
+        {
             "request": request,
             "input_directory_data": DirectoryData(input_directory),
             "output_directory_data": DirectoryData(output_directory),
             "redacted": True,
-        })
+        },
+    )

@@ -108,7 +108,6 @@ def test_e2e_gui(
     # Expect the client thread to be completed
     client_response = client_future.result(timeout=0)
     assert client_response.status_code == 200
-    assert "You chose" in client_response.text
 
 
 def test_e2e_version(cli_runner: CliRunner) -> None:

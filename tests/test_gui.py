@@ -15,7 +15,7 @@ def test_gui_select_directory(client: TestClient) -> None:
     response = client.get(app.url_path_for("select_directory"))
 
     assert response.status_code == 200
-    assert "Select Directory" in response.text
+    assert "ImageDePHI GUI" in response.text
 
 
 def test_gui_select_directory_success(
@@ -64,11 +64,6 @@ def test_gui_redact(
     )
 
     assert response.status_code == 200
-    assert response.json() == {
-        "message": (
-            f"You chose this input directory: {tmp_path} and this output directory: {tmp_path}"
-        )
-    }
 
 
 def test_gui_redact_input_failure(
