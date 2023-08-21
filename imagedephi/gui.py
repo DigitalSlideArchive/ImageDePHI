@@ -124,7 +124,8 @@ def select_directory(
             "input_directory_data": DirectoryData(input_directory),
             "output_directory_data": DirectoryData(output_directory),
             "image_url": image_url,
-            "modal": modal
+            "modal": modal,
+            "redacted": False
         },
     )
 
@@ -247,6 +248,7 @@ def home_page(request: Request):
 
 @app.post("/redact/")
 def redact(
+    request: Request,
     background_tasks: BackgroundTasks,
     input_directory: Path = Form(),  # noqa: B008
     output_directory: Path = Form(),  # noqa: B008
@@ -260,9 +262,10 @@ def redact(
 
     # Shutdown after the response is sent, as this is the terminal endpoint
     background_tasks.add_task(shutdown_event.set)
-    return {
-        "message": (
-            f"You chose this input directory: {input_directory} "
-            f"and this output directory: {output_directory}"
-        )
-    }
+    return templates.TemplateResponse(
+        "HomePage.html.j2", {
+            "request": request,
+            "input_directory_data": DirectoryData(input_directory),
+            "output_directory_data": DirectoryData(output_directory),
+            "redacted": True,
+        })

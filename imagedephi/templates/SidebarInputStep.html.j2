@@ -8,8 +8,8 @@ Input Directory
 {% block step_help_text %}
 Location of the images you’d like to process.
 {% endblock step_help_text %}
-{% block test %}
-<label for="input-modal" class="btn btn-sm btn-ghost bg-secondaryContent btn-square">
+{% block modal %}
+<label for="input-modal" class="btn btn-sm btn-ghost bg-secondaryContent btn-square" {{ 'disabled' if redacted}}>
 
   <i class="ri-folder-open-fill text-secondary text-lg"></i>
 </label>
@@ -29,13 +29,10 @@ Location of the images you’d like to process.
 
 
 
-{% endblock test %}
+{% endblock modal %}
 {% block selected_path %}
 {% if input_directory_data.directory.name %}
-<div class="text-center text-gray-500 text-[14px] font-bold">
-  Selected directory:
-</div>
-<div class="text-center text-primary text-[16px] font-normal break-all">
+<div class="text-left text-gray-500 text-[14px] font-bold break-all pl-8">
   {{input_directory_data.directory}}
 </div>
 {% else %}

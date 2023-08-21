@@ -18,13 +18,11 @@
         </span>
       </div>
     </div>
-    {% block test %}
-    {% endblock test %}
-    {# TODO figure out how to keep modal open until user clicks select #}
+    {% block modal %}
+    {% endblock modal %}
 
   </div>
-  <div
-    class="self-stretch h-[74px] px-5 pb-10 bg-white border-b border-neutral-200 flex-col justify-start items-center flex">
+  <div class="self-stretch h-[74px] px-5 pb-10 bg-white border-b border-neutral-200 flex-col justify-start flex">
     {% block selected_path %}
     {% endblock selected_path %}
   </div>
