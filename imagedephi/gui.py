@@ -134,7 +134,6 @@ def get_composite_image(ifd: IFD, file_name: str):
     width = int(ifd["tags"][tifftools.Tag.ImageWidth.value]["data"][0])
     samples = ifd["tags"][tifftools.Tag.SamplesPerPixel.value]["data"][0]
     image_array = np.zeros((height, width, samples))
-    print(height, width, samples)
     x_start: int = 0
     y_start: int = 0
 
@@ -153,7 +152,6 @@ def get_composite_image(ifd: IFD, file_name: str):
                 x_end = image_array.shape[0]
             if y_end > image_array.shape[1]:
                 y_end = image_array.shape[1]
-            print(f"({x_start}, {y_start}), ({x_end}, {y_end})")
 
             x_width = x_end - x_start
             y_length = y_end - y_start
@@ -165,8 +163,7 @@ def get_composite_image(ifd: IFD, file_name: str):
                 x_start = x_start + tile_size[0]
 
     composite_image = Image.fromarray(image_array.astype(np.uint8))
-    NEW_WIDTH = 250
-    scale_factor = NEW_WIDTH / composite_image.size[0]
+    scale_factor = MAX_ASSOCIATED_IMAGE_HEIGHT / composite_image.size[1]
     new_size = (
         int(composite_image.size[0] * scale_factor),
         int(composite_image.size[1] * scale_factor),
@@ -194,7 +191,9 @@ def get_image_response_from_ifd(ifd: IFD, file_name: str):
     except UnidentifiedImageError:
         #  Extract a thumbnail from the original image if the IFD can't be opened by PIL
         composite_image = get_composite_image(ifd, file_name)
-        raise HTTPException(status_code=404)
+        composite_image.save(jpeg_buffer, "JPEG")
+        jpeg_buffer.seek(0)
+        return StreamingResponse(jpeg_buffer, media_type="image/jpeg")
 
 
 @app.get("/image/")
