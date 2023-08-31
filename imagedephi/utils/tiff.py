@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 import tifftools
 
 if TYPE_CHECKING:
-    from tifftools.tifftools import IFD, TiffInfo
+    from tifftools.tifftools import IFD
 
 
 IMAGE_DESCRIPTION_ID = tifftools.constants.Tag["ImageDescription"].value
