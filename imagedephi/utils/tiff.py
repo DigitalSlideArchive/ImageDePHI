@@ -7,7 +7,11 @@ from typing import TYPE_CHECKING
 import tifftools
 
 if TYPE_CHECKING:
-    from tifftools.tifftools import IFD
+    from tifftools.tifftools import IFD, TiffInfo
+
+
+IMAGE_DESCRIPTION_ID = tifftools.constants.Tag["ImageDescription"].value
+NEWSUBFILETYPE_ID = tifftools.constants.Tag["NewSubfileType"].value
 
 
 def iter_ifds(
@@ -29,6 +33,11 @@ def iter_ifds(
         yield ifd
 
 
+def is_tiled(ifd: IFD):
+    """Determine if an IFD represents a tiled image."""
+    return tifftools.Tag.TileWidth.value in ifd["tags"]
+
+
 def get_tiff_tag(tag_name: str) -> tifftools.TiffTag:
     """Given the name of a TIFF tag, attempt to return the TIFF tag from tifftools."""
     # This function checks TagSet objects from tifftools for a given tag. If the tag is not found
@@ -43,6 +52,32 @@ def get_tiff_tag(tag_name: str) -> tifftools.TiffTag:
     return tifftools.constants.get_or_create_tag(tag_name)
 
 
+def _get_macro(ifds: list[IFD]) -> IFD | None:
+    key = "macro"
+    for ifd in iter_ifds(ifds):
+        if IMAGE_DESCRIPTION_ID in ifd["tags"]:
+            if key in str(ifd["tags"][IMAGE_DESCRIPTION_ID]["data"]):
+                return ifd
+        if NEWSUBFILETYPE_ID in ifd["tags"]:
+            newsubfiletype = ifd["tags"][NEWSUBFILETYPE_ID]["data"][0]
+            if newsubfiletype == 9:
+                return ifd
+    return None
+
+
+def _get_label(ifds: list[IFD]) -> IFD | None:
+    key = "label"
+    for ifd in iter_ifds(ifds):
+        if IMAGE_DESCRIPTION_ID in ifd["tags"]:
+            if key in str(ifd["tags"][IMAGE_DESCRIPTION_ID]["data"]):
+                return ifd
+        # Check NewSubfileType/tiled or non tiled
+        if not is_tiled(ifd) and NEWSUBFILETYPE_ID in ifd["tags"]:
+            if ifd["tags"][NEWSUBFILETYPE_ID]["data"][0] == 1:
+                return ifd
+    return None
+
+
 def get_associated_image_svs(image_path: Path, image_key: str) -> IFD | None:
     """Given a path to an SVS image, return the IFD for a given associated label or macro image."""
     if image_key not in ["macro", "label"]:
@@ -51,21 +86,13 @@ def get_associated_image_svs(image_path: Path, image_key: str) -> IFD | None:
     image_info = tifftools.read_tiff(image_path)
     ifds = image_info["ifds"]
 
-    image_description_tag = tifftools.constants.Tag["ImageDescription"]
-    newsubfiletype_tag = tifftools.constants.Tag["NewSubfileType"]
-
-    if "aperio" not in str(ifds[0]["tags"][image_description_tag.value]["data"]).lower():
-        # raise ValueError(f"{image_path} is not an svs image")
+    if "aperio" not in str(ifds[0]["tags"][IMAGE_DESCRIPTION_ID]["data"]).lower():
         return None
 
-    for ifd in iter_ifds(ifds):
-        if image_description_tag.value in ifd["tags"]:
-            if image_key in str(ifd["tags"][image_description_tag.value]["data"]):
-                return ifd
-        if newsubfiletype_tag.value in ifd["tags"]:
-            newsubfiletype = ifd["tags"][newsubfiletype_tag.value]["data"][0]
-            if int(newsubfiletype) & 8 and image_key == "macro":
-                return ifd
+    if image_key == "macro":
+        return _get_macro(ifds)
+    elif image_key == "label":
+        return _get_label(ifds)
     return None
 
 
