@@ -15,6 +15,7 @@ from fastapi import BackgroundTasks, FastAPI, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, PlainTextResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
 from jinja2 import FunctionLoader
+import numpy as np
 from starlette.background import BackgroundTask
 import tifftools
 
@@ -124,7 +125,57 @@ def select_directory(
     )
 
 
-def get_image_response_from_ifd(ifd: IFD):
+def get_composite_image(ifd: IFD, file_name: str):
+    offsets = ifd["tags"][tifftools.Tag.TileOffsets.value]["data"]
+    byte_counts = ifd["tags"][tifftools.Tag.TileByteCounts.value]["data"]
+    num_tiles = len(offsets)
+
+    height = int(ifd["tags"][tifftools.Tag.ImageLength.value]["data"][0])
+    width = int(ifd["tags"][tifftools.Tag.ImageWidth.value]["data"][0])
+    samples = ifd["tags"][tifftools.Tag.SamplesPerPixel.value]["data"][0]
+    image_array = np.zeros((height, width, samples))
+    print(height, width, samples)
+    x_start: int = 0
+    y_start: int = 0
+
+    with open(file_name, "rb") as image_file:
+        for idx in range(num_tiles):
+            image_file.seek(0)
+            image_file.seek(int(offsets[idx]))
+            tile_bytes = BytesIO(image_file.read(int(byte_counts[idx])))
+            tile_image = Image.open(tile_bytes)
+            tile_array = np.array(tile_image)
+            tile_size = tile_image.size
+
+            x_end = x_start + tile_size[0]
+            y_end = y_start + tile_size[1]
+            if x_end > image_array.shape[0]:
+                x_end = image_array.shape[0]
+            if y_end > image_array.shape[1]:
+                y_end = image_array.shape[1]
+            print(f"({x_start}, {y_start}), ({x_end}, {y_end})")
+
+            x_width = x_end - x_start
+            y_length = y_end - y_start
+            image_array[x_start:x_end, y_start:y_end, :] = tile_array[0:x_width, 0:y_length, :]
+
+            y_start = y_end
+            if y_start >= width:
+                y_start = 0
+                x_start = x_start + tile_size[0]
+
+    composite_image = Image.fromarray(image_array.astype(np.uint8))
+    NEW_WIDTH = 250
+    scale_factor = NEW_WIDTH / composite_image.size[0]
+    new_size = (
+        int(composite_image.size[0] * scale_factor),
+        int(composite_image.size[1] * scale_factor),
+    )
+    resized_image = composite_image.resize(new_size, Image.LANCZOS)
+    return resized_image
+
+
+def get_image_response_from_ifd(ifd: IFD, file_name: str):
     # use tifftools and PIL to create a jpeg of the associated image, sized for the browser
     tiff_buffer = BytesIO()
     jpeg_buffer = BytesIO()
@@ -141,6 +192,8 @@ def get_image_response_from_ifd(ifd: IFD):
         # return an image response
         return StreamingResponse(jpeg_buffer, media_type="image/jpeg")
     except UnidentifiedImageError:
+        #  Extract a thumbnail from the original image if the IFD can't be opened by PIL
+        composite_image = get_composite_image(ifd, file_name)
         raise HTTPException(status_code=404)
 
 
@@ -161,7 +214,7 @@ def get_associated_image(file_name: str = "", image_key: str = ""):
             raise HTTPException(
                 status_code=404, detail=f"Could not generate thumbnail image for {file_name}"
             )
-        return get_image_response_from_ifd(ifd)
+        return get_image_response_from_ifd(ifd, file_name)
 
     # image key is one of "macro", "label"
     if not get_is_svs(Path(file_name)):
@@ -172,7 +225,7 @@ def get_associated_image(file_name: str = "", image_key: str = ""):
     ifd = get_associated_image_svs(Path(file_name), image_key)
     if not ifd:
         raise HTTPException(status_code=404, detail=f"No {image_key} image found for {file_name}")
-    return get_image_response_from_ifd(ifd)
+    return get_image_response_from_ifd(ifd, file_name)
 
 
 @app.post("/redact/")
