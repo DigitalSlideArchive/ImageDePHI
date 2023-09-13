@@ -132,7 +132,7 @@ def get_composite_image(ifd: IFD, file_name: str):
 
     height = int(ifd["tags"][tifftools.Tag.ImageLength.value]["data"][0])
     width = int(ifd["tags"][tifftools.Tag.ImageWidth.value]["data"][0])
-    samples = ifd["tags"][tifftools.Tag.SamplesPerPixel.value]["data"][0]
+    samples = int(ifd["tags"][tifftools.Tag.SamplesPerPixel.value]["data"][0])
     image_array = np.zeros((height, width, samples))
     x_start: int = 0
     y_start: int = 0
