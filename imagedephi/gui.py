@@ -131,7 +131,6 @@ def extract_thumbnail_from_image_bytes(ifd: IFD, file_name: str) -> Image.Image 
 
     height = int(ifd["tags"][tifftools.Tag.ImageLength.value]["data"][0])
     width = int(ifd["tags"][tifftools.Tag.ImageWidth.value]["data"][0])
-    samples = int(ifd["tags"][tifftools.Tag.SamplesPerPixel.value]["data"][0])
     top: int = 0
     left: int = 0
 
