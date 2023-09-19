@@ -15,7 +15,6 @@ from fastapi import BackgroundTasks, FastAPI, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, PlainTextResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
 from jinja2 import FunctionLoader
-import numpy as np
 from starlette.background import BackgroundTask
 import tifftools
 
@@ -125,7 +124,7 @@ def select_directory(
     )
 
 
-def extract_thumbnail_from_image_bytes(ifd: IFD, file_name: str):
+def extract_thumbnail_from_image_bytes(ifd: IFD, file_name: str) -> Image.Image | None:
     offsets = ifd["tags"][tifftools.Tag.TileOffsets.value]["data"]
     byte_counts = ifd["tags"][tifftools.Tag.TileByteCounts.value]["data"]
     num_tiles = len(offsets)
@@ -133,28 +132,35 @@ def extract_thumbnail_from_image_bytes(ifd: IFD, file_name: str):
     height = int(ifd["tags"][tifftools.Tag.ImageLength.value]["data"][0])
     width = int(ifd["tags"][tifftools.Tag.ImageWidth.value]["data"][0])
     samples = int(ifd["tags"][tifftools.Tag.SamplesPerPixel.value]["data"][0])
-    image_array = np.zeros((height, width, samples))
     top: int = 0
     left: int = 0
 
+    image_canvas: Image.Image | None = None
     with open(file_name, "rb") as image_file:
         for idx in range(num_tiles):
             image_file.seek(int(offsets[idx]))
             tile_bytes = BytesIO(image_file.read(int(byte_counts[idx])))
             tile_image = Image.open(tile_bytes)
-            tile_array = np.array(tile_image)
+
+            if not image_canvas:
+                image_canvas = Image.new(tile_image.mode, (width, height))
+
             tile_size = tile_image.size
 
             bottom = top + tile_size[0]
             right = left + tile_size[1]
-            if bottom > image_array.shape[0]:
-                bottom = image_array.shape[0]
-            if right > image_array.shape[1]:
-                right = image_array.shape[1]
+            if bottom > height:
+                bottom = height
+            if right > width:
+                right = width
 
-            x_width = bottom - top
-            y_length = right - left
-            image_array[top:bottom, left:right, :] = tile_array[0:x_width, 0:y_length, :]
+            piece_height = bottom - top
+            piece_width = right - left
+
+            if piece_width != tile_image.size[1] or piece_height != tile_image.size[0]:
+                tile_image = tile_image.crop((0, 0, piece_width, piece_height))
+
+            image_canvas.paste(tile_image, (left, top, right, bottom))
 
             left = right
             if left >= width:
@@ -162,13 +168,15 @@ def extract_thumbnail_from_image_bytes(ifd: IFD, file_name: str):
                 left = 0
                 top = top + tile_size[0]
 
-    full_image = Image.fromarray(image_array.astype(np.uint8))
-    scale_factor = MAX_ASSOCIATED_IMAGE_HEIGHT / full_image.size[1]
+    if not image_canvas:
+        return None
+
+    scale_factor = MAX_ASSOCIATED_IMAGE_HEIGHT / image_canvas.size[1]
     new_size = (
-        int(full_image.size[0] * scale_factor),
-        int(full_image.size[1] * scale_factor),
+        int(image_canvas.size[0] * scale_factor),
+        int(image_canvas.size[1] * scale_factor),
     )
-    resized_image = full_image.resize(new_size, Image.LANCZOS)
+    resized_image = image_canvas.resize(new_size, Image.LANCZOS)
     return resized_image
 
 
@@ -191,9 +199,10 @@ def get_image_response_from_ifd(ifd: IFD, file_name: str):
     except UnidentifiedImageError:
         #  Extract a thumbnail from the original image if the IFD can't be opened by PIL
         composite_image = extract_thumbnail_from_image_bytes(ifd, file_name)
-        composite_image.save(jpeg_buffer, "JPEG")
-        jpeg_buffer.seek(0)
-        return StreamingResponse(jpeg_buffer, media_type="image/jpeg")
+        if composite_image:
+            composite_image.save(jpeg_buffer, "JPEG")
+            jpeg_buffer.seek(0)
+            return StreamingResponse(jpeg_buffer, media_type="image/jpeg")
 
 
 @app.get("/image/")
