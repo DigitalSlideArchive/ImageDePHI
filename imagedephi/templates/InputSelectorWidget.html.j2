@@ -4,8 +4,8 @@
   Input Directory
 {% endblock selector_title %}
 {% block selector_ancestor_url -%}
-  {{ request.url.include_query_params(input_directory=ancestor) }}
+  {{ request.url.include_query_params(input_directory=ancestor, modal='input_modal') }}
 {%- endblock selector_ancestor_url %}
 {% block selector_child_directory_url -%}
-  {{ request.url.include_query_params(input_directory=child_directory) }}
+  {{ request.url.include_query_params(input_directory=child_directory, modal='input_modal') }}
 {%- endblock selector_child_directory_url %}

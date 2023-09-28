@@ -1,0 +1,36 @@
+{% extends "SidebarSteps.html.j2" %}
+{% block step_number %}
+  1
+{% endblock step_number %}
+{% block step_title %}
+  Input Directory
+{% endblock step_title %}
+{% block step_help_text %}
+  Location of the images you’d like to process.
+{% endblock step_help_text %}
+{% block modal %}
+  <label for="input-modal" class="btn btn-sm btn-ghost bg-secondaryContent btn-square" {{ 'disabled' if redacted}}>
+    <i class="ri-folder-open-fill text-secondary text-lg"></i>
+  </label>
+  <input type="checkbox" id="input-modal" class="modal-toggle" />
+  <div class="modal {{ 'modal-open' if modal=='input_modal'}}"
+       id="input_modal">
+    <div class="w-full max-w-5xl h-4/5 rounded-xl overflow-hidden">
+      <div class="modal-box w-full max-w-5xl h-full overflow-auto">
+        <h3 class="font-bold text-lg">
+          <p>{% include "InputSelectorWidget.html.j2" %}</p>
+        </h3>
+        <a href="{{ request.url.include_query_params(input_directory=input_directory_data.directory, modal='') }}">
+          <button class="btn bg-primary float-right" type="button">Select</button>
+        </a>
+      </div>
+    </div>
+  </div>
+{% endblock modal %}
+{% block selected_path %}
+  {% if input_directory_data.directory.name %}
+    <div class="text-left text-gray-500 text-[14px] font-bold break-all pl-8">{{ input_directory_data.directory }}</div>
+  {% else %}
+    <div class="text-center text-gray-500 text-[14px] font-normal">No directory selected</div>
+  {% endif %}
+{% endblock selected_path %}

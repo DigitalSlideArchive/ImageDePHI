@@ -25,16 +25,16 @@
     {# Put the <a> outside, to make the whole line clickable #}
     <a href="{%- block selector_child_directory_url scoped required -%}{%- endblock selector_child_directory_url -%}">
       <li class="hover:bg-base-300">
-        <i class="mdi mdi-folder"></i>
+        <i class="ri-folder-3-fill text-neutral"></i>
         {{ child_directory.name }}
       </li>
     </a>
   {% endfor %}
 </ul>
-<ul>
+<ul class="pl-2">
   {% for child_image in directory_data.child_images[:10] %}
     <li>
-      <i class="mdi mdi-image text-sky-800"></i>
+      <i class="ri-image-fill text-sky-800"></i>
       {{ child_image.name }}
     </li>
   {% endfor %}

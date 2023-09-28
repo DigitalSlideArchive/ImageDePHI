@@ -13,6 +13,7 @@ import urllib.parse
 from PIL import Image, UnidentifiedImageError
 from fastapi import BackgroundTasks, FastAPI, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, PlainTextResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from jinja2 import FunctionLoader
 from starlette.background import BackgroundTask
@@ -47,6 +48,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
 
 debug_mode = bool(os.environ.get("DEBUG"))
+
 app = FastAPI(
     lifespan=lifespan,
     # End users don't need access to the OpenAPI spec
@@ -54,6 +56,7 @@ app = FastAPI(
     # FastAPI's debug flag will render exception tracebacks
     debug=debug_mode,
 )
+
 templates = Jinja2Templates(
     # Jinja2Templates requires a "directory" argument, but it is effectively unused
     # if a custom loader is passed
@@ -62,6 +65,8 @@ templates = Jinja2Templates(
 )
 
 shutdown_event = asyncio.Event()
+
+app.mount("/assets", StaticFiles(directory="imagedephi/assets"), name="assets")
 
 
 class DirectoryData:
@@ -81,47 +86,6 @@ class DirectoryData:
         ]
 
         self.child_images = list(iter_image_files(directory))
-
-
-# This exception handler not be used when FastAPI debug flag is enabled,
-# due to how ServerErrorMiddleware works.
-@app.exception_handler(500)
-def on_internal_error(request: Request, exc: Exception) -> PlainTextResponse:
-    """Return an error response and schedule the server for immediate shutdown."""
-    # Unlike the default error response, this also shuts down the server.
-    # A desktop application doesn't need to continue running through internal errors, and
-    # continuing to run makes it harder for users and the test environment to detect fatal errors.
-    app.state.last_exception = exc
-    return PlainTextResponse(
-        "Internal Server Error", status_code=500, background=BackgroundTask(shutdown_event.set)
-    )
-
-
-@app.get("/", response_class=HTMLResponse)
-def select_directory(
-    request: Request,
-    input_directory: Path = Path("/"),  # noqa: B008
-    output_directory: Path = Path("/"),  # noqa: B008
-):
-    # TODO: if input_directory is specified but an empty string, it gets instantiated as the CWD
-    if not input_directory.is_dir():
-        raise HTTPException(status_code=404, detail="Input directory not a directory")
-    if not output_directory.is_dir():
-        raise HTTPException(status_code=404, detail="Output directory not a directory")
-
-    def image_url(path: str, key: str) -> str:
-        params = {"file_name": str(input_directory / path), "image_key": key}
-        return "image/?" + urllib.parse.urlencode(params, safe="")
-
-    return templates.TemplateResponse(
-        "DirectorySelector.html.j2",
-        {
-            "request": request,
-            "input_directory_data": DirectoryData(input_directory),
-            "output_directory_data": DirectoryData(output_directory),
-            "image_url": image_url,
-        },
-    )
 
 
 def extract_thumbnail_from_image_bytes(ifd: IFD, file_name: str) -> Image.Image | None:
@@ -204,6 +168,50 @@ def get_image_response_from_ifd(ifd: IFD, file_name: str):
             return StreamingResponse(jpeg_buffer, media_type="image/jpeg")
 
 
+# This exception handler not be used when FastAPI debug flag is enabled,
+# due to how ServerErrorMiddleware works.
+@app.exception_handler(500)
+def on_internal_error(request: Request, exc: Exception) -> PlainTextResponse:
+    """Return an error response and schedule the server for immediate shutdown."""
+    # Unlike the default error response, this also shuts down the server.
+    # A desktop application doesn't need to continue running through internal errors, and
+    # continuing to run makes it harder for users and the test environment to detect fatal errors.
+    app.state.last_exception = exc
+    return PlainTextResponse(
+        "Internal Server Error", status_code=500, background=BackgroundTask(shutdown_event.set)
+    )
+
+
+@app.get("/", response_class=HTMLResponse)
+def select_directory(
+    request: Request,
+    input_directory: Path = Path("/"),  # noqa: B008
+    output_directory: Path = Path("/"),  # noqa: B008
+    modal="",
+):
+    # TODO: if input_directory is specified but an empty string, it gets instantiated as the CWD
+    if not input_directory.is_dir():
+        raise HTTPException(status_code=404, detail="Input directory not a directory")
+    if not output_directory.is_dir():
+        raise HTTPException(status_code=404, detail="Output directory not a directory")
+
+    def image_url(path: str, key: str) -> str:
+        params = {"file_name": str(input_directory / path), "image_key": key}
+        return "image/?" + urllib.parse.urlencode(params, safe="")
+
+    return templates.TemplateResponse(
+        "HomePage.html.j2",
+        {
+            "request": request,
+            "input_directory_data": DirectoryData(input_directory),
+            "output_directory_data": DirectoryData(output_directory),
+            "image_url": image_url,
+            "modal": modal,
+            "redacted": False,
+        },
+    )
+
+
 @app.get("/image/")
 def get_associated_image(file_name: str = "", image_key: str = ""):
     if not file_name:
@@ -237,6 +245,7 @@ def get_associated_image(file_name: str = "", image_key: str = ""):
 
 @app.post("/redact/")
 def redact(
+    request: Request,
     background_tasks: BackgroundTasks,
     input_directory: Path = Form(),  # noqa: B008
     output_directory: Path = Form(),  # noqa: B008
@@ -250,9 +259,12 @@ def redact(
 
     # Shutdown after the response is sent, as this is the terminal endpoint
     background_tasks.add_task(shutdown_event.set)
-    return {
-        "message": (
-            f"You chose this input directory: {input_directory} "
-            f"and this output directory: {output_directory}"
-        )
-    }
+    return templates.TemplateResponse(
+        "HomePage.html.j2",
+        {
+            "request": request,
+            "input_directory_data": DirectoryData(input_directory),
+            "output_directory_data": DirectoryData(output_directory),
+            "redacted": True,
+        },
+    )
