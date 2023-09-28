@@ -48,6 +48,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
 
 debug_mode = bool(os.environ.get("DEBUG"))
+
 app = FastAPI(
     lifespan=lifespan,
     # End users don't need access to the OpenAPI spec
@@ -55,6 +56,7 @@ app = FastAPI(
     # FastAPI's debug flag will render exception tracebacks
     debug=debug_mode,
 )
+
 templates = Jinja2Templates(
     # Jinja2Templates requires a "directory" argument, but it is effectively unused
     # if a custom loader is passed
@@ -84,50 +86,6 @@ class DirectoryData:
         ]
 
         self.child_images = list(iter_image_files(directory))
-
-
-# This exception handler not be used when FastAPI debug flag is enabled,
-# due to how ServerErrorMiddleware works.
-@app.exception_handler(500)
-def on_internal_error(request: Request, exc: Exception) -> PlainTextResponse:
-    """Return an error response and schedule the server for immediate shutdown."""
-    # Unlike the default error response, this also shuts down the server.
-    # A desktop application doesn't need to continue running through internal errors, and
-    # continuing to run makes it harder for users and the test environment to detect fatal errors.
-    app.state.last_exception = exc
-    return PlainTextResponse(
-        "Internal Server Error", status_code=500, background=BackgroundTask(shutdown_event.set)
-    )
-
-
-@app.get("/", response_class=HTMLResponse)
-def select_directory(
-    request: Request,
-    input_directory: Path = Path("/"),  # noqa: B008
-    output_directory: Path = Path("/"),  # noqa: B008
-    modal="",
-):
-    # TODO: if input_directory is specified but an empty string, it gets instantiated as the CWD
-    if not input_directory.is_dir():
-        raise HTTPException(status_code=404, detail="Input directory not a directory")
-    if not output_directory.is_dir():
-        raise HTTPException(status_code=404, detail="Output directory not a directory")
-
-    def image_url(path: str, key: str) -> str:
-        params = {"file_name": str(input_directory / path), "image_key": key}
-        return "image/?" + urllib.parse.urlencode(params, safe="")
-
-    return templates.TemplateResponse(
-        "HomePage.html.j2",
-        {
-            "request": request,
-            "input_directory_data": DirectoryData(input_directory),
-            "output_directory_data": DirectoryData(output_directory),
-            "image_url": image_url,
-            "modal": modal,
-            "redacted": False,
-        },
-    )
 
 
 def extract_thumbnail_from_image_bytes(ifd: IFD, file_name: str) -> Image.Image | None:
@@ -210,6 +168,50 @@ def get_image_response_from_ifd(ifd: IFD, file_name: str):
             return StreamingResponse(jpeg_buffer, media_type="image/jpeg")
 
 
+# This exception handler not be used when FastAPI debug flag is enabled,
+# due to how ServerErrorMiddleware works.
+@app.exception_handler(500)
+def on_internal_error(request: Request, exc: Exception) -> PlainTextResponse:
+    """Return an error response and schedule the server for immediate shutdown."""
+    # Unlike the default error response, this also shuts down the server.
+    # A desktop application doesn't need to continue running through internal errors, and
+    # continuing to run makes it harder for users and the test environment to detect fatal errors.
+    app.state.last_exception = exc
+    return PlainTextResponse(
+        "Internal Server Error", status_code=500, background=BackgroundTask(shutdown_event.set)
+    )
+
+
+@app.get("/", response_class=HTMLResponse)
+def select_directory(
+    request: Request,
+    input_directory: Path = Path("/"),  # noqa: B008
+    output_directory: Path = Path("/"),  # noqa: B008
+    modal="",
+):
+    # TODO: if input_directory is specified but an empty string, it gets instantiated as the CWD
+    if not input_directory.is_dir():
+        raise HTTPException(status_code=404, detail="Input directory not a directory")
+    if not output_directory.is_dir():
+        raise HTTPException(status_code=404, detail="Output directory not a directory")
+
+    def image_url(path: str, key: str) -> str:
+        params = {"file_name": str(input_directory / path), "image_key": key}
+        return "image/?" + urllib.parse.urlencode(params, safe="")
+
+    return templates.TemplateResponse(
+        "HomePage.html.j2",
+        {
+            "request": request,
+            "input_directory_data": DirectoryData(input_directory),
+            "output_directory_data": DirectoryData(output_directory),
+            "image_url": image_url,
+            "modal": modal,
+            "redacted": False,
+        },
+    )
+
+
 @app.get("/image/")
 def get_associated_image(file_name: str = "", image_key: str = ""):
     if not file_name:
@@ -239,11 +241,6 @@ def get_associated_image(file_name: str = "", image_key: str = ""):
     if not ifd:
         raise HTTPException(status_code=404, detail=f"No {image_key} image found for {file_name}")
     return get_image_response_from_ifd(ifd, file_name)
-
-
-@app.get("/home", response_class=HTMLResponse)
-def home_page(request: Request):
-    return templates.TemplateResponse("HomePage.html.j2", {"request": request})
 
 
 @app.post("/redact/")
