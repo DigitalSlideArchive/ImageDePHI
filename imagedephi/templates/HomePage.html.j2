@@ -83,70 +83,45 @@
             <div class="flex justify-between content-center p-4 border-b">
               <div class="max-h6 w-auto self-center">
                 <img src="{{ url_for('assets', path='logo.png') }}" />
+                                </div>
+                <div class="flex items-center space-y-0.5">
+                  <a class="btn btn-ghost btn-square btn-sm">
+                    <i class="ri-side-bar-line text-lg text-neutral"></i>
+                  </a>
+                </div>
               </div>
-              <div class="flex items-center space-y-0.5">
-                <a class="btn btn-ghost btn-square btn-sm">
-                  <i class="ri-side-bar-line text-lg text-neutral"></i>
-                </a>
+              {% include "SidebarInputStep.html.j2" %}
+              {% include "SidebarOutputStep.html.j2" %}
+              {% include "SidebarRulesetStep.html.j2" %}
+              <button type="submit" class="btn btn-wide bg-accent m-auto" {{ 'disabled' if redacted}}>De-phi
+                images
+              </button>
+            </div>
+          </div>
+        </div>
+        <input type="checkbox" id="input-modal" class="modal-toggle" />
+        {% include "InputSelectorWidget.html.j2" %}
+        <input type="checkbox" id="output-modal" class="modal-toggle" />
+        {% include "OutputSelectorWidget.html.j2" %}
+      </form>
+      {# TODO make into a separate component #}
+      {% if redacted %}
+        <div class="px-8 py-4">
+          <div class="hero bg-base-200">
+            <div class="hero-content text-center">
+              <div>
+                <h1 class="text-5xl font-bold">Redaction Successful</h1>
+                <p class="ma-6">
+                  We successfully performed a redaction on the images in {{
+                  input_directory_data.directory
+                  }}.
+                  The redacted images are now in a new folder created in {{ output_directory_data.directory }}
+                </p>
               </div>
             </div>
-            {% include "SidebarInputStep.html.j2" %}
-            {% include "SidebarOutputStep.html.j2" %}
-            {% include "SidebarRulesetStep.html.j2" %}
-
-            <button type="submit" class="btn btn-wide bg-accent m-auto" {{ 'disabled' if redacted}}>De-phi
-              images
-            </button>
           </div>
         </div>
-      </div>
-      <input type="checkbox" id="input-modal" class="modal-toggle" />
-      <div class="modal {{ 'modal-open' if modal=='input_modal'}}" id="input_modal">
-        <div class="w-full max-w-5xl h-4/5 rounded-xl overflow-hidden">
-          <div class="modal-box w-full max-w-5xl h-full overflow-auto">
-            <h3 class="font-bold text-lg">
-              <p>{% include "InputSelectorWidget.html.j2" %}</p>
-            </h3>
-            <a href="{{ request.url.include_query_params(input_directory=input_directory_data.directory, modal='') }}">
-              <button class="btn bg-primary float-right" type="button">Select</button>
-            </a>
-          </div>
-        </div>
-      </div>
-      <input type="checkbox" id="output-modal" class="modal-toggle" />
-      <div class="modal {{ 'modal-open' if modal=='output_modal'}}" id="output_modal">
-        <div class="w-full max-w-6xl h-4/5 rounded-xl overflow-hidden">
-          <div class="modal-box w-full max-w-xl h-full overflow-auto">
-            <a
-              href="{{ request.url.include_query_params(output_directory=output_directory_data.directory, modal='') }}">
-              <button class="btn bg-primary float-right" type="button">Select</button>
-            </a>
-            <h3 class="font-bold text-lg">
-              <p>{% include "OutputSelectorWidget.html.j2" %}</p>
-            </h3>
-          </div>
-        </div>
-      </div>
-    </form>
-    {# TODO make into a separate component #}
-    {% if redacted %}
-    <div class="px-8 py-4">
-      <div class="hero bg-base-200">
-        <div class="hero-content text-center">
-          <div>
-            <h1 class="text-5xl font-bold">Redaction Successful</h1>
-            <p class="ma-6">
-              We successfully performed a redaction on the images in {{
-              input_directory_data.directory
-              }}.
-              The redacted images are now in a new folder created in {{ output_directory_data.directory }}
-            </p>
-          </div>
-        </div>
-      </div>
+      {% endif %}
     </div>
-    {% endif %}
-  </div>
-</body>
-
+  </body>
 </html>
