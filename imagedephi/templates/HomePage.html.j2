@@ -1,16 +1,14 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
-  <head>
-    <title>ImageDePHI</title>
-    <meta name="description" content="ImageDePHI GUI" />
-    <meta name="keywords" content="" />
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@2.47.0/dist/full.css"
-          rel="stylesheet"
-          type="text/css" />
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.4.0/fonts/remixicon.css"
-          rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
+
+<head>
+  <title>ImageDePHI</title>
+  <meta name="description" content="ImageDePHI GUI" />
+  <meta name="keywords" content="" />
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@2.47.0/dist/full.css" rel="stylesheet" type="text/css" />
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.4.0/fonts/remixicon.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
     tailwind.config = {
       theme: {
         extend: {
@@ -93,38 +91,45 @@
                   </a>
                 </div>
               </div>
-              {% include "SidebarInputStep.html.j2" %}
-              {% include "SidebarOutputStep.html.j2" %}
-              {% include "SidebarRulesetStep.html.j2" %}
-              <button type="submit" class="btn btn-wide bg-accent m-auto" {{ 'disabled' if redacted}}>De-phi
-                images
-              </button>
-            </div>
-          </div>
-        </div>
-        <input type="checkbox" id="input-modal" class="modal-toggle" />
-        {% include "InputSelectorWidget.html.j2" %}
-        <input type="checkbox" id="output-modal" class="modal-toggle" />
-        {% include "OutputSelectorWidget.html.j2" %}
-      </form>
-      {# TODO make into a separate component #}
-      {% if redacted %}
-        <div class="px-8 py-4">
-          <div class="hero bg-base-200">
-            <div class="hero-content text-center">
-              <div>
-                <h1 class="text-5xl font-bold">Redaction Successful</h1>
-                <p class="ma-6">
-                  We successfully performed a redaction on the images in {{
-                  input_directory_data.directory
-                  }}.
-                  The redacted images are now in a new folder created in {{ output_directory_data.directory }}
-                </p>
+              <div class="flex items-center space-y-0.5">
+                <a class="btn btn-ghost btn-square btn-sm">
+                  <i class="ri-side-bar-line text-lg text-neutral"></i>
+                </a>
               </div>
             </div>
+            {% include "InputStep.html.j2" %}
+            {% include "OutputStep.html.j2" %}
+            {% include "RulesetStep.html.j2" %}
+            <button type="submit" class="btn btn-wide bg-accent m-auto" {{ 'disabled' if redacted}}>De-phi
+              images
+            </button>
           </div>
         </div>
-      {% endif %}
+      </div>
+      <input type="checkbox" id="input-modal" class="modal-toggle" />
+      {% include "InputSelectorWidget.html.j2" %}
+      <input type="checkbox" id="output-modal" class="modal-toggle" />
+      {% include "OutputSelectorWidget.html.j2" %}
+    </form>
+    {# TODO make into a separate component #}
+    {% if redacted %}
+    <div class="px-8 py-4">
+      <div class="hero bg-base-200">
+        <div class="hero-content text-center">
+          <div>
+            <h1 class="text-5xl font-bold">Redaction Successful</h1>
+            <p class="ma-6">
+              We successfully performed a redaction on the images in {{
+              input_directory_data.directory
+              }}.
+              The redacted images are now in a new folder created in {{ output_directory_data.directory }}
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
-  </body>
+    {% endif %}
+  </div>
+</body>
+
 </html>
