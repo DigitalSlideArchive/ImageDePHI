@@ -79,7 +79,7 @@ def redact_images(
     redact_dir = create_redact_dir(output_dir)
     show_redaction_plan(input_path)
     for image_file in images_to_redact:
-        logger.info(f"Redacting {image_file.name}...")
+        logger.info(f"Redacting {image_file.name}. Image {output_file_counter} of {output_file_max} images")
         if image_file.suffix in FILE_EXTENSION_MAP:
             redaction_plan = build_redaction_plan(image_file, base_rules, override_rules)
             if not redaction_plan.is_comprehensive():
@@ -95,6 +95,8 @@ def redact_images(
                     output_file_max,
                 )
                 redaction_plan.save(output_path, overwrite)
+                if output_file_counter == output_file_max:
+                    logger.info("Redactions completed")
             output_file_counter += 1
 
 
