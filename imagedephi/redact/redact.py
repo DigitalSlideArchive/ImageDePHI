@@ -81,7 +81,10 @@ def redact_images(
     show_redaction_plan(input_path)
     with click.progressbar(images_to_redact, label="Redacting Images") as bar:
         for image_file in bar:
-            logger.info(f"Redacting {image_file.name}. Image {output_file_counter} of {output_file_max} images")
+            logger.info(
+                f"""Redacting {image_file.name}.
+                Image {output_file_counter} of {output_file_max} images"""
+            )
             if image_file.suffix in FILE_EXTENSION_MAP:
                 redaction_plan = build_redaction_plan(image_file, base_rules, override_rules)
                 if not redaction_plan.is_comprehensive():
