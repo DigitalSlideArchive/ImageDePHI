@@ -71,7 +71,8 @@
   </head>
   <body class="bg-base-300 min-h-screen">
     <div class="flex">
-      <form method="post" action="{{ url_for('redact') }}">
+      <!-- djlint:off-->
+      <form method="post" action="{{ url_for('redact') }}"><!-- djlint:on -->
         <input type="hidden"
                value="{{ input_directory_data.directory }}"
                name="input_directory" />
