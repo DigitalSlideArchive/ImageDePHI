@@ -815,3 +815,503 @@ svs:
       action: delete
     Scan Warning:
       action: delete
+dicom:
+  metadata:
+    AccessionNumber:
+      action: empty
+    AcquisitionComments:
+      action: delete
+    AcquisitionContextSequence:
+      action: delete
+    AcquisitionDate:
+      action: empty
+    AcquisitionDateTime:
+      action: replace_dummy
+    AcquisitionDeviceProcessingDescription:
+      action: replace_dummy
+    AcquisitionProtocolDescription:
+      action: delete
+    AcquisitionTime:
+      action: empty
+    ActualHumanPerformersSequence:
+      action: delete
+    AdditionalPatient'sHistory:
+      action: delete
+    AdmissionID:
+      action: delete
+    AdmittingDate:
+      action: delete
+    AdmittingDiagnosesCodeSequence:
+      action: delete
+    AdmittingDiagnosesDescription:
+      action: delete
+    AdmittingTime:
+      action: delete
+    AffectedSOPInstanceUID:
+      action: delete
+    Allergies:
+      action: delete
+    Arbitrary:
+      action: delete
+    AuthorObserverSequence:
+      action: delete
+    BranchofService:
+      action: delete
+    CassetteID:
+      action: delete
+    CommentsonthePerformedProcedureStep:
+      action: delete
+    ConcatenationUID:
+      action: replace_uid
+    ConfidentialityConstraintonPatientDataDescription:
+      action: delete
+    ContentCreator'sName:
+      action: empty
+    ContentCreator'sIdentificationCodeSequence:
+      action: delete
+    ContentDate:
+      action: replace_dummy
+    ContentSequence:
+      action: delete
+    ContentTime:
+      action: replace_dummy
+    ContextGroupExtensionCreatorUID:
+      action: replace_uid
+    ContrastBolusAgent:
+      action: replace_dummy
+    ContributionDescription:
+      action: delete
+    CountryofResidence:
+      action: delete
+    CreatorVersionUID:
+      action: replace_uid
+    CurrentPatientLocation:
+      action: delete
+    CurveData:
+      action: delete
+    CurveDate:
+      action: delete
+    CurveTime:
+      action: delete
+    CustodialOrganizationSequence:
+      action: delete
+    DataSetTrailingPadding:
+      action: delete
+    DerivationDescription:
+      action: delete
+    DetectorID:
+      action: replace_dummy
+    DeviceSerialNumber:
+      action: replace_dummy
+    DeviceUID:
+      action: replace_uid
+    DigitalSignatureUID:
+      action: delete
+    DigitalSignaturesSequence:
+      action: delete
+    DimensionOrganizationUID:
+      action: replace_uid
+    DischargeDiagnosisDescription:
+      action: delete
+    DistributionAddress:
+      action: delete
+    DistributionName:
+      action: delete
+    DoseReferenceUID:
+      action: replace_uid
+    EthnicGroup:
+      action: delete
+    FailedSOPInstanceUIDList:
+      action: replace_uid
+    FiducialUID:
+      action: replace_uid
+    FillerOrderNumber/ImagingServiceRequest:
+      action: empty
+    FrameComments:
+      action: delete
+    FrameofReferenceUID:
+      action: replace_uid
+    GantryID:
+      action: delete
+    GeneratorID:
+      action: delete
+    GraphicAnnotationSequence:
+      action: replace_dummy
+    HumanPerformersName:
+      action: delete
+    HumanPerformersOrganization:
+      action: delete
+    IconImageSequence(seeNote12):
+      action: delete
+    IdentifyingComments:
+      action: delete
+    ImageComments:
+      action: delete
+    ImagePresentationComments:
+      action: delete
+    ImagingServiceRequestComments:
+      action: delete
+    Impressions:
+      action: delete
+    InstanceCreatorUID:
+      action: replace_uid
+    InstitutionAddress:
+      action: delete
+    InstitutionCodeSequence:
+      action: replace_dummy
+    InstitutionName:
+      action: replace_dummy
+    InstitutionalDepartmentName:
+      action: delete
+    InsurancePlanIdentification:
+      action: delete
+    IntendedRecipientsofResultsIdentificationSequence:
+      action: delete
+    InterpretationApproverSequence:
+      action: delete
+    InterpretationAuthor:
+      action: delete
+    InterpretationDiagnosisDescription:
+      action: delete
+    InterpretationIDIssuer:
+      action: delete
+    InterpretationRecorder:
+      action: delete
+    InterpretationText:
+      action: delete
+    InterpretationTranscriber:
+      action: delete
+    IrradiationEventUID:
+      action: replace_uid
+    IssuerofAdmissionID:
+      action: delete
+    IssuerofPatientID:
+      action: delete
+    IssuerofServiceEpisodeID:
+      action: delete
+    LargePaletteColorLookupTableUID:
+      action: replace_uid
+    LastMenstrualDate:
+      action: delete
+    MAC:
+      action: delete
+    MediaStorageSOPInstanceUID:
+      action: replace_uid
+    MedicalAlerts:
+      action: delete
+    MedicalRecordLocator:
+      action: delete
+    MilitaryRank:
+      action: delete
+    ModifiedAttributesSequence:
+      action: delete
+    ModifiedImageDescription:
+      action: delete
+    ModifyingDeviceID:
+      action: delete
+    ModifyingDeviceManufacturer:
+      action: delete
+    NameofPhysician(s)ReadingStudy:
+      action: delete
+    NamesofIntendedRecipientofResults:
+      action: delete
+    Occupation:
+      action: delete
+    Operators'IdentificationSequence:
+      action: replace_dummy
+    Operators'Name:
+      action: replace_dummy
+    OriginalAttributesSequence:
+      action: delete
+    OrderCallbackPhoneNumber:
+      action: delete
+    OrderEnteredBy:
+      action: delete
+    OrderEntererLocation:
+      action: delete
+    OtherPatientIDs:
+      action: delete
+    OtherPatientIDsSequence:
+      action: delete
+    OtherPatientNames:
+      action: delete
+    OverlayComments:
+      action: delete
+    OverlayData:
+      action: delete
+    OverlayDate:
+      action: delete
+    OverlayTime:
+      action: delete
+    PaletteColorLookupTableUID:
+      action: replace_uid
+    ParticipantSequence:
+      action: delete
+    PatientAddress:
+      action: delete
+    PatientComments:
+      action: delete
+    PatientID:
+      action: empty
+    PatientSexNeutered:
+      action: empty
+    PatientState:
+      action: delete
+    PatientTransportArrangements:
+      action: delete
+    Patient'sAge:
+      action: delete
+    Patient'sBirthDate:
+      action: empty
+    Patient'sBirthName:
+      action: delete
+    Patient'sBirthTime:
+      action: delete
+    Patient'sInstitutionResidence:
+      action: delete
+    Patient'sInsurancePlanCodeSequence:
+      action: delete
+    Patient'sMother'sBirthName:
+      action: delete
+    Patient'sName:
+      action: empty
+    Patient'sPrimaryLanguageCodeSequence:
+      action: delete
+    Patient'sPrimaryLanguageModifierCodeSequence:
+      action: delete
+    Patient'sReligiousPreference:
+      action: delete
+    Patient'sSex:
+      action: empty
+    Patient'sSize:
+      action: delete
+    Patient'sTelephoneNumbers:
+      action: delete
+    Patient'sWeight:
+      action: delete
+    PerformedLocation:
+      action: delete
+    PerformedProcedureStepDescription:
+      action: delete
+    PerformedProcedureStepEndDate:
+      action: delete
+    PerformedProcedureStepEndTime:
+      action: delete
+    PerformedProcedureStepID:
+      action: delete
+    PerformedProcedureStepStartDate:
+      action: delete
+    PerformedProcedureStepStartTime:
+      action: delete
+    PerformedStationAETitle:
+      action: delete
+    PerformedStationGeographicLocationCodeSequence:
+      action: delete
+    PerformedStationName:
+      action: delete
+    PerformedStationNameCodeSequence:
+      action: delete
+    PerformingPhysicianIdentificationSequence:
+      action: delete
+    PerformingPhysicians'Name:
+      action: delete
+    PersonAddress:
+      action: delete
+    PersonIdentificationCodeSequence:
+      action: replace_dummy
+    PersonName:
+      action: replace_dummy
+    PersonTelephoneNumbers:
+      action: delete
+    PhysicianApprovingInterpretation:
+      action: delete
+    Physician(s)ReadingStudyIdentificationSequence:
+      action: delete
+    Physician(s)ofRecord:
+      action: delete
+    Physician(s)ofRecordIdentificationSequence:
+      action: delete
+    PlacerOrderNumber/ImagingServiceRequest:
+      action: empty
+    PlateID:
+      action: delete
+    Pre-Medication:
+      action: delete
+    PregnancyStatus:
+      action: delete
+    Privateattributes:
+      action: delete
+    ProtocolName:
+      action: replace_dummy
+    ReasonfortheImagingServiceRequest:
+      action: delete
+    ReasonforStudy:
+      action: delete
+    ReferencedDigitalSignatureSequence:
+      action: delete
+    ReferencedFrameofReferenceUID:
+      action: replace_uid
+    ReferencedGeneralPurposeScheduledProcedureStepTransactionUID:
+      action: replace_uid
+    ReferencedImageSequence:
+      action: replace_uid
+    ReferencedPatientAliasSequence:
+      action: delete
+    ReferencedPatientSequence:
+      action: delete
+    ReferencedPerformedProcedureStepSequence:
+      action: replace_dummy
+    ReferencedSOPInstanceMACSequence:
+      action: delete
+    ReferencedSOPInstanceUID:
+      action: replace_uid
+    ReferencedSOPInstanceUIDinFile:
+      action: replace_uid
+    ReferencedStudySequence:
+      action: empty
+    ReferringPhysician'sAddress:
+      action: delete
+    ReferringPhysician'sIdentificationSequence:
+      action: delete
+    ReferringPhysician'sName:
+      action: empty
+    ReferringPhysician'sTelephoneNumbers:
+      action: delete
+    RegionofResidence:
+      action: delete
+    RelatedFrameofReferenceUID:
+      action: replace_uid
+    RequestAttributesSequence:
+      action: delete
+    RequestedContrastAgent:
+      action: delete
+    RequestedProcedureComments:
+      action: delete
+    RequestedProcedureDescription:
+      action: empty
+    RequestedProcedureID:
+      action: delete
+    RequestedProcedureLocation:
+      action: delete
+    RequestedSOPInstanceUID:
+      action: replace_uid
+    RequestingPhysician:
+      action: delete
+    RequestingService:
+      action: delete
+    ResponsibleOrganization:
+      action: delete
+    ResponsiblePerson:
+      action: delete
+    ResultsComments:
+      action: delete
+    ResultsDistributionListSequence:
+      action: delete
+    ResultsIDIssuer:
+      action: delete
+    ReviewerName:
+      action: empty
+    ScheduledHumanPerformersSequence:
+      action: delete
+    ScheduledPatientInstitutionResidence:
+      action: delete
+    ScheduledPerformingPhysicianIdentificationSequence:
+      action: delete
+    ScheduledPerformingPhysicianName:
+      action: delete
+    ScheduledProcedureStepEndDate:
+      action: delete
+    ScheduledProcedureStepEndTime:
+      action: delete
+    ScheduledProcedureStepDescription:
+      action: delete
+    ScheduledProcedureStepLocation:
+      action: delete
+    ScheduledProcedureStepStartDate:
+      action: delete
+    ScheduledProcedureStepStartTime:
+      action: delete
+    ScheduledStationAETitle:
+      action: delete
+    ScheduledStationGeographicLocationCodeSequence:
+      action: delete
+    ScheduledStationName:
+      action: delete
+    ScheduledStationNameCodeSequence:
+      action: delete
+    ScheduledStudyLocation:
+      action: delete
+    ScheduledStudyLocationAETitle:
+      action: delete
+    SeriesDate:
+      action: replace_dummy
+    SeriesDescription:
+      action: delete
+    SeriesInstanceUID:
+      action: replace_uid
+    SeriesTime:
+      action: replace_dummy
+    ServiceEpisodeDescription:
+      action: delete
+    ServiceEpisodeID:
+      action: delete
+    SmokingStatus:
+      action: delete
+    SOPInstanceUID:
+      action: replace_uid
+    SourceImageSequence:
+      action: replace_uid
+    SpecialNeeds:
+      action: delete
+    StationName:
+      action: replace_dummy
+    StorageMediaFile-setUID:
+      action: replace_uid
+    StudyComments:
+      action: delete
+    StudyDate:
+      action: empty
+    StudyDescription:
+      action: delete
+    StudyID:
+      action: empty
+    StudyIDIssuer:
+      action: delete
+    StudyInstanceUID:
+      action: replace_uid
+    StudyTime:
+      action: empty
+    SynchronizationFrameofReferenceUID:
+      action: replace_uid
+    TemplateExtensionCreatorUID:
+      action: replace_uid
+    TemplateExtensionOrganizationUID:
+      action: replace_uid
+    TextComments:
+      action: delete
+    TextString:
+      action: delete
+    TimezoneOffsetFromUTC:
+      action: delete
+    TopicAuthor:
+      action: delete
+    TopicKeywords:
+      action: delete
+    TopicSubject:
+      action: delete
+    TopicTitle:
+      action: delete
+    TransactionUID:
+      action: replace_uid
+    UID:
+      action: replace_uid
+    VerifyingObserverIdentificationCodeSequence:
+      action: empty
+    VerifyingObserverName:
+      action: replace_dummy
+    VerifyingObserverSequence:
+      action: replace_dummy
+    VerifyingOrganization:
+      action: delete
+    VisitComments:
+      action: delete
