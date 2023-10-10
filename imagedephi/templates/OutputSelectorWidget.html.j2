@@ -1,8 +1,12 @@
 {% extends "BaseSelectorWidget.html.j2" %}
 {% set directory_data = output_directory_data %}
+{% set current_modal = "output_modal" %}
 {% block selector_title %}
   Output Directory
 {% endblock selector_title %}
+{% block selected_url -%}
+  {{ request.url.include_query_params(output_directory=directory_data.directory, modal='') }}
+{%- endblock selected_url %}
 {% block selector_ancestor_url -%}
   {{ request.url.include_query_params(output_directory=ancestor, modal='output_modal') }}
 {%- endblock selector_ancestor_url %}
