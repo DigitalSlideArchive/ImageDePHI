@@ -79,9 +79,9 @@ def redact_images(
     output_file_max = len(images_to_redact)
     redact_dir = create_redact_dir(output_dir)
     show_redaction_plan(input_path)
-    with click.progressbar(images_to_redact, label="Redacting Images") as bar:
+    with click.progressbar(images_to_redact, label="Redacting Images", show_pos=True) as bar:
         for image_file in bar:
-            logger.info(
+            click.echo(
                 f"""Redacting {image_file.name}.
                 Image {output_file_counter} of {output_file_max} images"""
             )
@@ -101,7 +101,7 @@ def redact_images(
                     )
                     redaction_plan.save(output_path, overwrite)
                     if output_file_counter == output_file_max:
-                        logger.info("Redactions completed")
+                        click.echo("Redactions completed")
                 output_file_counter += 1
 
 
