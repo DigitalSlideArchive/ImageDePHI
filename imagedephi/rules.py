@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field, validator
 class FileFormat(Enum):
     TIFF = "tiff"
     SVS = "svs"
+    DICOM = "dicom"
 
 
 expected_type_map: dict[str, list[Type[Any]]] = {
@@ -16,13 +17,17 @@ expected_type_map: dict[str, list[Type[Any]]] = {
     "rational": [int],
 }
 
-RedactionOperation: TypeAlias = Literal["keep", "delete", "replace"]
+RedactionOperation: TypeAlias = Literal[
+    "keep", "delete", "replace", "empty", "replace_uid", "replace_dummy"
+]
 
 
 class _Rule(BaseModel):
     # key_name is not set by users, but is availible internally
     key_name: str = Field(exclude=True)
-    action: Literal["keep", "delete", "replace", "check_type"]
+    action: Literal[
+        "keep", "delete", "replace", "replace_uid", "replace_dummy", "empty", "check_type"
+    ]
 
 
 class KeepRule(_Rule):
@@ -31,6 +36,12 @@ class KeepRule(_Rule):
 
 class DeleteRule(_Rule):
     action: Literal["delete"]
+
+
+class EmptyRule(_Rule):
+    """Replace with a zero-length value."""
+
+    action: Literal["empty"]
 
 
 class ReplaceRule(_Rule):
@@ -60,8 +71,24 @@ class CheckTypeMetadataRule(_Rule):
         return valid_data_types
 
 
+class UidReplaceRule(_Rule):
+    action: Literal["replace_uid"]
+
+
+class DummyReplaceRule(_Rule):
+    """Replace value with a system-defined value based on original type."""
+
+    action: Literal["replace_dummy"]
+
+
 ConcreteMetadataRule = Annotated[
-    MetadataReplaceRule | KeepRule | DeleteRule | CheckTypeMetadataRule,
+    MetadataReplaceRule
+    | KeepRule
+    | DeleteRule
+    | CheckTypeMetadataRule
+    | UidReplaceRule
+    | EmptyRule
+    | DummyReplaceRule,
     Field(discriminator="action"),
 ]
 
@@ -103,9 +130,23 @@ class SvsRules(TiffRules):
         return metadata
 
 
+class DicomRules(BaseModel):
+    metadata: dict[str, ConcreteMetadataRule]
+
+    @validator("metadata", pre=True)
+    @classmethod
+    def set_tag_name(cls, metadata: Any):
+        if isinstance(metadata, dict):
+            for key, value in metadata.items():
+                if isinstance(value, dict):
+                    value["key_name"] = key
+        return metadata
+
+
 class Ruleset(BaseModel):
     name: str
     description: str
     output_file_name: str
     tiff: TiffRules
     svs: SvsRules
+    dicom: DicomRules

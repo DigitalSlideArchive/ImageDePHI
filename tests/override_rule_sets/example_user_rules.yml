@@ -26,3 +26,5 @@ svs:
     Filename:
       action: check_type
       expected_type: number
+dicom:
+  metadata: {}
