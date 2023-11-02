@@ -835,7 +835,7 @@ dicom:
       action: empty
     ActualHumanPerformersSequence:
       action: delete
-    AdditionalPatient'sHistory:
+    AdditionalPatientHistory:
       action: delete
     AdmissionID:
       action: delete
@@ -855,19 +855,19 @@ dicom:
       action: delete
     AuthorObserverSequence:
       action: delete
-    BranchofService:
+    BranchOfService:
       action: delete
     CassetteID:
       action: delete
-    CommentsonthePerformedProcedureStep:
+    CommentsOnThePerformedProcedureStep:
       action: delete
     ConcatenationUID:
       action: replace_uid
-    ConfidentialityConstraintonPatientDataDescription:
+    ConfidentialityConstraintOnPatientDataDescription:
       action: delete
-    ContentCreator'sName:
+    ContentCreatorName:
       action: empty
-    ContentCreator'sIdentificationCodeSequence:
+    ContentCreatorIdentificationCodeSequence:
       action: delete
     ContentDate:
       action: replace_dummy
@@ -881,13 +881,11 @@ dicom:
       action: replace_dummy
     ContributionDescription:
       action: delete
-    CountryofResidence:
+    CountryOfResidence:
       action: delete
     CreatorVersionUID:
       action: replace_uid
     CurrentPatientLocation:
-      action: delete
-    CurveData:
       action: delete
     CurveDate:
       action: delete
@@ -925,11 +923,11 @@ dicom:
       action: replace_uid
     FiducialUID:
       action: replace_uid
-    FillerOrderNumber/ImagingServiceRequest:
+    FillerOrderNumberImagingServiceRequestRetired:
       action: empty
     FrameComments:
       action: delete
-    FrameofReferenceUID:
+    FrameOfReferenceUID:
       action: replace_uid
     GantryID:
       action: delete
@@ -937,11 +935,11 @@ dicom:
       action: delete
     GraphicAnnotationSequence:
       action: replace_dummy
-    HumanPerformersName:
+    HumanPerformerName:
       action: delete
-    HumanPerformersOrganization:
+    HumanPerformerOrganization:
       action: delete
-    IconImageSequence(seeNote12):
+    IconImageSequence:
       action: delete
     IdentifyingComments:
       action: delete
@@ -965,7 +963,7 @@ dicom:
       action: delete
     InsurancePlanIdentification:
       action: delete
-    IntendedRecipientsofResultsIdentificationSequence:
+    IntendedRecipientsOfResultsIdentificationSequence:
       action: delete
     InterpretationApproverSequence:
       action: delete
@@ -983,11 +981,11 @@ dicom:
       action: delete
     IrradiationEventUID:
       action: replace_uid
-    IssuerofAdmissionID:
+    IssuerOfAdmissionID:
       action: delete
-    IssuerofPatientID:
+    IssuerOfPatientID:
       action: delete
-    IssuerofServiceEpisodeID:
+    IssuerOfServiceEpisodeID:
       action: delete
     LargePaletteColorLookupTableUID:
       action: replace_uid
@@ -1011,15 +1009,15 @@ dicom:
       action: delete
     ModifyingDeviceManufacturer:
       action: delete
-    NameofPhysician(s)ReadingStudy:
+    NameOfPhysiciansReadingStudy:
       action: delete
-    NamesofIntendedRecipientofResults:
+    NamesOfIntendedRecipientsOfResults:
       action: delete
     Occupation:
       action: delete
-    Operators'IdentificationSequence:
+    OperatorIdentificationSequence:
       action: replace_dummy
-    Operators'Name:
+    OperatorsName:
       action: replace_dummy
     OriginalAttributesSequence:
       action: delete
@@ -1034,10 +1032,6 @@ dicom:
     OtherPatientIDsSequence:
       action: delete
     OtherPatientNames:
-      action: delete
-    OverlayComments:
-      action: delete
-    OverlayData:
       action: delete
     OverlayDate:
       action: delete
@@ -1059,35 +1053,35 @@ dicom:
       action: delete
     PatientTransportArrangements:
       action: delete
-    Patient'sAge:
+    PatientAge:
       action: delete
-    Patient'sBirthDate:
+    PatientBirthDate:
       action: empty
-    Patient'sBirthName:
+    PatientBirthName:
       action: delete
-    Patient'sBirthTime:
+    PatientBirthTime:
       action: delete
-    Patient'sInstitutionResidence:
+    PatientInstitutionResidence:
       action: delete
-    Patient'sInsurancePlanCodeSequence:
+    PatientInsurancePlanCodeSequence:
       action: delete
-    Patient'sMother'sBirthName:
+    PatientMotherBirthName:
       action: delete
-    Patient'sName:
+    PatientName:
       action: empty
-    Patient'sPrimaryLanguageCodeSequence:
+    PatientPrimaryLanguageCodeSequence:
       action: delete
-    Patient'sPrimaryLanguageModifierCodeSequence:
+    PatientPrimaryLanguageModifierCodeSequence:
       action: delete
-    Patient'sReligiousPreference:
+    PatientReligiousPreference:
       action: delete
-    Patient'sSex:
+    PatientSex:
       action: empty
-    Patient'sSize:
+    PatientSize:
       action: delete
-    Patient'sTelephoneNumbers:
+    PatientTelephoneNumbers:
       action: delete
-    Patient'sWeight:
+    PatientWeight:
       action: delete
     PerformedLocation:
       action: delete
@@ -1113,7 +1107,7 @@ dicom:
       action: delete
     PerformingPhysicianIdentificationSequence:
       action: delete
-    PerformingPhysicians'Name:
+    PerformingPhysicianName:
       action: delete
     PersonAddress:
       action: delete
@@ -1125,31 +1119,29 @@ dicom:
       action: delete
     PhysicianApprovingInterpretation:
       action: delete
-    Physician(s)ReadingStudyIdentificationSequence:
+    PhysiciansReadingStudyIdentificationSequence:
       action: delete
-    Physician(s)ofRecord:
+    PhysiciansOfRecord:
       action: delete
-    Physician(s)ofRecordIdentificationSequence:
+    PhysiciansOfRecordIdentificationSequence:
       action: delete
-    PlacerOrderNumber/ImagingServiceRequest:
+    PlacerOrderNumberImagingServiceRequestRetired:
       action: empty
     PlateID:
       action: delete
-    Pre-Medication:
+    PreMedication:
       action: delete
     PregnancyStatus:
       action: delete
-    Privateattributes:
-      action: delete
     ProtocolName:
       action: replace_dummy
-    ReasonfortheImagingServiceRequest:
+    ReasonForTheImagingServiceRequest:
       action: delete
-    ReasonforStudy:
+    ReasonForStudy:
       action: delete
     ReferencedDigitalSignatureSequence:
       action: delete
-    ReferencedFrameofReferenceUID:
+    ReferencedFrameOfReferenceUID:
       action: replace_uid
     ReferencedGeneralPurposeScheduledProcedureStepTransactionUID:
       action: replace_uid
@@ -1165,21 +1157,21 @@ dicom:
       action: delete
     ReferencedSOPInstanceUID:
       action: replace_uid
-    ReferencedSOPInstanceUIDinFile:
+    ReferencedSOPInstanceUIDInFile:
       action: replace_uid
     ReferencedStudySequence:
       action: empty
-    ReferringPhysician'sAddress:
+    ReferringPhysicianAddress:
       action: delete
-    ReferringPhysician'sIdentificationSequence:
+    ReferringPhysicianIdentificationSequence:
       action: delete
-    ReferringPhysician'sName:
+    ReferringPhysicianName:
       action: empty
-    ReferringPhysician'sTelephoneNumbers:
+    ReferringPhysicianTelephoneNumbers:
       action: delete
-    RegionofResidence:
+    RegionOfResidence:
       action: delete
-    RelatedFrameofReferenceUID:
+    RelatedFrameOfReferenceUID:
       action: replace_uid
     RequestAttributesSequence:
       action: delete
@@ -1265,7 +1257,7 @@ dicom:
       action: delete
     StationName:
       action: replace_dummy
-    StorageMediaFile-setUID:
+    StorageMediaFileSetUID:
       action: replace_uid
     StudyComments:
       action: delete
@@ -1281,7 +1273,7 @@ dicom:
       action: replace_uid
     StudyTime:
       action: empty
-    SynchronizationFrameofReferenceUID:
+    SynchronizationFrameOfReferenceUID:
       action: replace_uid
     TemplateExtensionCreatorUID:
       action: replace_uid
