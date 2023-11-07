@@ -5,13 +5,14 @@ from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 import importlib.resources
 from io import BytesIO
+import logging
 import os
 from pathlib import Path
-from typing import TYPE_CHECKING
+from queue import Queue
 import urllib.parse
 
 from PIL import Image, UnidentifiedImageError
-from fastapi import BackgroundTasks, FastAPI, Form, HTTPException, Request
+from fastapi import BackgroundTasks, FastAPI, Form, HTTPException, Request, WebSocket
 from fastapi.responses import HTMLResponse, PlainTextResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -19,7 +20,9 @@ from jinja2 import FunctionLoader
 from starlette.background import BackgroundTask
 import tifftools
 
-from imagedephi.redact import iter_image_files, redact_images
+from imagedephi.redact import iter_image_files, redact as redact_module, redact_images
+
+# from imagedephi.redact.redact import output_file_counter
 from imagedephi.utils.tiff import get_associated_image_svs, get_ifd_for_thumbnail, get_is_svs
 
 if TYPE_CHECKING:
@@ -251,6 +254,7 @@ def redact(
     input_directory: Path = Form(),  # noqa: B008
     output_directory: Path = Form(),  # noqa: B008
 ):
+
     if not input_directory.is_dir():
         raise HTTPException(status_code=404, detail="Input directory not found")
     if not output_directory.is_dir():
@@ -269,3 +273,60 @@ def redact(
             "redacted": True,
         },
     )
+
+
+# The following is websockets 'hello world' testing DO NOT MERGE with this still here
+
+html = """
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Chat</title>
+    </head>
+    <body>
+        <h1>WebSocket Chat</h1>
+        <form action="" onsubmit="sendMessage(event)">
+            <input type="text" id="messageText" autocomplete="off"/>
+            <button>Send</button>
+        </form>
+        <ul id='messages'>
+        </ul>
+        <script>
+            var ws = new WebSocket("ws://localhost:8000/ws");
+            ws.onmessage = function(event) {
+                var messages = document.getElementById('messages')
+                var message = document.createElement('li')
+                var content = document.createTextNode(event.data)
+                message.appendChild(content)
+                messages.appendChild(message)
+            };
+            function sendMessage(event) {
+                var input = document.getElementById("messageText")
+                ws.send(input.value)
+                input.value = ''
+                event.preventDefault()
+            }
+        </script>
+    </body>
+</html>
+"""
+
+# Not sure if this should be a generator
+def progress_logging(log_queue: Queue) -> logging.LogRecord | None:
+    if log_queue.not_empty:
+        return log_queue.get().getMessage()
+
+
+@app.get("/websocket")
+async def get():
+    return HTMLResponse(html)
+
+
+@app.websocket('/ws')
+async def websocket_endpoint(websocket: WebSocket):
+    redact_module.output_file_counter = 1
+    await websocket.accept()
+    while True:
+        if redact_module.ql.not_empty:
+            await websocket.send_text(f"log: {progress_logging(redact_module.ql)}")
+            await asyncio.sleep(.25)

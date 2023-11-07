@@ -3,7 +3,11 @@ from __future__ import annotations
 from collections.abc import Generator
 import datetime
 import importlib.resources
+from io import StringIO
+import logging
+from logging.handlers import QueueHandler
 from pathlib import Path
+import queue
 
 import click
 import tifftools
@@ -16,6 +20,10 @@ from imagedephi.utils.logger import logger
 from .build_redaction_plan import FILE_EXTENSION_MAP, build_redaction_plan
 from .svs import MalformedAperioFileError
 from .tiff import UnsupportedFileTypeError
+
+ql = queue.Queue(-1)
+
+qh = QueueHandler(ql)
 
 
 def _get_output_path(
@@ -75,17 +83,26 @@ def redact_images(
     )
     # Convert to a list in order to get the length
     images_to_redact = list(iter_image_files(input_path) if input_path.is_dir() else [input_path])
+    global output_file_counter
     output_file_counter = 1
     output_file_max = len(images_to_redact)
     redact_dir = create_redact_dir(output_dir)
     show_redaction_plan(input_path)
-    with click.progressbar(images_to_redact, label="Redacting Images", show_pos=True) as bar:
+    f = open("demofile2.txt", "a")
+
+    file = StringIO()
+    with click.progressbar(images_to_redact, label="Redacting Images", show_pos=True, file=file, show_percent=True) as bar:
+        f.seek(0)
+        f.write(bar.file.read())
+        f.close()
         for image_file in bar:
-            click.echo(
-                f"""Redacting {image_file.name}.
-                Image {output_file_counter} of {output_file_max} images"""
+            test = logging.makeLogRecord(
+                dict(msg=f"""Redacting {image_file.name}.
+                Image {output_file_counter} of {output_file_max} images""")
             )
+            qh.emit(test)
             if image_file.suffix in FILE_EXTENSION_MAP:
+                # it looks like build_redaction_plan gets called twice. Below and as part of show_redaction_plan above
                 redaction_plan = build_redaction_plan(image_file, base_rules, override_rules)
                 if not redaction_plan.is_comprehensive():
                     logger.info(f"Redaction could not be performed for {image_file.name}.")
