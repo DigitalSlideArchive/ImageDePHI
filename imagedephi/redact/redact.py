@@ -4,7 +4,6 @@ from collections.abc import Generator
 import datetime
 import importlib.resources
 from io import StringIO
-import logging
 from logging.handlers import QueueHandler
 from pathlib import Path
 import queue
@@ -16,11 +15,13 @@ import yaml
 
 from imagedephi.rules import Ruleset
 from imagedephi.utils.logger import logger
+from imagedephi.utils.progress_log import push_progress
 
 from .build_redaction_plan import FILE_EXTENSION_MAP, build_redaction_plan
 from .svs import MalformedAperioFileError
 from .tiff import UnsupportedFileTypeError
 
+# create separate progress logger and remove 'emit'
 ql = queue.Queue(-1)
 
 qh = QueueHandler(ql)
@@ -88,19 +89,13 @@ def redact_images(
     output_file_max = len(images_to_redact)
     redact_dir = create_redact_dir(output_dir)
     show_redaction_plan(input_path)
-    f = open("demofile2.txt", "a")
 
     file = StringIO()
     with click.progressbar(images_to_redact, label="Redacting Images", show_pos=True, file=file, show_percent=True) as bar:
-        f.seek(0)
-        f.write(bar.file.read())
-        f.close()
+
         for image_file in bar:
-            test = logging.makeLogRecord(
-                dict(msg=f"""Redacting {image_file.name}.
-                Image {output_file_counter} of {output_file_max} images""")
-            )
-            qh.emit(test)
+            push_progress(image_file.name, output_file_counter, output_file_max)
+
             if image_file.suffix in FILE_EXTENSION_MAP:
                 # it looks like build_redaction_plan gets called twice. Below and as part of show_redaction_plan above
                 redaction_plan = build_redaction_plan(image_file, base_rules, override_rules)

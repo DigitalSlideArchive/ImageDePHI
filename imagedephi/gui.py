@@ -8,7 +8,9 @@ from io import BytesIO
 import logging
 import os
 from pathlib import Path
-from queue import Queue
+from queue import Empty, Queue
+from time import sleep
+from typing import TYPE_CHECKING
 import urllib.parse
 
 from PIL import Image, UnidentifiedImageError
@@ -21,6 +23,7 @@ from starlette.background import BackgroundTask
 import tifftools
 
 from imagedephi.redact import iter_image_files, redact as redact_module, redact_images
+from imagedephi.utils.progress_log import get_next_progress_message, push_progress
 
 # from imagedephi.redact.redact import output_file_counter
 from imagedephi.utils.tiff import get_associated_image_svs, get_ifd_for_thumbnail, get_is_svs
@@ -312,9 +315,9 @@ html = """
 """
 
 # Not sure if this should be a generator
-def progress_logging(log_queue: Queue) -> logging.LogRecord | None:
-    if log_queue.not_empty:
-        return log_queue.get().getMessage()
+# def progress_logging(log_queue: Queue) -> logging.LogRecord | None:
+#     if log_queue.not_empty:
+#         return log_queue.get().getMessage()
 
 
 @app.get("/websocket")
@@ -327,6 +330,8 @@ async def websocket_endpoint(websocket: WebSocket):
     redact_module.output_file_counter = 1
     await websocket.accept()
     while True:
-        if redact_module.ql.not_empty:
-            await websocket.send_text(f"log: {progress_logging(redact_module.ql)}")
-            await asyncio.sleep(.25)
+        message = get_next_progress_message()
+        if message is not None:
+            await websocket.send_text(f"{message[0]} of {message[1]} ")
+        else:
+            await asyncio.sleep(.01)
