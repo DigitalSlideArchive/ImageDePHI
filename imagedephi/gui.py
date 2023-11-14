@@ -276,7 +276,6 @@ def redact(
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
-    redact_module.output_file_counter = 1
     await websocket.accept()
     while True:
         message = get_next_progress_message()

@@ -4,9 +4,7 @@ from collections.abc import Generator
 import datetime
 import importlib.resources
 from io import StringIO
-from logging.handlers import QueueHandler
 from pathlib import Path
-import queue
 
 import click
 import tifftools
@@ -20,11 +18,6 @@ from imagedephi.utils.progress_log import push_progress
 from .build_redaction_plan import FILE_EXTENSION_MAP, build_redaction_plan
 from .svs import MalformedAperioFileError
 from .tiff import UnsupportedFileTypeError
-
-# create separate progress logger and remove 'emit'
-ql = queue.Queue(-1)
-
-qh = QueueHandler(ql)
 
 
 def _get_output_path(
@@ -84,7 +77,6 @@ def redact_images(
     )
     # Convert to a list in order to get the length
     images_to_redact = list(iter_image_files(input_path) if input_path.is_dir() else [input_path])
-    global output_file_counter
     output_file_counter = 1
     output_file_max = len(images_to_redact)
     redact_dir = create_redact_dir(output_dir)
