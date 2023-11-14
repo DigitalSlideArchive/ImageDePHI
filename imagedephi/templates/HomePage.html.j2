@@ -68,7 +68,6 @@
       },
     }
     </script>
-
     <script type="text/javascript" src="js/redaction.js"></script>
   </head>
   <body class="bg-base-300 min-h-screen">
@@ -117,17 +116,12 @@
               <h1 class="text-5xl font-bold">Redacting Images</h1>
             </div>
             <div>
-              <ul id='messages'>
-              </ul>
+              Redacting image <span id='progress'></span> out of {{ input_directory_data.child_images|length }}
               <script>
-
                 var ws = new WebSocket("ws://localhost:8000/ws");
+                var progress = document.getElementById('progress');
                 ws.onmessage = function (event) {
-                  var messages = document.getElementById('messages')
-                  var message = document.createElement('li')
-                  var content = document.createTextNode(event.data)
-                  message.appendChild(content)
-                  messages.appendChild(message)
+                  progress.textContent = event.data.slice(1, event.data.length - 1)
                 };
 
               </script>

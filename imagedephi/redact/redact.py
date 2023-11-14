@@ -91,13 +91,13 @@ def redact_images(
     show_redaction_plan(input_path)
 
     file = StringIO()
-    with click.progressbar(images_to_redact, label="Redacting Images", show_pos=True, file=file, show_percent=True) as bar:
-
+    with click.progressbar(
+        images_to_redact, label="Redacting Images", show_pos=True, file=file, show_percent=True
+    ) as bar:
         for image_file in bar:
             push_progress(image_file.name, output_file_counter, output_file_max)
 
             if image_file.suffix in FILE_EXTENSION_MAP:
-                # it looks like build_redaction_plan gets called twice. Below and as part of show_redaction_plan above
                 redaction_plan = build_redaction_plan(image_file, base_rules, override_rules)
                 if not redaction_plan.is_comprehensive():
                     logger.info(f"Redaction could not be performed for {image_file.name}.")

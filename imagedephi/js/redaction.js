@@ -6,6 +6,7 @@ window.onload = (event) => {
   redactForm.addEventListener("submit", () => {
     redactButton.setAttribute("disabled", "true")
     redactBanner.classList.remove("hidden")
+    location.reload()
   })
 
 }
