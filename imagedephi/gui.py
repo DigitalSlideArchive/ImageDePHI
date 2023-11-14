@@ -19,7 +19,7 @@ from jinja2 import FunctionLoader
 from starlette.background import BackgroundTask
 import tifftools
 
-from imagedephi.redact import iter_image_files, redact as redact_module, redact_images
+from imagedephi.redact import iter_image_files, redact_images
 from imagedephi.utils.progress_log import get_next_progress_message
 
 # from imagedephi.redact.redact import output_file_counter
