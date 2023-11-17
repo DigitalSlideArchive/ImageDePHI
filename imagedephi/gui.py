@@ -12,7 +12,7 @@ import urllib.parse
 
 from PIL import Image, UnidentifiedImageError
 from fastapi import BackgroundTasks, FastAPI, Form, HTTPException, Request, WebSocket
-from fastapi.responses import HTMLResponse, PlainTextResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from jinja2 import FunctionLoader
@@ -192,9 +192,9 @@ def on_internal_error(request: Request, exc: Exception) -> PlainTextResponse:
     )
 
 
-@app.get("/", response_class=HTMLResponse)
+@app.get("/")
 def select_directory(
-    request: Request,
+    # request: Request,
     input_directory: Path = Path("/"),  # noqa: B008
     output_directory: Path = Path("/"),  # noqa: B008
     modal="",
@@ -209,17 +209,24 @@ def select_directory(
         params = {"file_name": str(input_directory / path), "image_key": key}
         return "image/?" + urllib.parse.urlencode(params, safe="")
 
-    return templates.TemplateResponse(
-        "HomePage.html.j2",
-        {
-            "request": request,
-            "input_directory_data": DirectoryData(input_directory),
-            "output_directory_data": DirectoryData(output_directory),
-            "image_url": image_url,
-            "modal": modal,
-            "redacted": False,
-        },
-    )
+    return {
+        "input_directory_data": DirectoryData(input_directory),
+        "output_directory_data": DirectoryData(output_directory),
+        "image_url": image_url,
+        "modal": modal,
+        "redacted": False,
+    },
+    # return templates.TemplateResponse(
+    #     "HomePage.html.j2",
+    #     {
+    #         "request": request,
+    #         "input_directory_data": DirectoryData(input_directory),
+    #         "output_directory_data": DirectoryData(output_directory),
+    #         "image_url": image_url,
+    #         "modal": modal,
+    #         "redacted": False,
+    #     },
+    # )
 
 
 @app.get("/image/")
