@@ -12,7 +12,8 @@ import urllib.parse
 
 from PIL import Image, UnidentifiedImageError
 from fastapi import BackgroundTasks, FastAPI, Form, HTTPException, Request, WebSocket
-from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import PlainTextResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from jinja2 import FunctionLoader
@@ -29,6 +30,12 @@ if TYPE_CHECKING:
     from tifftools.tifftools import IFD
 
 MAX_ASSOCIATED_IMAGE_HEIGHT = 160
+
+# Should we allow more origins since vite increments if 80 is busy?
+origins = [
+    "http://localhost",
+    "http://localhost:8080"
+]
 
 
 def _load_template(template_name: str) -> str | None:
@@ -58,6 +65,14 @@ app = FastAPI(
     openapi_url="/openapi.json" if debug_mode else None,
     # FastAPI's debug flag will render exception tracebacks
     debug=debug_mode,
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 templates = Jinja2Templates(

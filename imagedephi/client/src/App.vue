@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import HelloWorld from './components/HelloWorld.vue'
+
+// Quick proxy server test
+fetch('http://localhost:8000/', {method: "GET", mode: 'cors'})
 </script>
 
 <template>
