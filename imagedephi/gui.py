@@ -207,7 +207,7 @@ def on_internal_error(request: Request, exc: Exception) -> PlainTextResponse:
     )
 
 
-@app.get("/")
+@app.get("/directory")
 def select_directory(
     # request: Request,
     input_directory: Path = Path("/"),  # noqa: B008
