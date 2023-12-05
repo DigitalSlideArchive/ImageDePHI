@@ -1369,11 +1369,3 @@ dicom:
       action: keep
     PixelMeasuresSequence:
       action: keep
-# A note about DICOM --
-# ---------------------
-# The documentation used to generate the initial set of rules includes redaction
-# rules for entire Sequences. This should be accounted for during plan creation.
-# What happens if a sequence is marked to be deleted and an element of that
-# sequence has a different action for it?
-# Should iteration over dicom data elements return both the sequence and all
-# subelements of the sequence?
