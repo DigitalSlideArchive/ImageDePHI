@@ -40,11 +40,15 @@ def iter_image_files(directory: Path) -> Generator[Path, None, None]:
         # Use first four bits to check if its a tiff file
         if child.is_file():
             try:
-                data = open(child, "rb").read(4)
+                data = open(child, "rb").read(132)
             except PermissionError:
                 pass
             else:
-                if data in (b"II\x2a\x00", b"MM\x00\x2a", b"II\x2b\x00", b"MM\x00\x2b"):
+                if data[:4] in (b"II\x2a\x00", b"MM\x00\x2a", b"II\x2b\x00", b"MM\x00\x2b"):
+                    # tiff
+                    yield child
+                elif data[128:] == b"DICM":
+                    # dicom
                     yield child
 
 

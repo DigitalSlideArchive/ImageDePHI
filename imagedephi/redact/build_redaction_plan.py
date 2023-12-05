@@ -2,6 +2,7 @@ from pathlib import Path
 
 from imagedephi.rules import FileFormat, Ruleset
 
+from .dicom import DicomRedactionPlan
 from .redaction_plan import RedactionPlan
 from .svs import SvsRedactionPlan
 from .tiff import TiffRedactionPlan
@@ -10,6 +11,7 @@ FILE_EXTENSION_MAP: dict[str, FileFormat] = {
     ".tif": FileFormat.TIFF,
     ".tiff": FileFormat.TIFF,
     ".svs": FileFormat.SVS,
+    ".dcm": FileFormat.DICOM,
 }
 
 
@@ -30,5 +32,10 @@ def build_redaction_plan(
             merged_rules.image_description.update(override_rules.svs.image_description)
 
         return SvsRedactionPlan(image_path, merged_rules)
+    elif file_extension == FileFormat.DICOM:
+        merged_rules = base_rules.dicom.copy()
+        if override_rules:
+            merged_rules.metadata.update(override_rules.dicom.metadata)
+        return DicomRedactionPlan(image_path, merged_rules)
     else:
         raise Exception(f"File format for {image_path} not supported.")
