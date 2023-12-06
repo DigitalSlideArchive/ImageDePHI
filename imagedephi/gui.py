@@ -282,4 +282,4 @@ async def websocket_endpoint(websocket: WebSocket):
         if message is not None:
             await websocket.send_text(str({message[0]}))
         else:
-            await asyncio.sleep(0.01)
+            await asyncio.sleep(0.001)

@@ -118,7 +118,8 @@
             <div>
               Redacting image <span id='progress'></span> out of {{ input_directory_data.child_images|length }}
               <script>
-                var ws = new WebSocket("ws://localhost:8000/ws");
+                  var ws = new WebSocket("{{ url_for('websocket_endpoint') }}");
+
                 var progress = document.getElementById('progress');
                 ws.onmessage = function (event) {
                   progress.textContent = event.data.slice(1, event.data.length - 1)
