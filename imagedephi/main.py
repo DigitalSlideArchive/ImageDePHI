@@ -114,9 +114,9 @@ def imagedephi(
 @click.pass_obj
 def run(obj: ImagedephiContext, input_path: Path, output_dir: Path, verbose, quiet, log_file):
     """Perform the redaction of images."""
-    redact_images(input_path, output_dir, obj.override_rule_set)
     if verbose or quiet or log_file:
         set_logging_config(verbose, quiet, log_file)
+    redact_images(input_path, output_dir, obj.override_rule_set)
 
 
 @imagedephi.command
