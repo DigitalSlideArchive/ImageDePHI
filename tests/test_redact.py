@@ -35,6 +35,14 @@ def svs_input_path(data_dir, request) -> Path:
     return data_dir / "input" / request.param
 
 
+@pytest.fixture(
+    params=[PurePath("dcm"), PurePath("dcm") / "test_dcm_image.dcm"],
+    ids=["input_dir", "input_file"],
+)
+def dcm_input_path(data_dir, request) -> Path:
+    return data_dir / "input" / request.param
+
+
 @freeze_time("2023-05-12 12:12:53")
 def test_create_redact_dir(tmp_path):
     output_dir = create_redact_dir(tmp_path / "fake")
@@ -100,3 +108,21 @@ def test_remove_orphaned_metadata(data_dir, tmp_path, override_rule_set):
 
     assert b"Secret" in input_bytes
     assert b"Secret" not in output_bytes
+
+
+@freeze_time("2023-05-12 12:12:53")
+def test_redact_dcm(dcm_input_path, tmp_path, override_rule_set):
+    redact.redact_images(dcm_input_path, tmp_path, override_rule_set)
+
+    output_file = tmp_path / "Redacted_2023-05-12_12-12-53" / "my_study_slide_1.dcm"
+    dcm_output_file_bytes = output_file.read_bytes()
+    # verify the custom rule was applied
+    assert b"Sample" not in dcm_output_file_bytes
+
+
+def test_plan_dcm(caplog, dcm_input_path):
+    logger.setLevel(logging.INFO)
+    redact.show_redaction_plan(dcm_input_path)
+
+    assert "DICOM Metadata Redaction Plan" in caplog.text
+    assert "SeriesDescription: delete" in caplog.text
