@@ -116,7 +116,7 @@ def test_redact_dcm(dcm_input_path, tmp_path, override_rule_set):
 
     output_file = tmp_path / "Redacted_2023-05-12_12-12-53" / "my_study_slide_1.dcm"
     dcm_output_file_bytes = output_file.read_bytes()
-    # verify the custom rule was applied
+    # verify th ebase rule deleted "SeriesDescription"
     assert b"Sample" not in dcm_output_file_bytes
 
 
