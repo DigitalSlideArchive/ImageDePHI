@@ -68,11 +68,12 @@
       },
     }
     </script>
+    <script type="text/javascript" src="js/redaction.js"></script>
   </head>
   <body class="bg-base-300 min-h-screen">
     <div class="flex">
       <!-- djlint:off-->
-      <form method="post" action="{{ url_for('redact') }}"><!-- djlint:on -->
+      <form method="post" action="{{ url_for('redact') }}" id="redact"><!-- djlint:on -->
         <input type="hidden"
                value="{{ input_directory_data.directory }}"
                name="input_directory" />
@@ -96,7 +97,7 @@
               {% include "InputStep.html.j2" %}
               {% include "OutputStep.html.j2" %}
               {% include "RulesetStep.html.j2" %}
-              <button type="submit" class="btn btn-wide bg-accent m-auto" {{ 'disabled' if redacted}}>De-phi
+              <button type="submit" class="btn btn-wide bg-accent m-auto" {{ 'disabled' if redacted}} id="dephi">De-phi
                 images
               </button>
             </div>
@@ -108,6 +109,27 @@
         {% include "OutputSelectorWidget.html.j2" %}
       </form>
       {# TODO make into a separate component #}
+      <div class="px-8 py-4 hidden" id="redacting">
+        <div class="hero bg-base-200 m-auto">
+          <div class="hero-content text-center">
+            <div>
+              <h1 class="text-5xl font-bold">Redacting Images</h1>
+            </div>
+            <div>
+              Redacting image <span id='progress'></span> out of {{ input_directory_data.child_images|length }}
+              <script>
+                  var ws = new WebSocket("{{ url_for('websocket_endpoint') }}");
+
+                var progress = document.getElementById('progress');
+                ws.onmessage = function (event) {
+                  progress.textContent = event.data.slice(1, event.data.length - 1)
+                };
+
+              </script>
+            </div>
+          </div>
+        </div>
+      </div>
       {% if redacted %}
         <div class="px-8 py-4">
           <div class="hero bg-base-200">

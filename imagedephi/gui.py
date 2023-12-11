@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING
 import urllib.parse
 
 from PIL import Image, UnidentifiedImageError
-from fastapi import BackgroundTasks, FastAPI, Form, HTTPException, Request
+from fastapi import BackgroundTasks, FastAPI, Form, HTTPException, Request, WebSocket
 from fastapi.responses import HTMLResponse, PlainTextResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -20,6 +20,9 @@ from starlette.background import BackgroundTask
 import tifftools
 
 from imagedephi.redact import iter_image_files, redact_images
+from imagedephi.utils.progress_log import get_next_progress_message
+
+# from imagedephi.redact.redact import output_file_counter
 from imagedephi.utils.tiff import get_associated_image_svs, get_ifd_for_thumbnail, get_is_svs
 
 if TYPE_CHECKING:
@@ -67,6 +70,7 @@ templates = Jinja2Templates(
 shutdown_event = asyncio.Event()
 
 app.mount("/assets", StaticFiles(directory="imagedephi/assets"), name="assets")
+app.mount("/js", StaticFiles(directory="imagedephi/js"), name="js")
 
 
 class DirectoryData:
@@ -268,3 +272,14 @@ def redact(
             "redacted": True,
         },
     )
+
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    while True:
+        message = get_next_progress_message()
+        if message is not None:
+            await websocket.send_text(str({message[0]}))
+        else:
+            await asyncio.sleep(0.001)

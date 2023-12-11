@@ -3,14 +3,17 @@ from __future__ import annotations
 from collections.abc import Generator
 import datetime
 import importlib.resources
+from io import StringIO
 from pathlib import Path
 
+import click
 import tifftools
 import tifftools.constants
 import yaml
 
 from imagedephi.rules import Ruleset
 from imagedephi.utils.logger import logger
+from imagedephi.utils.progress_log import push_progress
 
 from .build_redaction_plan import FILE_EXTENSION_MAP, build_redaction_plan
 from .svs import MalformedAperioFileError
@@ -82,24 +85,32 @@ def redact_images(
     output_file_max = len(images_to_redact)
     redact_dir = create_redact_dir(output_dir)
     show_redaction_plan(input_path)
-    for image_file in images_to_redact:
-        logger.info(f"Redacting {image_file.name}...")
-        if image_file.suffix in FILE_EXTENSION_MAP:
-            redaction_plan = build_redaction_plan(image_file, base_rules, override_rules)
-            if not redaction_plan.is_comprehensive():
-                logger.info(f"Redaction could not be performed for {image_file.name}.")
-                redaction_plan.report_missing_rules()
-            else:
-                redaction_plan.execute_plan()
-                output_path = _get_output_path(
-                    image_file,
-                    redact_dir,
-                    output_file_name_base,
-                    output_file_counter,
-                    output_file_max,
-                )
-                redaction_plan.save(output_path, overwrite)
-            output_file_counter += 1
+
+    file = StringIO()
+    with click.progressbar(
+        images_to_redact, label="Redacting Images", show_pos=True, file=file, show_percent=True
+    ) as bar:
+        for image_file in bar:
+            push_progress(image_file.name, output_file_counter, output_file_max)
+
+            if image_file.suffix in FILE_EXTENSION_MAP:
+                redaction_plan = build_redaction_plan(image_file, base_rules, override_rules)
+                if not redaction_plan.is_comprehensive():
+                    logger.info(f"Redaction could not be performed for {image_file.name}.")
+                    redaction_plan.report_missing_rules()
+                else:
+                    redaction_plan.execute_plan()
+                    output_path = _get_output_path(
+                        image_file,
+                        redact_dir,
+                        output_file_name_base,
+                        output_file_counter,
+                        output_file_max,
+                    )
+                    redaction_plan.save(output_path, overwrite)
+                    if output_file_counter == output_file_max:
+                        click.echo("Redactions completed")
+                output_file_counter += 1
 
 
 def show_redaction_plan(input_path: Path, override_rules: Ruleset | None = None) -> None:
