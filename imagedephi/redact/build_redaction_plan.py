@@ -33,9 +33,9 @@ def build_redaction_plan(
 
         return SvsRedactionPlan(image_path, merged_rules)
     elif file_extension == FileFormat.DICOM:
-        merged_rules = base_rules.dicom.copy()
+        dicom_rules = base_rules.dicom.copy()
         if override_rules:
-            merged_rules.metadata.update(override_rules.dicom.metadata)
-        return DicomRedactionPlan(image_path, merged_rules)
+            dicom_rules.metadata.update(override_rules.dicom.metadata)
+        return DicomRedactionPlan(image_path, dicom_rules)
     else:
         raise Exception(f"File format for {image_path} not supported.")

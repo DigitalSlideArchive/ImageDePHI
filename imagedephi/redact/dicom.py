@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from collections.abc import Generator
 from pathlib import Path
-from typing import TYPE_CHECKING
 from uuid import uuid4
 
 import pydicom
@@ -23,7 +22,7 @@ from imagedephi.utils.logger import logger
 
 from .redaction_plan import RedactionPlan
 
-VR_TO_DUMMY_VALUE = {}
+VR_TO_DUMMY_VALUE: dict[str, str | float | int | list | bytes] = {}
 for vr in valuerep.STR_VR:
     VR_TO_DUMMY_VALUE[vr] = ""
 for vr in valuerep.FLOAT_VR:
@@ -35,7 +34,7 @@ for vr in valuerep.LIST_VR:
 for vr in valuerep.BYTES_VR:
     VR_TO_DUMMY_VALUE[vr] = b""
 
-VR_TO_EXPECTED_TYPE = {}
+VR_TO_EXPECTED_TYPE: dict[str, type] = {}
 for vr in valuerep.STR_VR:
     VR_TO_EXPECTED_TYPE[vr] = str
 for vr in valuerep.FLOAT_VR:
@@ -45,7 +44,7 @@ for vr in valuerep.INT_VR:
 for vr in valuerep.LIST_VR:
     VR_TO_EXPECTED_TYPE[vr] = list
 for vr in valuerep.BYTES_VR:
-    VR_TO_DUMMY_VALUE[vr] = bytes
+    VR_TO_EXPECTED_TYPE[vr] = bytes
 
 
 class DicomRedactionPlan(RedactionPlan):
