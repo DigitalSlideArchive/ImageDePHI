@@ -69,6 +69,7 @@ def redact_images(
     input_path: Path,
     output_dir: Path,
     override_rules: Ruleset | None = None,
+    rename: bool = True,
     overwrite: bool = False,
 ) -> None:
     base_rules = get_base_rules()
@@ -96,12 +97,16 @@ def redact_images(
                     redaction_plan.report_missing_rules()
                 else:
                     redaction_plan.execute_plan()
-                    output_path = _get_output_path(
-                        image_file,
-                        redact_dir,
-                        output_file_name_base,
-                        output_file_counter,
-                        output_file_max,
+                    output_path = (
+                        _get_output_path(
+                            image_file,
+                            redact_dir,
+                            output_file_name_base,
+                            output_file_counter,
+                            output_file_max,
+                        )
+                        if rename
+                        else redact_dir / image_file.name
                     )
                     redaction_plan.save(output_path, overwrite)
                     if output_file_counter == output_file_max:
