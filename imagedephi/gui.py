@@ -92,18 +92,21 @@ shutdown_event = asyncio.Event()
 
 class DirectoryData:
     directory: Path
-    ancestors: list[Path]
-    child_directories: list[Path]
+    ancestors: list[dict[str, Path]]
+    child_directories: list[dict[str, Path]]
     child_images: list[Path]
 
     def __init__(self, directory: Path):
         self.directory = directory
 
-        self.ancestors = list(reversed(directory.parents))
-        self.ancestors.append(directory)
+        # ordered_ancestors = list(reversed(directory.parents))
+
+        self.ancestors = [{ancestor.name: ancestor} for ancestor in reversed(directory.parents)]
+        self.ancestors.append({directory.name: directory})
 
         self.child_directories = [
-            child for child in directory.iterdir() if child.is_dir() and os.access(child, os.R_OK)
+            {child.name: child} for child in directory.iterdir()
+            if child.is_dir() and os.access(child, os.R_OK)
         ]
 
         self.child_images = list(iter_image_files(directory))
@@ -206,40 +209,21 @@ def on_internal_error(request: Request, exc: Exception) -> PlainTextResponse:
 @app.get("/directory/")
 def select_directory(
     # request: Request,
-    input_directory: Path = Path("/"),  # noqa: B008
-    output_directory: Path = Path("/"),  # noqa: B008
-    modal="",
+    directory: Path = Path("/"),  # noqa: B008
 ):
     # TODO: if input_directory is specified but an empty string, it gets instantiated as the CWD
-    if not input_directory.is_dir():
+    if not directory.is_dir():
         raise HTTPException(status_code=404, detail="Input directory not a directory")
-    if not output_directory.is_dir():
-        raise HTTPException(status_code=404, detail="Output directory not a directory")
 
     def image_url(path: str, key: str) -> str:
-        params = {"file_name": str(input_directory / path), "image_key": key}
+        params = {"file_name": str(directory / path), "image_key": key}
         return "image/?" + urllib.parse.urlencode(params, safe="")
 
-    return (
-        {
-            "input_directory_data": DirectoryData(input_directory),
-            "output_directory_data": DirectoryData(output_directory),
-            "image_url": image_url,
-            "modal": modal,
-            "redacted": False,
-        },
-    )
-    # return templates.TemplateResponse(
-    #     "HomePage.html.j2",
-    #     {
-    #         "request": request,
-    #         "input_directory_data": DirectoryData(input_directory),
-    #         "output_directory_data": DirectoryData(output_directory),
-    #         "image_url": image_url,
-    #         "modal": modal,
-    #         "redacted": False,
-    #     },
-    # )
+    return {
+        "directory_data": DirectoryData(directory),
+        "image_url": image_url,
+        "redacted": False,
+    },
 
 
 @app.get("/image/")
