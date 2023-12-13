@@ -1,34 +1,43 @@
 <template>
-    <div class="w-96 pt-2.5 bg-white flex-col justify-start items-start inline-flex">
-  <div class="self-stretch px-4 py-3 bg-white justify-start items-center gap-2.5 inline-flex">
-    <div class="w-6 h-6 bg-rose-100 rounded-[100px] justify-center items-center flex">
-      <div class="w-6 h-6 text-red-400 text-sm font-semibold flex flex-wrap justify-center content-center">
-        {{ stepNumber }}
+  <div class="w-96 pt-2.5 bg-white flex-col justify-start items-start inline-flex">
+    <div class="self-stretch px-4 py-3 bg-white justify-start items-center gap-2.5 inline-flex">
+      <div class="w-6 h-6 bg-rose-100 rounded-[100px] justify-center items-center flex">
+        <div class="w-6 h-6 text-red-400 text-sm font-semibold flex flex-wrap justify-center content-center">
+          {{ stepNumber }}
+        </div>
       </div>
-    </div>
-    <div class="grow shrink basis-0">
-      <div class="grow shrink basis-0 flex flex-col">
-        <span class="text-purple-900 text-sm font-semibold uppercase tracking-widest">
-         {{ stepTitle }}
-        </span>
-        <span class="text-gray-500 text-xs font-normal tracking-wide">
-         {{ helpText }}
-        </span>
+      <div class="grow shrink basis-0">
+        <div class="grow shrink basis-0 flex flex-col">
+          <span class="text-purple-900 text-sm font-semibold uppercase tracking-widest">
+            {{ stepTitle }}
+          </span>
+          <span class="text-gray-500 text-xs font-normal tracking-wide">
+            {{ helpText }}
+          </span>
+        </div>
       </div>
+        <button class="btn btn-ghost btn-square btn-sm" @click="openModal">
+      <i class="ri-folder-open-fill text-secondary text-lg"></i>  </button>
+
     </div>
-    <!-- {% block modal %}
-    {% endblock modal %} -->
+    <div class="self-stretch h-[74px] px-5 pb-10 bg-white border-b border-neutral-200 flex-col justify-start flex">
+      <!-- {% block selected_path %}
+      {% endblock selected_path %} -->
+    </div>
   </div>
-  <div class="self-stretch h-[74px] px-5 pb-10 bg-white border-b border-neutral-200 flex-col justify-start flex">
-    <!-- {% block selected_path %}
-    {% endblock selected_path %} -->
-  </div>
-</div>
 </template>
 <script setup lang="ts">
-const props= defineProps({
-    stepNumber:Number,
-    stepTitle: String,
-    helpText:String
-})
+
+const props = defineProps({
+  stepNumber: Number,
+  stepTitle: String,
+  helpText: String,
+  modal: String,
+});
+
+const openModal = () => {
+  if (props.modal){
+    document.getElementById(props.modal)?.showModal();
+  }
+};
 </script>
