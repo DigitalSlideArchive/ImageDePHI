@@ -21,23 +21,30 @@
 
     </div>
     <div class="self-stretch h-[74px] px-5 pb-10 bg-white border-b border-neutral-200 flex-col justify-start flex">
-      <!-- {% block selected_path %}
-      {% endblock selected_path %} -->
+      <div v-if="stepTitle?.includes('Input') && selectedDirectories.inputDirectory" class="text-left text-gray-500 text-[14px] font-bold break-all pl-8">
+        {{ selectedDirectories.inputDirectory }}
+      </div>
+      <div v-else-if="stepTitle?.includes('Output') && selectedDirectories.outputDirectory" class="text-left text-gray-500 text-[14px] font-bold break-all pl-8">
+        {{ selectedDirectories.outputDirectory }}
+       </div>
+       <div v-else class="text-left text-gray-500 text-[14px] font-bold break-all pl-8">
+        No directory selected
+        </div>
     </div>
+
   </div>
 </template>
 <script setup lang="ts">
-
+import { selectedDirectories } from '../store/directoryStore';
 const props = defineProps({
   stepNumber: Number,
   stepTitle: String,
   helpText: String,
-  modal: String,
+  inputModal: null,
+  outputModal: null,
 });
 
 const openModal = () => {
-  if (props.modal){
-    document.getElementById(props.modal)?.showModal();
-  }
+    props.stepTitle == "Input Directory" ? props.inputModal.modal.showModal() : props.outputModal.modal.showModal();
 };
 </script>

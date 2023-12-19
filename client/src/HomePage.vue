@@ -19,17 +19,17 @@
               :step-number=1
               step-title="Input Directory"
               help-text="Location of the images you’d like to process."
-              modal="input-directory-modal"
+              :inputModal="inputModal"
               />
               <MenuSteps
               :step-number=2
               step-title="Output Directory"
               help-text="Location of the images after they are processed."
-              modal="output-directory-modal"
+              :outputModal="outputModal"
               />
-                <FileBrowser  :modalId="'input-directory-modal'" :title="'Input Directory'" />
+                <FileBrowser  :modalId="'inputDirectory'" :title="'Input Directory'" ref="inputModal"/>
 
-                <FileBrowser :modalId="'output-directory-modal'" :title="'Output Directory'"/>
+                <FileBrowser :modalId="'outputDirectory'" :title="'Output Directory'" ref='outputModal'/>
            <!-- TODO disable on redact -->
               <button type="submit" class="btn btn-wide bg-accent m-auto" id="dephi">De-phi
                 images
@@ -43,5 +43,8 @@
 <script setup lang="ts">
 import MenuSteps from './components/MenuSteps.vue';
 import FileBrowser from './components/FileBrowser.vue';
+import { ref } from 'vue';
+const inputModal = ref(null);
+const outputModal = ref(null);
 
 </script>

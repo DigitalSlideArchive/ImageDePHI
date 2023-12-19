@@ -1,6 +1,15 @@
+export interface Directory {
+    name: string;
+    path: string;
+}
+
 export type DirectoryData = {
     directory: string;
-    ancestors: string[];
-    children: string[];
+    ancestors: Directory[];
+    children: Directory[];
     childrenImages: string[];
 }
+
+export interface SelectedDirectories {
+    [key: string]: string;
+  }
