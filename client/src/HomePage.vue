@@ -1,3 +1,12 @@
+<script setup lang="ts">
+import MenuSteps from './components/MenuSteps.vue';
+import FileBrowser from './components/FileBrowser.vue';
+import { ref } from 'vue';
+const inputModal = ref(null);
+const outputModal = ref(null);
+
+</script>
+
 <template>
 <div class="flex">
     <input type="checkbox" class="drawer-toggle" id="side-drawer" />
@@ -40,11 +49,3 @@
 
 </div>
 </template>
-<script setup lang="ts">
-import MenuSteps from './components/MenuSteps.vue';
-import FileBrowser from './components/FileBrowser.vue';
-import { ref } from 'vue';
-const inputModal = ref(null);
-const outputModal = ref(null);
-
-</script>
