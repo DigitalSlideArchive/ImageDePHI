@@ -1,6 +1,7 @@
-import {ref} from 'vue'
+import { ref, Ref} from 'vue'
+import { SelectedDirectories } from './types'
 
-export  const selectedDirectories = ref({
-    inputDirectory: '/',
-    outputDirectory: '/'
+export const selectedDirectories: Ref<SelectedDirectories> = ref({
+    inputDirectory: '',
+    outputDirectory: ''
 })

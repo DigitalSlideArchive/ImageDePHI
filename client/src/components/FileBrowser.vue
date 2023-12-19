@@ -1,13 +1,23 @@
 <script setup lang="ts">
-import { ref, Ref, watch} from 'vue';
+import { ref, Ref} from 'vue';
 import { getDirectoryInfo } from '../api/rest';
 import { selectedDirectories } from '../store/directoryStore';
 import { DirectoryData } from '../store/types';
 
-defineProps({
-  modalId: String,
-  title: String,
+const props = defineProps({
+  modalId: {
+    type: String,
+    required: true
+  },
+  title: {
+    type: String,
+    required: true
+  },
 });
+
+const modal= ref();
+defineExpose({ modal });
+
 
 const directoryData: Ref<DirectoryData> = ref({
   directory: '',
@@ -16,13 +26,21 @@ const directoryData: Ref<DirectoryData> = ref({
   childrenImages: []
 });
 
-
 const updateDirectories = async (currentDirectory?:string) => {
   const data = await getDirectoryInfo(currentDirectory);
   directoryData.value = await {...data, children: data.child_directories, childrenImages: data.child_images};
 
 };
 updateDirectories();
+
+const closeModal = () => {
+    modal.value.close();
+};
+
+const updateSelectedDirectories = (path: string) => {
+  selectedDirectories.value[props.modalId] = path;
+};
+
 
 
 
@@ -32,6 +50,7 @@ updateDirectories();
   <dialog
     class="modal"
     :id="modalId"
+    ref="modal"
   >
     <div class="w-full max-w-4xl h-4/5 rounded-xl overflow-hidden">
       <div class="modal-box w-full max-w-4xl h-full overflow-auto pt-0">
@@ -40,51 +59,55 @@ updateDirectories();
             <h2 class="text-lg font-semibold">
               {{ title }}
             </h2>
-              <button class="btn bg-primary float-right" type="button">Select</button>
+              <button class="btn bg-primary float-right" type="button" @click="closeModal">Select</button>
           </div>
           <div class="text-sm breadcrumbs mb-4 border-b-2">
             <ul class="flex flex-wrap">
-                <li v-for="ancestor in directoryData.ancestors" class="mr-1 text-base">
-                  <!-- {# The root directory has an empty string "name" #}
-                  {% set ancestor_name = ancestor.name|default('/', true) %} -->
-                  <!-- {% if loop.last %}
-                    <span class="font-black">{{ ancestor_name }}</span>
-                  {% else %} -->
-                    <a class="text-blue-700">
-                      {{ Object.keys(ancestor)[0] }}
-                    </a>
-                  <!-- {% endif %} -->
+
+                <li v-for="(ancestor,index) in directoryData.ancestors" class="mr-1 text-base">
+                  <span v-if="index === directoryData.ancestors.length -1" class="font-black">{{ ancestor.name ? ancestor.name : '/' }}</span>
+                  <a
+                    v-else class="text-blue-700"
+                    @click="updateDirectories(ancestor.path),  updateSelectedDirectories(ancestor.path)">
+                    {{ ancestor.name ? ancestor.name : '/' }}
+                  </a>
                 </li>
             </ul>
           </div>
         </div>
-        <ul class="menu menu-sm">
+        <ul class="text-blue-700">
 
-            <!-- <a class="text-blue-700"> -->
-              <li v-for="child in directoryData.children">
-                <a @click="updateDirectories(Object.values(child)[0])">
+              <li
+                v-for="child in directoryData.children.sort((a,b) => {
+                        const folder1 = a.name.toLowerCase();
+                        const folder2 = b.name.toLowerCase();
+                        if (folder1 < folder2) {
+                          return -1;
+                        }
+                        if (folder1 > folder2) {
+                          return 1;
+                        }
+                        return 0;
+                      })"
+                class="hover:bg-base-300 cursor-default py-0.5"
+                @click="updateDirectories(child.path),  updateSelectedDirectories(child.path)"
+              >
                 <i class="ri-folder-3-fill text-neutral"></i>
-                {{ Object.keys(child)[0]}}
-              </a>
+                {{ child.name}}
               </li>
-            <!-- </a> -->
         </ul>
         <ul class="pl-2">
-          <!-- {% for child_image in directory_data.child_images[:10] %} -->
-            <li>
-              <!-- <i class="ri-image-fill text-sky-800"></i> -->
-              <!-- {{ child_image.name }} -->
+            <li
+              v-for="child_image in directoryData.childrenImages.slice(0,10)"
+              class="py-0.5"
+            >
+              <i class="ri-image-fill text-sky-800"></i>
+              {{ child_image }}
             </li>
-          <!-- {% endfor %}
-          {% if directory_data.child_images|length > 10 %}
-            <li class="italic">{{ directory_data.child_images|length - 10 }} More Images</li>
-          {% endif %} -->
+            <li v-if="directoryData.childrenImages.length > 10" class="italic">{{ directoryData.childrenImages.length - 10 }} More Images</li>
         </ul>
       </div>
     </div>
-    <form method="dialog" class="modal-backdrop">
-      <button>close</button>
-    </form>
   </dialog>
 
 </template>
