@@ -1,13 +1,13 @@
-export interface Directory {
+export interface Path {
     name: string;
     path: string;
 }
 
 export type DirectoryData = {
     directory: string;
-    ancestors: Directory[];
-    children: Directory[];
-    childrenImages: string[];
+    ancestors: Path[];
+    children: Path[];
+    childrenImages: Path[];
 }
 
 export interface SelectedDirectories {

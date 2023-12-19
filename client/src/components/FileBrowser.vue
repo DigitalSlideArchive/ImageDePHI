@@ -102,7 +102,7 @@ const updateSelectedDirectories = (path: string) => {
               class="py-0.5"
             >
               <i class="ri-image-fill text-sky-800"></i>
-              {{ child_image }}
+              {{ child_image.name }}
             </li>
             <li v-if="directoryData.childrenImages.length > 10" class="italic">{{ directoryData.childrenImages.length - 10 }} More Images</li>
         </ul>
