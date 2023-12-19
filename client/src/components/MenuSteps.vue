@@ -1,3 +1,18 @@
+<script setup lang="ts">
+import { selectedDirectories } from '../store/directoryStore';
+const props = defineProps({
+  stepNumber: Number,
+  stepTitle: String,
+  helpText: String,
+  inputModal: null,
+  outputModal: null,
+});
+
+const openModal = () => {
+    props.stepTitle == "Input Directory" ? props.inputModal.modal.showModal() : props.outputModal.modal.showModal();
+};
+</script>
+
 <template>
   <div class="w-96 pt-2.5 bg-white flex-col justify-start items-start inline-flex">
     <div class="self-stretch px-4 py-3 bg-white justify-start items-center gap-2.5 inline-flex">
@@ -34,17 +49,3 @@
 
   </div>
 </template>
-<script setup lang="ts">
-import { selectedDirectories } from '../store/directoryStore';
-const props = defineProps({
-  stepNumber: Number,
-  stepTitle: String,
-  helpText: String,
-  inputModal: null,
-  outputModal: null,
-});
-
-const openModal = () => {
-    props.stepTitle == "Input Directory" ? props.inputModal.modal.showModal() : props.outputModal.modal.showModal();
-};
-</script>

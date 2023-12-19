@@ -40,10 +40,6 @@ const closeModal = () => {
 const updateSelectedDirectories = (path: string) => {
   selectedDirectories.value[props.modalId] = path;
 };
-
-
-
-
 </script>
 
 <template>
