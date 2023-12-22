@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING
 import urllib.parse
 
 from PIL import Image, UnidentifiedImageError
-from fastapi import BackgroundTasks, FastAPI, Form, HTTPException, Request, WebSocket
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Request, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -208,19 +208,19 @@ def on_internal_error(request: Request, exc: Exception) -> PlainTextResponse:
 
 @app.get("/directory/")
 def select_directory(
-    # request: Request,
-    directory: Path = Path("/"),  # noqa: B008
+    directory: str = ("/"),  # noqa: B008
 ):
+    directory_path = Path(directory)
     # TODO: if input_directory is specified but an empty string, it gets instantiated as the CWD
-    if not directory.is_dir():
+    if not directory_path.is_dir():
         raise HTTPException(status_code=404, detail="Input directory not a directory")
 
     def image_url(path: str, key: str) -> str:
-        params = {"file_name": str(directory / path), "image_key": key}
+        params = {"file_name": str(directory_path / path), "image_key": key}
         return "image/?" + urllib.parse.urlencode(params, safe="")
 
     return {
-        "directory_data": DirectoryData(directory),
+        "directory_data": DirectoryData(directory_path),
         "image_url": image_url,
         "redacted": False,
     },
@@ -259,29 +259,25 @@ def get_associated_image(file_name: str = "", image_key: str = ""):
 
 @app.post("/redact/")
 def redact(
-    request: Request,
+    input_directory: str,  # noqa: B008
+    output_directory: str,  # noqa: B008
     background_tasks: BackgroundTasks,
-    input_directory: Path = Form(),  # noqa: B008
-    output_directory: Path = Form(),  # noqa: B008
 ):
-    if not input_directory.is_dir():
+    input_path = Path(input_directory)
+    output_path = Path(output_directory)
+    if not input_path.is_dir():
         raise HTTPException(status_code=404, detail="Input directory not found")
-    if not output_directory.is_dir():
+    if not output_path.is_dir():
         raise HTTPException(status_code=404, detail="Output directory not found")
 
-    redact_images(input_directory, output_directory)
+    redact_images(input_path, output_path)
 
     # Shutdown after the response is sent, as this is the terminal endpoint
     background_tasks.add_task(shutdown_event.set)
-    return templates.TemplateResponse(
-        "HomePage.html.j2",
-        {
-            "request": request,
-            "input_directory_data": DirectoryData(input_directory),
-            "output_directory_data": DirectoryData(output_directory),
-            "redacted": True,
-        },
-    )
+    return {
+        "input_directory_data": DirectoryData(input_path),
+        "output_directory_data": DirectoryData(output_path),
+    }
 
 
 @app.websocket("/ws")
