@@ -1,7 +1,12 @@
 <script setup lang="ts">
+import { ref } from 'vue';
+
+import { redactImages } from './api/rest';
+import { selectedDirectories } from './store/directoryStore';
+
 import MenuSteps from './components/MenuSteps.vue';
 import FileBrowser from './components/FileBrowser.vue';
-import { ref } from 'vue';
+
 const inputModal = ref(null);
 const outputModal = ref(null);
 
@@ -40,8 +45,12 @@ const outputModal = ref(null);
 
                 <FileBrowser :modalId="'outputDirectory'" :title="'Output Directory'" ref='outputModal'/>
            <!-- TODO disable on redact -->
-              <button type="submit" class="btn btn-wide bg-accent m-auto" id="dephi">De-phi
-                images
+              <button
+                type="submit"
+                class="btn btn-wide bg-accent m-auto"
+                @click="redactImages(selectedDirectories.inputDirectory, selectedDirectories.outputDirectory)"
+                >
+                De-phi Images
               </button>
             </div>
           </div>
