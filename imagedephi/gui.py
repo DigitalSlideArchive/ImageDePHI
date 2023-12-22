@@ -274,10 +274,7 @@ def redact(
 
     # Shutdown after the response is sent, as this is the terminal endpoint
     background_tasks.add_task(shutdown_event.set)
-    return {
-        "input_directory_data": DirectoryData(input_path),
-        "output_directory_data": DirectoryData(output_path),
-    }
+    # Should this return anything?
 
 
 @app.websocket("/ws")
@@ -286,6 +283,7 @@ async def websocket_endpoint(websocket: WebSocket):
     while True:
         message = get_next_progress_message()
         if message is not None:
-            await websocket.send_text(str({message[0]}))
+            message_dict = dict(count=message[0], max=message[1])
+            await websocket.send_json(message_dict)
         else:
             await asyncio.sleep(0.001)
