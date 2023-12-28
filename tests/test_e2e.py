@@ -75,7 +75,7 @@ def test_e2e_gui(
         asyncio.run(asyncio.wait_for(wait_for_port(port), timeout=2))
         return httpx.post(
             f"http://127.0.0.1:{port}/redact/",
-            data={
+            params={
                 "input_directory": str(data_dir / "input" / "tiff"),
                 "output_directory": str(tmp_path),
             },
