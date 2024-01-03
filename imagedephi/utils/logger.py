@@ -9,7 +9,7 @@ try:
         if os.path.exists("logging.conf")
         else str(importlib.resources.files("imagedephi") / "logging.conf")
     )
-except KeyError:
+except (FileNotFoundError, KeyError):
     pass
 
 logger = logging.getLogger("root")

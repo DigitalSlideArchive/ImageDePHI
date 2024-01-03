@@ -63,7 +63,7 @@ app = FastAPI(
 templates = Jinja2Templates(
     # Jinja2Templates requires a "directory" argument, but it is effectively unused
     # if a custom loader is passed
-    directory="",
+    directory=".",
     loader=FunctionLoader(_load_template),
 )
 
