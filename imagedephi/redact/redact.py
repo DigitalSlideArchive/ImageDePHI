@@ -37,7 +37,7 @@ def get_base_rules():
         return base_rule_set
 
 
-def iter_image_files(directory: Path) -> Generator[Path, None, None]:
+def iter_image_files(directory: Path, recursive: bool = False) -> Generator[Path, None, None]:
     """Given a directory return an iterable of available images."""
     for child in sorted(directory.iterdir()):
         # Use first four bits to check if its a tiff file
@@ -49,6 +49,8 @@ def iter_image_files(directory: Path) -> Generator[Path, None, None]:
             else:
                 if data in (b"II\x2a\x00", b"MM\x00\x2a", b"II\x2b\x00", b"MM\x00\x2b"):
                     yield child
+        elif child.is_dir() and recursive:
+            yield from iter_image_files(child, recursive)
 
 
 def create_redact_dir(base_output_dir: Path) -> Path:
@@ -71,13 +73,14 @@ def redact_images(
     override_rules: Ruleset | None = None,
     rename: bool = True,
     overwrite: bool = False,
+    recursive: bool = False,
 ) -> None:
     base_rules = get_base_rules()
     output_file_name_base = (
         override_rules.output_file_name if override_rules else base_rules.output_file_name
     )
     # Convert to a list in order to get the length
-    images_to_redact = list(iter_image_files(input_path) if input_path.is_dir() else [input_path])
+    images_to_redact = list(iter_image_files(input_path, recursive) if input_path.is_dir() else [input_path])
     output_file_counter = 1
     output_file_max = len(images_to_redact)
     redact_dir = create_redact_dir(output_dir)
@@ -97,10 +100,14 @@ def redact_images(
                     redaction_plan.report_missing_rules()
                 else:
                     redaction_plan.execute_plan()
+                    output_parent_dir = redact_dir
+                    if recursive:
+                        output_parent_dir = Path(str(image_file).replace(str(input_path), str(redact_dir), 1)).parent
+                        output_parent_dir.mkdir(parents=True, exist_ok=True)
                     output_path = (
                         _get_output_path(
                             image_file,
-                            redact_dir,
+                            output_parent_dir,
                             output_file_name_base,
                             output_file_counter,
                             output_file_max,
