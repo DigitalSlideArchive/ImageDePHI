@@ -111,12 +111,21 @@ def imagedephi(
     help="Path where output directory will be created.",
     type=click.Path(exists=True, file_okay=False, readable=True, writable=True, path_type=Path),
 )
+@click.option("--rename/--skip-rename", default=True)
 @click.pass_obj
-def run(obj: ImagedephiContext, input_path: Path, output_dir: Path, verbose, quiet, log_file):
+def run(
+    obj: ImagedephiContext,
+    input_path: Path,
+    output_dir: Path,
+    rename: bool,
+    verbose,
+    quiet,
+    log_file,
+):
     """Perform the redaction of images."""
     if verbose or quiet or log_file:
         set_logging_config(verbose, quiet, log_file)
-    redact_images(input_path, output_dir, obj.override_rule_set)
+    redact_images(input_path, output_dir, obj.override_rule_set, rename)
 
 
 @imagedephi.command

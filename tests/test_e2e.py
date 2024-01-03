@@ -131,3 +131,23 @@ def test_e2e_help(cli_runner: CliRunner, help_flag: str) -> None:
 
     assert result.exit_code == 0
     assert "Usage: imagedephi" in result.output
+
+
+@freeze_time("2023-05-12 12:12:53")
+@pytest.mark.timeout(5)
+@pytest.mark.parametrize("rename", [True, False])
+def test_e2e_rename_flag(cli_runner, data_dir: Path, tmp_path: Path, rename: bool):
+    rename_flag = "--rename" if rename else "--skip-rename"
+    result = cli_runner.invoke(
+        main.imagedephi,
+        ["run", str(data_dir / "input" / "tiff"), "--output-dir", str(tmp_path), rename_flag],
+    )
+
+    assert result.exit_code == 0
+
+    output_file_name = (
+        tmp_path / "Redacted_2023-05-12_12-12-53" / "study_slide_1.tif"
+        if rename
+        else tmp_path / "Redacted_2023-05-12_12-12-53" / "test_image.tif"
+    )
+    assert output_file_name.exists()
