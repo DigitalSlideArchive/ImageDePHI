@@ -151,3 +151,17 @@ def test_e2e_rename_flag(cli_runner, data_dir: Path, tmp_path: Path, rename: boo
         else tmp_path / "Redacted_2023-05-12_12-12-53" / "test_image.tif"
     )
     assert output_file_name.exists()
+
+
+@freeze_time("2024-01-04 10:48:00")
+@pytest.mark.timeout(5)
+@pytest.mark.parametrize("recursive", [True, False])
+def test_e2e_recursive(cli_runner, data_dir: Path, tmp_path: Path, recursive: bool):
+    args = ["run", str(data_dir / "input"), "--output-dir", str(tmp_path)]
+    if recursive:
+        args.append("--recursive")
+    result = cli_runner.invoke(main.imagedephi, args)
+
+    assert result.exit_code == 0
+    output_subdir = tmp_path / "Redacted_2024-01-04_10-48-00" / "svs"
+    assert output_subdir.exists() == recursive
