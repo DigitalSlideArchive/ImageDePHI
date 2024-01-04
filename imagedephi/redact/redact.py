@@ -80,7 +80,9 @@ def redact_images(
         override_rules.output_file_name if override_rules else base_rules.output_file_name
     )
     # Convert to a list in order to get the length
-    images_to_redact = list(iter_image_files(input_path, recursive) if input_path.is_dir() else [input_path])
+    images_to_redact = list(
+        iter_image_files(input_path, recursive) if input_path.is_dir() else [input_path]
+    )
     output_file_counter = 1
     output_file_max = len(images_to_redact)
     redact_dir = create_redact_dir(output_dir)
@@ -102,7 +104,9 @@ def redact_images(
                     redaction_plan.execute_plan()
                     output_parent_dir = redact_dir
                     if recursive:
-                        output_parent_dir = Path(str(image_file).replace(str(input_path), str(redact_dir), 1)).parent
+                        output_parent_dir = Path(
+                            str(image_file).replace(str(input_path), str(redact_dir), 1)
+                        ).parent
                         output_parent_dir.mkdir(parents=True, exist_ok=True)
                     output_path = (
                         _get_output_path(
