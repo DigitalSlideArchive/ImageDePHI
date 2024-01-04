@@ -69,8 +69,14 @@ templates = Jinja2Templates(
 
 shutdown_event = asyncio.Event()
 
-app.mount("/assets", StaticFiles(directory="imagedephi/assets"), name="assets")
-app.mount("/js", StaticFiles(directory="imagedephi/js"), name="js")
+app.mount(
+    "/assets",
+    StaticFiles(directory=str(importlib.resources.files("imagedephi") / "assets")),
+    name="assets",
+)
+app.mount(
+    "/js", StaticFiles(directory=str(importlib.resources.files("imagedephi") / "js")), name="js"
+)
 
 
 class DirectoryData:
