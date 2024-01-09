@@ -8,6 +8,6 @@ For efficient front end developement in the project root run:
 In a new terminal:
 
 ```bash
-cd imagedephi/client/
+cd client/
 yarn dev
 ```
