@@ -117,7 +117,7 @@ def redact_images(
                             output_file_max,
                         )
                         if rename
-                        else redact_dir / image_file.name
+                        else output_parent_dir / image_file.name
                     )
                     redaction_plan.save(output_path, overwrite)
                     if output_file_counter == output_file_max:
