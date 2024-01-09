@@ -32,11 +32,6 @@ if TYPE_CHECKING:
 
 MAX_ASSOCIATED_IMAGE_HEIGHT = 160
 
-# Should we allow more origins since vite increments if 80 is busy?
-origins = [
-    "http://localhost",
-    "http://localhost:8080"
-]
 
 
 def _load_template(template_name: str) -> str | None:
@@ -68,19 +63,19 @@ app = FastAPI(
     debug=debug_mode,
 )
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
+if debug_mode:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+    # TODO: Write out the .env.dev file (with a code comment explaining the risk that this .env definition leaks to production) so Vite knows the Python HTTP API port
 
 shutdown_event = asyncio.Event()
 
-app.mount("/", StaticFiles(directory=(importlib.resources.files("imagedephi") / "dist"), html=True), name="home") # type: ignore
-app.mount("/assets", StaticFiles(directory=importlib.resources.files("imagedephi") / "dist" / "assets"), name="assets") # type: ignore
+app.mount("/", StaticFiles(directory=str(importlib.resources.files("imagedephi") / "web_static"), html=True), name="home")
+app.mount("/assets", StaticFiles(directory=str(importlib.resources.files("imagedephi") / "web_static" / "assets")), name="assets")
 
 
 class DirectoryData:

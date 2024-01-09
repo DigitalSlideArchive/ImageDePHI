@@ -8,8 +8,8 @@
     "lint:tsc": "vue-tsc --noEmit",
     "lint": "npm-run-all lint:*",
     "dev": "vite --port 8080",
-    "build:clean": "rimraf ../imagedephi/web_client",
-    "build:compile": "vite build --outDir ../imagedephi/web_client",
+    "build:clean": "rimraf ../imagedephi/web_static",
+    "build:compile": "vite build --outDir ../imagedephi/web_static",
     "build": "npm-run-all build:clean build:compile"
   },
   "dependencies": {

@@ -1,8 +1,12 @@
+# Build artifacts
+/imagedephi/web_static/
+
+# Developer tools
 .envrc
 .vscode/*
 */web_static/*
 
-# Redacted Images
+# Sample Redacted Images
 */REDACTED_*
 */Redacted_*
 Redacted_*/
