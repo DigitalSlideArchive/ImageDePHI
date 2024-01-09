@@ -26,9 +26,28 @@ imagedephi = "imagedephi.main:imagedephi"
 only-include = [
   "imagedephi",
 ]
+artifacts = [
+  "imagedephi/web_static",
+]
 
 [tool.hatch.version]
 source = "vcs"
+
+[tool.hatch.build.hooks.jupyter-builder]
+dependencies = ["hatch-jupyter-builder"]
+build-function = "hatch_jupyter_builder.npm_builder"
+ensured-targets = [
+  "imagedephi/web_static/index.html",
+]
+# Allow development installs even if the client build is broken
+optional-editable-build = true
+
+[tool.hatch.build.hooks.jupyter-builder.build-kwargs]
+path = "client"
+build_cmd = "build"
+# Will only rebuild if source_dir was modified after build_dir
+source_dir = "client"
+build_dir = "imagedephi/web_static"
 
 [tool.djlint]
 extension = "html.j2"
