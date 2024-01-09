@@ -1,5 +1,7 @@
 .envrc
 .vscode/*
+*/web_static/*
+
 # Redacted Images
 */REDACTED_*
 */Redacted_*

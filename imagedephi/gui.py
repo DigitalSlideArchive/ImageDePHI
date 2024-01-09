@@ -76,20 +76,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-templates = Jinja2Templates(
-    # Jinja2Templates requires a "directory" argument, but it is effectively unused
-    # if a custom loader is passed
-    directory=".",
-    loader=FunctionLoader(_load_template),
-)
 
 shutdown_event = asyncio.Event()
 
-# app.mount("/assets", StaticFiles(directory="imagedephi/assets"), name="assets")
-# app.mount("/js", StaticFiles(directory="imagedephi/js"), name="js")
-
-app.mount("/", StaticFiles(directory=Path(__file__).parent / "client" / "dist", html=True), name="home")
-app.mount("/assets", StaticFiles(directory=Path(__file__).parent / "client" / "dist" / "assets"), name="assets")
+app.mount("/", StaticFiles(directory=(importlib.resources.files("imagedephi") / "dist"), html=True), name="home") # type: ignore
+app.mount("/assets", StaticFiles(directory=importlib.resources.files("imagedephi") / "dist" / "assets"), name="assets") # type: ignore
 
 
 class DirectoryData:
