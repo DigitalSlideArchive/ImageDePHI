@@ -181,10 +181,12 @@ class SvsRedactionPlan(TiffRedactionPlan):
                 for key in self.no_match_description_keys:
                     logger.error(f"Missing key (Aperio ImageDescription): {key}")
 
-    def report_plan(self) -> None:
+    def report_plan(self) -> dict[str, dict[str, str]]:
         logger.info("Aperio (.svs) Metadata Redaction Plan\n")
         offset = -1
         ifd_count = 0
+        report = {}
+        report[self.image_path.name] = {}
         for tag, ifd in self._iter_tiff_tag_entries(self.tiff_info["ifds"]):
             if ifd["offset"] != offset:
                 offset = ifd["offset"]
@@ -196,10 +198,12 @@ class SvsRedactionPlan(TiffRedactionPlan):
                     rule = self.description_redaction_steps[key_name]
                     operation = self.determine_redaction_operation(rule, image_description)
                     logger.info(f"SVS Image Description - {key_name}: {operation}")
+                    report[self.image_path.name][key_name] = operation
                 continue
             rule = self.metadata_redaction_steps[tag.value]
             operation = self.determine_redaction_operation(rule, ifd)
             logger.info(f"Tiff Tag {tag.value} - {rule.key_name}: {operation}")
+            report[self.image_path.name][rule.key_name] = operation
         self.report_missing_rules()
         logger.info("Aperio (.svs) Associated Image Redaction Plan\n")
         match_counts = {}
@@ -213,6 +217,12 @@ class SvsRedactionPlan(TiffRedactionPlan):
                 f"{match_counts[key]} image(s) match rule:"
                 f" {key} - {self.rules.associated_images[key].action}"
             )
+            report[self.image_path.name] = (
+                f"{match_counts[key]} image(s) match rule:"
+                f" {key} - {self.rules.associated_images[key].action}"
+            )
+
+        return report
 
     def _redact_svs_image_description(self, ifd: IFD) -> None:
         image_description_tag = tifftools.constants.Tag["ImageDescription"]

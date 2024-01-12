@@ -205,10 +205,12 @@ class TiffRedactionPlan(RedactionPlan):
             for tag in self.no_match_tags:
                 logger.error(f"Missing tag (tiff): {tag.value} - {tag.name}")
 
-    def report_plan(self) -> None:
+    def report_plan(self) -> dict[str, dict[str, str]]:
         logger.info("Tiff Metadata Redaction Plan\n")
         offset = -1
         ifd_count = 0
+        report = {}
+        report[self.image_path.name] = {}
         for tag, ifd in self._iter_tiff_tag_entries(self.tiff_info["ifds"]):
             if ifd["offset"] != offset:
                 offset = ifd["offset"]
@@ -217,12 +219,15 @@ class TiffRedactionPlan(RedactionPlan):
             rule = self.metadata_redaction_steps[tag.value]
             operation = self.determine_redaction_operation(rule, ifd)
             logger.info(f"Tiff Tag {tag.value} - {rule.key_name}: {operation}")
+            report[self.image_path.name][rule.key_name] = operation
         self.report_missing_rules()
         logger.info("Tiff Associated Image Redaction Plan\n")
         logger.info(f"Found {len(self.image_redaction_steps)} associated images")
         if self.image_redaction_steps:
             default_rule = list(self.image_redaction_steps.values())[0]
             logger.info(f"Redaction action: {default_rule.action}")
+
+        return report
 
     def create_new_image(self, ifd: IFD, rule: ImageReplaceRule) -> BytesIO:
         """
