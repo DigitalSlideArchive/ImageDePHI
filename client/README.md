@@ -2,7 +2,7 @@
 For efficient front end developement in the project root run:
 
    ```bash
-   export DEBUG = True
+   export DEBUG=True
    hypercorn --reload imagedephi.gui:app
    ```
 
@@ -17,5 +17,5 @@ yarn dev
 `imagedephi gui` will break and tests will fail in debug mode. Remember to reset variable when done with development.
 
 ```bash
-export DEBUG = False
+export DEBUG=False
 ```
