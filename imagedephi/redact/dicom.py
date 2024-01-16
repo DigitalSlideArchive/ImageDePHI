@@ -66,7 +66,7 @@ class DicomRedactionPlan(RedactionPlan):
         dicom_dataset: Dataset,
     ) -> Generator[tuple[DataElement, Dataset], None, None]:
         for element in dicom_dataset:
-            if element.VR == "SQ":
+            if element.VR == valuerep.VR.SQ:
                 for dataset in element.value:
                     yield from DicomRedactionPlan._iter_dicom_elements(dataset)
                 # Treat the sequence as its own element as well.
