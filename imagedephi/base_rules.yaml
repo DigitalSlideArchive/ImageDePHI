@@ -1307,3 +1307,65 @@ dicom:
       action: delete
     VisitComments:
       action: delete
+    InstanceNumber:
+      action: keep
+    DimensionOrganizationSequence:
+      action: keep
+    DimensionIndexSequence:
+      action: keep
+    DimensionOrganizationType:
+      action: keep
+    SamplesPerPixel:
+      action: keep
+    PhotometricInterpretation:
+      action: keep
+    PlanarConfiguration:
+      action: keep
+    NumberOfFrames:
+      action: keep
+    FrameIncrementPointer:
+      action: keep
+    Rows:
+      action: keep
+    Columns:
+      action: keep
+    BitsAllocated:
+      action: keep
+    BitsStored:
+      action: keep
+    HighBit:
+      action: keep
+    PixelRepresentation:
+      action: keep
+    LossyImageCompression:
+      action: keep
+    RepresentativeFrameNumber:
+      action: keep
+    ImagedVolumeWidth:
+      action: keep
+    ImagedVolumeHeight:
+      action: keep
+    TotalPixelMatrixColumns:
+      action: keep
+    TotalPixelMatrixRows:
+      action: keep
+    ImageOrientationSlide:
+      action: keep
+    SharedFunctionalGroupsSequence:
+      action: keep
+    PixelData:
+      action: keep
+    ImageType:
+      action: keep
+    SOPClassUID:
+      action: replace_uid
+    Modality:
+      action: keep
+    DimensionIndexPointer:
+      action: keep
+    FunctionalGroupPointer:
+      action: keep
+    PixelSpacing:
+      action: keep
+    PixelMeasuresSequence:
+      action: keep
