@@ -19,7 +19,7 @@ If running on macOS, you may need to [add the executable to the list of trusted 
 Image redaction is determined by a set of rules. By default, the base set of rules are used. These rules are provided by the `imagedephi` package and can be found [here](https://github.com/DigitalSlideArchive/ImageDePHI/blob/main/imagedephi/base_rules.yaml).
 
 ## Rule Application
-All runs of `imagedephi` use the provided base set of rules as a foundation. End users can use the ruleset framework to buld custom rulesets that handle additional or custom metadata not covered by the base rules, or override the behavior of the base rule set.
+All runs of `imagedephi` use the provided base set of rules as a foundation. End users can use the ruleset framework to build custom rulesets that handle additional or custom metadata not covered by the base rules, or override the behavior of the base rule set.
 
 Override rule sets can be specified by using the `-r my_ruleset.yml` or `--override-rules my_ruleset.yml` option. This option is available for both the `imagedephi run` and `imagedephi plan` commands. Override rules sets are not provided by `imagedephi`, and must de defined by the end user.
 
