@@ -36,6 +36,9 @@ jobs:
       - name: Build binary
         run: |
           tox -e binary
+      - name: Test binary runs
+        run: |
+          dist/imagedephi --help
       - name: Upload binary artifact
         uses: actions/upload-artifact@v3
         with:
