@@ -84,7 +84,6 @@ class DicomRedactionPlan(RedactionPlan):
         self.metadata_redaction_steps = {}
         self.no_match_tags = []
         self.uid_map = {}
-        print(self.dicom_data)
 
         for element, _ in DicomRedactionPlan._iter_dicom_elements(self.dicom_data):
             keyword = keyword_for_tag(element.tag)
