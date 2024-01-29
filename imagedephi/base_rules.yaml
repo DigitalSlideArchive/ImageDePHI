@@ -1369,3 +1369,171 @@ dicom:
       action: keep
     PixelMeasuresSequence:
       action: keep
+    AcquisitionDuration:
+      action: keep
+    BarcodeValue:
+      action: delete
+    BurnedInAnnotation:
+      action: keep
+    CodeMeaning:
+      action: keep
+    CodeValue:
+      action: keep
+    CodingSchemeDesignator:
+      action: keep
+    ColorSpace:
+      action: keep
+    ColumnPositionInTotalImagePixelMatrix:
+      action: keep
+    ConceptCodeSequence:
+      action: keep
+    ConceptNameCodeSequence:
+      action: keep
+    ContainerIdentifier:
+      action: delete
+    ContainerTypeCodeSequence:
+      action: delete
+    ConvolutionKernel:
+      action: keep
+    DateTime:
+      action: delete
+    DerivationImageSequence:
+      action: keep
+    DimensionDescriptionLabel:
+      action: delete
+    DimensionIndexValues:
+      action: keep
+    ExtendedDepthOfField:
+      action: keep
+    FocusMethod:
+      action: keep
+    FrameAcquisitionDateTime:
+      action: delete
+    FrameAcquisitionDuration:
+      action: keep
+    FrameContentSequence:
+      action: keep
+    FrameReferenceDateTime:
+      action: delete
+    FrameType:
+      action: keep
+    ICCProfile:
+      action: keep
+    IlluminationColorCodeSequence:
+      action: keep
+    IlluminationTypeCodeSequence:
+      action: keep
+    IlluminatorTypeCodeSequence:
+      action: keep
+    ImagePathFilterTypeStackCodeSequence:
+      action: keep
+    ImagedVolumeDepth:
+      action: keep
+    InstanceCreationDate:
+      action: delete
+    InstanceCreationTime:
+      action: delete
+    IssuerOfAccessionNumberSequence:
+      action: delete
+    IssuerOfTheContainerIdentifierSequence:
+      action: replace_dummy
+    IssuerOfTheSpecimenIdentifierSequence:
+      action: delete
+    LabelText:
+      action: delete
+    LensesCodeSequence:
+      action: keep
+    LocalNamespaceEntityID:
+      action: replace_dummy
+    LongCodeValue:
+      action: keep
+    LossyImageCompressionMethod:
+      action: keep
+    LossyImageCompressionRatio:
+      action: keep
+    Manufacturer:
+      action: keep
+    ManufacturerDeviceClassUID:
+      action: replace_uid
+    ManufacturerModelName:
+      action: keep
+    MeasurementUnitsCodeSequence:
+      action: keep
+    NumberOfOpticalPaths:
+      action: keep
+    NumericValue:
+      action: keep
+    ObjectiveLensPower:
+      action: keep
+    OpticalPathDescription:
+      action: delete
+    OpticalPathIdentificationSequence:
+      action: keep
+    OpticalPathIdentifier:
+      action: keep
+    OpticalPathSequence:
+      action: keep
+    PatientOrientation:
+      action: delete
+    PerFrameFunctionalGroupsSequence:
+      action: keep
+    PlanePositionSlideSequence:
+      action: keep
+    PositionReferenceIndicator:
+      action: keep
+    PyramidDescription:
+      action: delete
+    PyramidLabel:
+      action: keep
+    PyramidUID:
+      action: replace_uid
+    ReferencedSOPClassUID:
+      action: replace_uid
+    RowPositionInTotalImagePixelMatrix:
+      action: keep
+    SeriesNumber:
+      action: keep
+    SliceThickness:
+      action: keep
+    SoftwareVersions:
+      action: keep
+    SpacingBetweenSlices:
+      action: keep
+    SpecificCharacterSet:
+      action: keep
+    SpecimenDescriptionSequence:
+      action: keep
+    SpecimenIdentifier:
+      action: delete
+    SpecimenLabelInImage:
+      action: delete
+    SpecimenPreparationSequence:
+      action: keep
+    SpecimenPreparationStepContentItemSequence:
+      action: keep
+    SpecimenShortDescription:
+      action: delete
+    SpecimenTypeCodeSequence:
+      action: keep
+    SpecimenUID:
+      action: replace_uid
+    TextValue:
+      action: keep
+    TotalPixelMatrixFocalPlanes:
+      action: keep
+    TotalPixelMatrixOriginSequence:
+      action: keep
+    TypeOfPatientID:
+      action: delete
+    ValueType:
+      action: keep
+    VolumetricProperties:
+      action: keep
+    WholeSlideMicroscopyImageFrameTypeSequence:
+      action: keep
+    XOffsetInSlideCoordinateSystem:
+      action: keep
+    YOffsetInSlideCoordinateSystem:
+      action: keep
+    ZOffsetInSlideCoordinateSystem:
+      action: keep
