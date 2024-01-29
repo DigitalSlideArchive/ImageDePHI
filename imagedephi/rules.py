@@ -132,6 +132,7 @@ class SvsRules(TiffRules):
 
 class DicomRules(BaseModel):
     metadata: dict[str, ConcreteMetadataRule]
+    delete_custom_metadata: bool
 
     @validator("metadata", pre=True)
     @classmethod

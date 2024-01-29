@@ -13,8 +13,10 @@ from pydicom.tag import BaseTag
 
 from imagedephi.rules import (
     ConcreteMetadataRule,
+    DeleteRule,
     DicomRules,
     FileFormat,
+    KeepRule,
     MetadataReplaceRule,
     RedactionOperation,
 )
@@ -86,6 +88,17 @@ class DicomRedactionPlan(RedactionPlan):
         self.uid_map = {}
 
         for element, _ in DicomRedactionPlan._iter_dicom_elements(self.dicom_data):
+            custom_metadata_key = "CustomMetadataItem"
+            if element.tag.group % 2 == 1:
+                if rules.delete_custom_metadata:
+                    # If the group is odd, it is custom metadata. Use the custom metadata action
+                    self.metadata_redaction_steps[element.tag] = DeleteRule(
+                        key_name=custom_metadata_key, action="delete"
+                    )
+                else:
+                    self.metadata_redaction_steps[element.tag] = KeepRule(
+                        key_name=custom_metadata_key, action="keep"
+                    )
             keyword = keyword_for_tag(element.tag)
             keyword_in_rules = keyword in rules.metadata
             if not keyword_in_rules:
@@ -121,14 +134,11 @@ class DicomRedactionPlan(RedactionPlan):
 
     def report_plan(self) -> None:
         logger.info("DICOM Metadata Redaction Plan\n")
-        print("DICOM Metadata Redaction Plan\n")
         for element, _ in DicomRedactionPlan._iter_dicom_elements(self.dicom_data):
-            keyword = keyword_for_tag(element.tag)
             rule = self.metadata_redaction_steps.get(element.tag, None)
             if rule:
                 operation = self.determine_redaction_operation(rule, element)
-                logger.info(f"DICOM Tag {element.tag} - {keyword}: {operation}")
-                print(f"DICOM Tag {element.tag} - {keyword}: {operation}")
+                logger.info(f"DICOM Tag {element.tag} - {rule.key_name}: {operation}")
         self.report_missing_rules()
 
     def apply(self, rule: ConcreteMetadataRule, element: DataElement, dataset: Dataset):

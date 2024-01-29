@@ -816,6 +816,7 @@ svs:
     Scan Warning:
       action: delete
 dicom:
+  delete_custom_metadata: true
   metadata:
     AccessionNumber:
       action: empty
