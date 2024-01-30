@@ -99,6 +99,7 @@ class DicomRedactionPlan(RedactionPlan):
                     self.metadata_redaction_steps[element.tag] = KeepRule(
                         key_name=custom_metadata_key, action="keep"
                     )
+                continue
             keyword = keyword_for_tag(element.tag)
             keyword_in_rules = keyword in rules.metadata
             if not keyword_in_rules:
