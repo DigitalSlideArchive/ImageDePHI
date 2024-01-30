@@ -3,7 +3,7 @@ const basePath = import.meta.env.VITE_APP_API_URL
   : "";
 
 export async function getDirectoryInfo(path?: string) {
-  const selectedPath = path ? path : "";
+  const selectedPath = path ? path : "/";
   const response = await fetch(
     `${basePath}/directory?directory=${selectedPath}`,
     {

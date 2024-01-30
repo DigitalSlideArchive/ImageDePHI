@@ -209,7 +209,7 @@ def on_internal_error(request: Request, exc: Exception) -> PlainTextResponse:
 
 @app.get("/directory/")
 def select_directory(
-    directory: str = ("/"),  # noqa: B008
+    directory: str = "/",  # noqa: B008
 ):
     directory_path = Path(directory)
     # TODO: if input_directory is specified but an empty string, it gets instantiated as the CWD
