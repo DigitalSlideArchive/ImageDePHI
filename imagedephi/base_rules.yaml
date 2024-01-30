@@ -1147,7 +1147,7 @@ dicom:
     ReferencedGeneralPurposeScheduledProcedureStepTransactionUID:
       action: replace_uid
     ReferencedImageSequence:
-      action: replace_uid
+      action: keep
     ReferencedPatientAliasSequence:
       action: delete
     ReferencedPatientSequence:
@@ -1253,7 +1253,7 @@ dicom:
     SOPInstanceUID:
       action: replace_uid
     SourceImageSequence:
-      action: replace_uid
+      action: keep
     SpecialNeeds:
       action: delete
     StationName:
