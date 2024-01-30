@@ -32,12 +32,6 @@ if TYPE_CHECKING:
 
 MAX_ASSOCIATED_IMAGE_HEIGHT = 160
 
-# Should we allow more origins since vite increments if 80 is busy?
-origins = [
-    "http://localhost",
-    "http://localhost:8080"
-]
-
 
 def _load_template(template_name: str) -> str | None:
     template_file = importlib.resources.files("imagedephi") / "templates" / template_name
@@ -58,7 +52,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         raise app.state.last_exception  # pyright: ignore [reportGeneralTypeIssues]
 
 
-debug_mode = bool(os.environ.get("DEBUG"))
+debug_mode = eval(str(os.environ.get("DEBUG")))
 
 app = FastAPI(
     lifespan=lifespan,
@@ -68,28 +62,32 @@ app = FastAPI(
     debug=debug_mode,
 )
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+if debug_mode:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
-templates = Jinja2Templates(
-    # Jinja2Templates requires a "directory" argument, but it is effectively unused
-    # if a custom loader is passed
-    directory=".",
-    loader=FunctionLoader(_load_template),
-)
+else:
+    app.mount(
+        "/",
+        StaticFiles(
+            directory=str(importlib.resources.files("imagedephi") / "web_static"), html=True
+        ),
+        name="home",
+    )
+    app.mount(
+        "/assets",
+        StaticFiles(
+            directory=str(importlib.resources.files("imagedephi") / "web_static" / "assets")
+        ),
+        name="assets",
+    )
+
 
 shutdown_event = asyncio.Event()
-
-# app.mount("/assets", StaticFiles(directory="imagedephi/assets"), name="assets")
-# app.mount("/js", StaticFiles(directory="imagedephi/js"), name="js")
-
-app.mount("/", StaticFiles(directory=Path(__file__).parent / "client" / "dist", html=True), name="home")
-app.mount("/assets", StaticFiles(directory=Path(__file__).parent / "client" / "dist" / "assets"), name="assets")
 
 
 class DirectoryData:
@@ -205,7 +203,7 @@ def on_internal_error(request: Request, exc: Exception) -> PlainTextResponse:
     )
 
 
-@app.get("/directory")
+@app.get("/directory/")
 def select_directory(
     # request: Request,
     input_directory: Path = Path("/"),  # noqa: B008
@@ -222,13 +220,15 @@ def select_directory(
         params = {"file_name": str(input_directory / path), "image_key": key}
         return "image/?" + urllib.parse.urlencode(params, safe="")
 
-    return {
-        "input_directory_data": DirectoryData(input_directory),
-        "output_directory_data": DirectoryData(output_directory),
-        "image_url": image_url,
-        "modal": modal,
-        "redacted": False,
-    },
+    return (
+        {
+            "input_directory_data": DirectoryData(input_directory),
+            "output_directory_data": DirectoryData(output_directory),
+            "image_url": image_url,
+            "modal": modal,
+            "redacted": False,
+        },
+    )
     # return templates.TemplateResponse(
     #     "HomePage.html.j2",
     #     {

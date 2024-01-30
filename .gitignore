@@ -1,6 +1,11 @@
+# Developer tools
 .envrc
 .vscode/*
-# Redacted Images
+
+# Build artifacts
+*/web_static/*
+
+# Sample Redacted Images
 */REDACTED_*
 */Redacted_*
 Redacted_*/
