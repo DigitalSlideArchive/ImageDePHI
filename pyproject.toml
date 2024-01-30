@@ -10,7 +10,6 @@ dependencies = [
     "tifftools",
     "fastapi",
     "python-multipart",
-    "Jinja2",
     "hypercorn",
     "pyyaml",
     "Pillow",
@@ -48,11 +47,6 @@ build_cmd = "build"
 # Will only rebuild if source_dir was modified after build_dir
 source_dir = "client"
 build_dir = "imagedephi/web_static"
-
-[tool.djlint]
-extension = "html.j2"
-profile = "jinja"
-indent = 2
 
 [tool.black]
 line-length = 100

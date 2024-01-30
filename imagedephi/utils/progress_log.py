@@ -1,4 +1,3 @@
-
 import queue
 
 _progress_queue: queue.Queue[tuple] = queue.Queue(-1)
