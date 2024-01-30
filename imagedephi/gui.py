@@ -16,8 +16,6 @@ from fastapi import BackgroundTasks, FastAPI, HTTPException, Request, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
-from jinja2 import FunctionLoader
 from starlette.background import BackgroundTask
 import tifftools
 
@@ -99,16 +97,19 @@ class DirectoryData:
     def __init__(self, directory: Path):
         self.directory = directory
 
-        self.ancestors = [{'name': ancestor.name, 'path': ancestor} for ancestor in reversed(directory.parents)]
-        self.ancestors.append({'name': directory.name, 'path': directory})
+        self.ancestors = [
+            {"name": ancestor.name, "path": ancestor} for ancestor in reversed(directory.parents)
+        ]
+        self.ancestors.append({"name": directory.name, "path": directory})
 
         self.child_directories = [
-            {'name': child.name, 'path': child} for child in directory.iterdir()
+            {"name": child.name, "path": child}
+            for child in directory.iterdir()
             if child.is_dir() and os.access(child, os.R_OK)
         ]
 
         self.child_images = [
-            {'name': image.name, 'path': image} for image in list(iter_image_files(directory))
+            {"name": image.name, "path": image} for image in list(iter_image_files(directory))
         ]
 
 
@@ -219,11 +220,13 @@ def select_directory(
         params = {"file_name": str(directory_path / path), "image_key": key}
         return "image/?" + urllib.parse.urlencode(params, safe="")
 
-    return {
-        "directory_data": DirectoryData(directory_path),
-        "image_url": image_url,
-        "redacted": False,
-    },
+    return (
+        {
+            "directory_data": DirectoryData(directory_path),
+            "image_url": image_url,
+            "redacted": False,
+        },
+    )
 
 
 @app.get("/image/")
