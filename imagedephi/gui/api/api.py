@@ -9,7 +9,7 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException, WebSocket
 
 from imagedephi.gui.utils.directory import DirectoryData
 from imagedephi.gui.utils.image import get_image_response_from_ifd
-from imagedephi.redact import redact_images
+from imagedephi.redact import redact_images, show_redaction_plan
 from imagedephi.utils.progress_log import get_next_progress_message
 from imagedephi.utils.tiff import get_associated_image_svs, get_ifd_for_thumbnail, get_is_svs
 
@@ -69,6 +69,17 @@ def get_associated_image(file_name: str = "", image_key: str = ""):
     if not ifd:
         raise HTTPException(status_code=404, detail=f"No {image_key} image found for {file_name}")
     return get_image_response_from_ifd(ifd, file_name)
+
+
+@router.get("/redaction_plan")
+def get_redaction_plan(
+    input_directory: str = ("/"),  # noqa: B008
+):
+    input_path = Path(input_directory)
+    if not input_path.is_dir():
+        raise HTTPException(status_code=404, detail="Input directory not found")
+
+    return show_redaction_plan(input_path, limit=10, offset=0)
 
 
 @router.post("/redact/")

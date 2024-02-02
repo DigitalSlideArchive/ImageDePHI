@@ -6,6 +6,7 @@ import { selectedDirectories } from "./store/directoryStore";
 
 import MenuSteps from "./components/MenuSteps.vue";
 import FileBrowser from "./components/FileBrowser.vue";
+import ImageList from "./components/ImageList.vue";
 
 const inputModal = ref(null);
 const outputModal = ref(null);
@@ -99,5 +100,6 @@ ws.onmessage = (event) => {
         ></progress>
       </div>
     </div>
+    <ImageList />
   </div>
 </template>
