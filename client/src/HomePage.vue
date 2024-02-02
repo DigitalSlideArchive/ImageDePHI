@@ -33,7 +33,7 @@ ws.onmessage = (event) => {
         <div class="bg-base-100 drop-shadow-xl rounded flex flex-col">
           <div class="flex justify-between content-center p-4 border-b">
             <div class="max-h6 w-auto self-center">
-              <img src="src/assets/logo.png" />
+              <img src="/logo.png" />
             </div>
             <div class="flex items-center space-y-0.5">
               <a class="btn btn-ghost btn-square btn-sm">
