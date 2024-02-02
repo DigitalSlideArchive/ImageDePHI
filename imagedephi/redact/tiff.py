@@ -196,14 +196,17 @@ class TiffRedactionPlan(RedactionPlan):
     def is_comprehensive(self) -> bool:
         return not self.no_match_tags
 
-    def report_missing_rules(self) -> None:
+    def report_missing_rules(self, report) -> None:
         if self.is_comprehensive():
             logger.info("This redaction plan is comprehensive.")
         else:
             # keep this line in logger? Or should we restructure a bit
             logger.error("The following tags could not be redacted given the current set of rules.")
+            report[self.image_path.name]['missing_tags'] = []
+
             for tag in self.no_match_tags:
                 logger.error(f"Missing tag (tiff): {tag.value} - {tag.name}")
+                report[self.image_path.name]['missing_tags'].append({tag.value: tag.name})
 
     def report_plan(self) -> dict[str, dict[str, str]]:
         logger.info("Tiff Metadata Redaction Plan\n")
@@ -211,22 +214,25 @@ class TiffRedactionPlan(RedactionPlan):
         ifd_count = 0
         report = {}
         report[self.image_path.name] = {}
+
         for tag, ifd in self._iter_tiff_tag_entries(self.tiff_info["ifds"]):
             if ifd["offset"] != offset:
                 offset = ifd["offset"]
                 ifd_count += 1
                 logger.info(f"IFD {ifd_count}:")
-            rule = self.metadata_redaction_steps[tag.value]
-            operation = self.determine_redaction_operation(rule, ifd)
-            logger.info(f"Tiff Tag {tag.value} - {rule.key_name}: {operation}")
-            report[self.image_path.name][rule.key_name] = operation
-        self.report_missing_rules()
+            if tag.value not in self.no_match_tags:
+                rule = self.metadata_redaction_steps[tag.value]
+                operation = self.determine_redaction_operation(rule, ifd)
+                logger.info(f"Tiff Tag {tag.value} - {rule.key_name}: {operation}")
+                report[self.image_path.name][rule.key_name] = operation
+        self.report_missing_rules(report)
         logger.info("Tiff Associated Image Redaction Plan\n")
         logger.info(f"Found {len(self.image_redaction_steps)} associated images")
+        report[self.image_path.name]["associated_images"] = len(self.image_redaction_steps)
         if self.image_redaction_steps:
             default_rule = list(self.image_redaction_steps.values())[0]
             logger.info(f"Redaction action: {default_rule.action}")
-
+            report[self.image_path.name]["associated_image_redaction_action"] = default_rule.action
         return report
 
     def create_new_image(self, ifd: IFD, rule: ImageReplaceRule) -> BytesIO:

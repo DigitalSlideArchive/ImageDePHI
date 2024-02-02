@@ -167,12 +167,12 @@ class SvsRedactionPlan(TiffRedactionPlan):
     def is_comprehensive(self) -> bool:
         return super().is_comprehensive() and not self.no_match_description_keys
 
-    def report_missing_rules(self) -> None:
+    def report_missing_rules(self, report) -> None:
         if self.is_comprehensive():
             logger.info("The redaction plan is comprehensive.")
         else:
             if self.no_match_tags:
-                super().report_missing_rules()
+                super().report_missing_rules(report)
             if self.no_match_description_keys:
                 logger.error(
                     "The following keys were found in Aperio ImageDescription strings "
@@ -180,6 +180,7 @@ class SvsRedactionPlan(TiffRedactionPlan):
                 )
                 for key in self.no_match_description_keys:
                     logger.error(f"Missing key (Aperio ImageDescription): {key}")
+                    report[self.image_path.name]['missing_keys'].append(key)
 
     def report_plan(self) -> dict[str, dict[str, str]]:
         logger.info("Aperio (.svs) Metadata Redaction Plan\n")
@@ -204,7 +205,7 @@ class SvsRedactionPlan(TiffRedactionPlan):
             operation = self.determine_redaction_operation(rule, ifd)
             logger.info(f"Tiff Tag {tag.value} - {rule.key_name}: {operation}")
             report[self.image_path.name][rule.key_name] = operation
-        self.report_missing_rules()
+        self.report_missing_rules(report)
         logger.info("Aperio (.svs) Associated Image Redaction Plan\n")
         match_counts = {}
         for _, image_rule in self.image_redaction_steps.items():
