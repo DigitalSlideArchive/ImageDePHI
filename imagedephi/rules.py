@@ -102,8 +102,8 @@ class BaseRules(BaseModel):
 
 
 class TiffRules(BaseModel):
-    associated_images: dict[str, ConcreteImageRule]
-    metadata: dict[str, ConcreteMetadataRule]
+    associated_images: dict[str, ConcreteImageRule] = {}
+    metadata: dict[str, ConcreteMetadataRule] = {}
 
     # TODO: is pre necessary?
     @validator("metadata", "associated_images", pre=True)
@@ -117,7 +117,7 @@ class TiffRules(BaseModel):
 
 
 class SvsRules(TiffRules):
-    image_description: dict[str, ConcreteMetadataRule]
+    image_description: dict[str, ConcreteMetadataRule] = {}
 
     # TODO: is pre necessary?
     @validator("metadata", "image_description", "associated_images", pre=True)
@@ -131,7 +131,7 @@ class SvsRules(TiffRules):
 
 
 class DicomRules(BaseModel):
-    metadata: dict[str, ConcreteMetadataRule]
+    metadata: dict[str, ConcreteMetadataRule] = {}
     delete_custom_metadata: bool = True
 
     @validator("metadata", pre=True)
@@ -145,9 +145,9 @@ class DicomRules(BaseModel):
 
 
 class Ruleset(BaseModel):
-    name: str
-    description: str
-    output_file_name: str
-    tiff: TiffRules
-    svs: SvsRules
-    dicom: DicomRules
+    name: str = "My Rules"
+    description: str = "My rules"
+    output_file_name: str = "study_slide"
+    tiff: TiffRules = TiffRules()
+    svs: SvsRules = SvsRules()
+    dicom: DicomRules = DicomRules()
