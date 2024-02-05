@@ -90,8 +90,9 @@ class DicomRedactionPlan(RedactionPlan):
         for element, _ in DicomRedactionPlan._iter_dicom_elements(self.dicom_data):
             custom_metadata_key = "CustomMetadataItem"
             keyword = keyword_for_tag(element.tag)
-            keyword_in_rules = keyword in rules.metadata
-            if not keyword_in_rules:
+            # Check keyword and (gggg,eeee) representation
+            tag_in_rules = keyword in rules.metadata or str(element.tag) in rules.metadata
+            if not tag_in_rules:
                 if element.tag.group % 2 == 1:
                     if rules.delete_custom_metadata:
                         # If the group is odd, it is custom metadata. Use the custom metadata action
