@@ -89,21 +89,21 @@ class DicomRedactionPlan(RedactionPlan):
 
         for element, _ in DicomRedactionPlan._iter_dicom_elements(self.dicom_data):
             custom_metadata_key = "CustomMetadataItem"
-            if element.tag.group % 2 == 1:
-                if rules.delete_custom_metadata:
-                    # If the group is odd, it is custom metadata. Use the custom metadata action
-                    self.metadata_redaction_steps[element.tag] = DeleteRule(
-                        key_name=custom_metadata_key, action="delete"
-                    )
-                else:
-                    self.metadata_redaction_steps[element.tag] = KeepRule(
-                        key_name=custom_metadata_key, action="keep"
-                    )
-                continue
             keyword = keyword_for_tag(element.tag)
             keyword_in_rules = keyword in rules.metadata
             if not keyword_in_rules:
-                self.no_match_tags.append(element.tag)
+                if element.tag.group % 2 == 1:
+                    if rules.delete_custom_metadata:
+                        # If the group is odd, it is custom metadata. Use the custom metadata action
+                        self.metadata_redaction_steps[element.tag] = DeleteRule(
+                            key_name=custom_metadata_key, action="delete"
+                        )
+                    else:
+                        self.metadata_redaction_steps[element.tag] = KeepRule(
+                            key_name=custom_metadata_key, action="keep"
+                        )
+                else:
+                    self.no_match_tags.append(element.tag)
                 continue
 
             rule = rules.metadata[keyword]
