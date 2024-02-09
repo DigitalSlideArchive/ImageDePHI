@@ -38,6 +38,9 @@ _global_options = [
         help="Path where log file will be created",
         type=click.Path(path_type=Path),
     ),
+    click.option(
+        "-r", "--recursive", is_flag=True, help="Apply the command to images in subdirectories"
+    ),
 ]
 
 
@@ -88,6 +91,7 @@ def imagedephi(
     verbose: int,
     quiet: int,
     log_file: Path,
+    recursive: bool,
 ) -> None:
     """Redact microscopy whole slide images."""
     obj = ImagedephiContext()
@@ -112,14 +116,13 @@ def imagedephi(
     type=click.Path(exists=True, file_okay=False, readable=True, writable=True, path_type=Path),
 )
 @click.option("--rename/--skip-rename", default=True)
-@click.option("-r", "--recursive", is_flag=True, help="Redact images in subdirectories.")
 @click.pass_obj
 def run(
     obj: ImagedephiContext,
     input_path: Path,
     output_dir: Path,
     rename: bool,
-    recursive: bool,
+    recursive,
     verbose,
     quiet,
     log_file,
@@ -134,12 +137,12 @@ def run(
 @global_options
 @click.argument("input-path", type=click.Path(exists=True, readable=True, path_type=Path))
 @click.pass_obj
-def plan(obj: ImagedephiContext, input_path: Path, quiet, verbose, log_file) -> None:
+def plan(obj: ImagedephiContext, input_path: Path, recursive, quiet, verbose, log_file) -> None:
     # """Print the redaction plan for images."""
     if verbose or quiet or log_file:
         set_logging_config(verbose, quiet, log_file)
 
-    show_redaction_plan(input_path, obj.override_rule_set)
+    show_redaction_plan(input_path, obj.override_rule_set, recursive)
 
 
 @imagedephi.command
