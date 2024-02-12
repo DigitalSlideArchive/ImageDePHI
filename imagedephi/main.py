@@ -138,10 +138,11 @@ def run(
 @click.argument("input-path", type=click.Path(exists=True, readable=True, path_type=Path))
 @click.pass_obj
 def plan(obj: ImagedephiContext, input_path: Path, recursive, quiet, verbose, log_file) -> None:
-    # """Print the redaction plan for images."""
-    if verbose or quiet or log_file:
-        set_logging_config(verbose, quiet, log_file)
-
+    """Print the redaction plan for images."""
+    # Even if the user doesn't use the verbose flag, ensure logging level is set to
+    # show info output of this command.
+    v = verbose if verbose else 1
+    set_logging_config(v, quiet, log_file)
     show_redaction_plan(input_path, obj.override_rule_set, recursive)
 
 

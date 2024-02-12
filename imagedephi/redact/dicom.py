@@ -121,14 +121,12 @@ class DicomRedactionPlan(RedactionPlan):
 
     def report_plan(self) -> None:
         logger.info("DICOM Metadata Redaction Plan\n")
-        print("DICOM Metadata Redaction Plan\n")
         for element, _ in DicomRedactionPlan._iter_dicom_elements(self.dicom_data):
             keyword = keyword_for_tag(element.tag)
             rule = self.metadata_redaction_steps.get(element.tag, None)
             if rule:
                 operation = self.determine_redaction_operation(rule, element)
                 logger.info(f"DICOM Tag {element.tag} - {keyword}: {operation}")
-                print(f"DICOM Tag {element.tag} - {keyword}: {operation}")
         self.report_missing_rules()
 
     def apply(self, rule: ConcreteMetadataRule, element: DataElement, dataset: Dataset):
