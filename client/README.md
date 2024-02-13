@@ -3,7 +3,7 @@ For efficient front end developement in the project root run:
 
    ```bash
    export DEBUG=True
-   hypercorn --reload imagedephi.gui:app
+   hypercorn --reload imagedephi.gui.app:app
    ```
 
 In a new terminal:

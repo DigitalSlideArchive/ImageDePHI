@@ -5,7 +5,7 @@ const basePath = import.meta.env.VITE_APP_API_URL
 export async function getDirectoryInfo(path?: string) {
   const selectedPath = path ? path : "/";
   const response = await fetch(
-    `${basePath}/directory?directory=${selectedPath}`,
+    `${basePath}/directory/?directory=${selectedPath}`,
     {
       method: "GET",
       mode: "cors",
@@ -21,7 +21,7 @@ export async function redactImages(
   outputDirectory: string,
 ) {
   const response = await fetch(
-    `${basePath}/redact?input_directory=${inputDirectory}&output_directory=${outputDirectory}`,
+    `${basePath}/redact/?input_directory=${inputDirectory}&output_directory=${outputDirectory}`,
     {
       method: "POST",
       mode: "cors",

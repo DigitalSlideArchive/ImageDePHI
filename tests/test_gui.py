@@ -3,7 +3,7 @@ from pathlib import Path
 from fastapi.testclient import TestClient
 import pytest
 
-from imagedephi.gui import app
+from imagedephi.gui.app import app
 
 
 @pytest.fixture
