@@ -13,7 +13,7 @@ from hypercorn import Config
 from hypercorn.asyncio import serve
 import yaml
 
-from imagedephi.gui import app, shutdown_event
+from imagedephi.gui.app import app, shutdown_event
 from imagedephi.redact import redact_images, show_redaction_plan
 from imagedephi.rules import Ruleset
 from imagedephi.utils.cli import FallthroughGroup, run_coroutine
