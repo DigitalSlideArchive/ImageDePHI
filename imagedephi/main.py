@@ -78,7 +78,7 @@ def set_logging_config(v: int, q: int, log_file: Path | None = None):
 )
 @click.version_option(prog_name="ImageDePHI")
 @click.option(
-    "-r",
+    "-R",
     "--override-rules",
     type=click.File("r"),
     help="User-defined rules to override defaults.",
