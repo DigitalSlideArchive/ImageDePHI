@@ -135,9 +135,6 @@ def show_redaction_plan(
     image_paths = iter_image_files(input_path, recursive) if input_path.is_dir() else [input_path]
     base_rules = get_base_rules()
     for image_path in image_paths:
-        if image_path.suffix not in FILE_EXTENSION_MAP:
-            logger.error(f"Image format for {image_path.name} not supported.")
-            continue
         try:
             redaction_plan = build_redaction_plan(image_path, base_rules, override_rules)
         except tifftools.TifftoolsError:
