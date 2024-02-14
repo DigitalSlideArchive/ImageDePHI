@@ -129,8 +129,10 @@ def redact_images(
                 output_file_counter += 1
 
 
-def show_redaction_plan(input_path: Path, override_rules: Ruleset | None = None) -> None:
-    image_paths = iter_image_files(input_path) if input_path.is_dir() else [input_path]
+def show_redaction_plan(
+    input_path: Path, override_rules: Ruleset | None = None, recursive=False
+) -> None:
+    image_paths = iter_image_files(input_path, recursive) if input_path.is_dir() else [input_path]
     base_rules = get_base_rules()
     for image_path in image_paths:
         try:
