@@ -15,7 +15,12 @@ const progress = ref({
   max: 0,
 });
 
-const ws = new WebSocket("ws://localhost:8000/ws");
+const wsBase = import.meta.env.VITE_APP_API_URL
+  ? new URL(import.meta.env.VITE_APP_API_URL)
+  : new URL(import.meta.url);
+
+const ws = new WebSocket("ws:" + wsBase.host + "/ws");
+
 ws.onmessage = (event) => {
   const data = JSON.parse(event.data);
   progress.value = {

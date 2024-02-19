@@ -95,6 +95,7 @@ def redact(
 @router.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
+    await websocket.send_json("Connected")
     while True:
         message = get_next_progress_message()
         if message is not None:
