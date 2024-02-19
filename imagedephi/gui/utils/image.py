@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from tifftools.tifftools import IFD
 
 
-def extract_thumbnail_from_image_bytes(ifd, file_name: str) -> Image.Image | None:
+def extract_thumbnail_from_image_bytes(ifd: "IFD", file_name: str) -> Image.Image | None:
     offsets = ifd["tags"][tifftools.Tag.TileOffsets.value]["data"]
     byte_counts = ifd["tags"][tifftools.Tag.TileByteCounts.value]["data"]
     num_tiles = len(offsets)
@@ -66,7 +66,7 @@ def extract_thumbnail_from_image_bytes(ifd, file_name: str) -> Image.Image | Non
     return resized_image
 
 
-def get_image_response_from_ifd(ifd, file_name: str):
+def get_image_response_from_ifd(ifd: "IFD", file_name: str):
     # use tifftools and PIL to create a jpeg of the associated image, sized for the browser
     tiff_buffer = BytesIO()
     jpeg_buffer = BytesIO()
