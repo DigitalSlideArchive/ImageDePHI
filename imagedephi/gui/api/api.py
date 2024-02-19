@@ -7,7 +7,6 @@ import urllib.parse
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException, WebSocket
 
-import imagedephi.gui.app
 from imagedephi.gui.utils.directory import DirectoryData
 from imagedephi.gui.utils.image import get_image_response_from_ifd
 from imagedephi.redact import redact_images
@@ -18,6 +17,8 @@ if TYPE_CHECKING:
     from tifftools.tifftools import IFD
 
 router = APIRouter()
+
+shutdown_event = asyncio.Event()
 
 
 @router.get("/directory/")
@@ -88,7 +89,7 @@ def redact(
     redact_images(input_path, output_path)
 
     # Shutdown after the response is sent, as this is the terminal endpoint
-    background_tasks.add_task(imagedephi.gui.app.shutdown_event.set)  # type: ignore[attr-defined]
+    background_tasks.add_task(shutdown_event.set)  # type: ignore[attr-defined]
 
 
 @router.websocket("/ws")
