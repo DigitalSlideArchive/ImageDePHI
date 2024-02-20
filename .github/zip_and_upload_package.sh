@@ -17,7 +17,7 @@ chmod +x $executable
 zipfile="${runner_os}-imagedephi-cli.zip"
 
 if [[ "$runner_os" = "Windows" ]]; then
-    tar.exe -a -c -f $zipfile $executable
+    powershell Compress-Archive $executable $zipfile
 else
     zip $zipfile $executable
 fi
