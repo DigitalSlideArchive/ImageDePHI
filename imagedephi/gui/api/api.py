@@ -18,8 +18,6 @@ if TYPE_CHECKING:
 
 router = APIRouter()
 
-shutdown_event = asyncio.Event()
-
 
 @router.get("/directory/")
 def select_directory(
@@ -87,9 +85,6 @@ def redact(
         raise HTTPException(status_code=404, detail="Output directory not found")
 
     redact_images(input_path, output_path)
-
-    # Shutdown after the response is sent, as this is the terminal endpoint
-    background_tasks.add_task(shutdown_event.set)  # type: ignore[attr-defined]
 
 
 @router.websocket("/ws")
