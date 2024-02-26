@@ -15,6 +15,7 @@ dependencies = [
     "pyyaml",
     "Pillow",
     "pydicom",
+    "wsidicom",
     "websockets",
 ]
 dynamic = ["version"]
