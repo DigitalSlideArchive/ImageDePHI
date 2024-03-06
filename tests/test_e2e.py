@@ -66,9 +66,7 @@ def test_e2e_gui(
     port = unused_tcp_port
     subprocess.Popen(
         [sys.executable, "-m", "imagedephi", "gui", "--port", str(port)],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        # shell=(True if sys.platform == "win32" else False),
+
     )
     sleep(2)
     check_gui = httpx.get(f"http://127.0.0.1:{port}")
