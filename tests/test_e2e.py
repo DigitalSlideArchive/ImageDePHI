@@ -1,9 +1,9 @@
+import asyncio
 from collections.abc import Generator
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 import subprocess
 import sys
-from time import sleep
 
 from click.testing import CliRunner
 from freezegun import freeze_time
@@ -11,13 +11,7 @@ import httpx
 import pytest
 
 from imagedephi import main
-
-
-@pytest.fixture
-def thread_executor() -> Generator[ThreadPoolExecutor, None, None]:
-    executor = ThreadPoolExecutor(max_workers=1)
-    yield executor
-    # executor.shutdown(cancel_futures=True)
+from imagedephi.utils.network import wait_for_port
 
 
 @freeze_time("2023-05-12 12:12:53")
@@ -64,11 +58,16 @@ def test_e2e_gui(
 ) -> None:
 
     port = unused_tcp_port
-    subprocess.Popen(
-        [sys.executable, "-m", "imagedephi", "gui", "--port", str(port)],
 
+    gui = subprocess.Popen(
+        [sys.executable, "-m", "imagedephi", "gui", "--port", str(port)],
     )
-    sleep(2)
+
+    asyncio.run(asyncio.wait_for(wait_for_port(port), timeout=2))
+
+    # Check that the GUI is running
+    assert gui.poll() is None
+
     check_gui = httpx.get(f"http://127.0.0.1:{port}")
     assert check_gui.status_code == 200
 
@@ -78,7 +77,12 @@ def test_e2e_gui(
     )
 
     assert check_redact.status_code == 200
-    sleep(2)
+
+    gui.terminate()
+    gui.wait()
+    # Check that the GUI has stopped
+    assert gui.poll() is not None
+
     redacted_dirs = list(tmp_path.glob("*Redacted*"))
     assert len(redacted_dirs) > 0
     redacted_files = list(redacted_dirs[0].glob("*"))
