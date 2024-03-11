@@ -2,7 +2,6 @@ from pathlib import Path
 import re
 
 import pydicom
-from pydicom.tag import Tag
 
 extensions = {
     None: True,
@@ -19,7 +18,6 @@ def file_is_same_series_as(original_path: Path, path: Path) -> bool:
     These heuristics match those defined in the large image DICOM source found at
     https://github.com/girder/large_image/blob/master/sources/dicom/large_image_source_dicom/__init__.py#L226.
     """
-
     might_match = False
     if original_path.suffix not in extensions:
         if original_path.suffix == path.suffix or path.suffix in extensions:
