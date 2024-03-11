@@ -18,8 +18,12 @@ from fastapi.templating import Jinja2Templates
 from jinja2 import FunctionLoader
 from starlette.background import BackgroundTask
 import tifftools
+from wsidicom import WsiDicom
 
 from imagedephi.redact import iter_image_files, redact_images
+from imagedephi.rules import FileFormat
+from imagedephi.utils.dicom import file_is_same_series_as
+from imagedephi.utils.image import get_file_format_from_path
 from imagedephi.utils.progress_log import get_next_progress_message
 
 # from imagedephi.redact.redact import output_file_counter
@@ -178,6 +182,25 @@ def get_image_response_from_ifd(ifd: IFD, file_name: str):
             return StreamingResponse(jpeg_buffer, media_type="image/jpeg")
 
 
+def get_image_response_dicom(slide: WsiDicom, key: str):
+    image = None
+    if key == "thumbnail":
+        image = slide.read_thumbnail()
+    elif key == "label":
+        image = slide.read_label()
+    elif key == "macro":
+        image = slide.read_overview()
+    if image:
+        # resize the image
+        scale_factor = MAX_ASSOCIATED_IMAGE_HEIGHT / image.size[1]
+        new_size = (int(image.size[0] * scale_factor), int(image.size[1] * scale_factor))
+        image.thumbnail(new_size, Image.LANCZOS)
+        img_buffer = BytesIO()
+        image.save(img_buffer, "JPEG")
+        img_buffer.seek(0)
+        return StreamingResponse(img_buffer, media_type="image/jpeg")
+
+
 # This exception handler not be used when FastAPI debug flag is enabled,
 # due to how ServerErrorMiddleware works.
 @app.exception_handler(500)
@@ -223,34 +246,54 @@ def select_directory(
 
 
 @app.get("/image/")
-def get_associated_image(file_name: str = "", image_key: str = ""):
-    if not file_name:
-        raise HTTPException(status_code=400, detail="file_name is a required parameter")
+def get_associated_image(image_path: str = "", image_key: str = ""):
+    if not image_path:
+        raise HTTPException(status_code=400, detail="image_path is a required parameter")
+
+    if not Path(image_path).exists():
+        raise HTTPException(status_code=400, detail="image_path does not exist")
 
     if image_key not in ["macro", "label", "thumbnail"]:
         raise HTTPException(
             status_code=400,
-            detail=f"{image_key} is not a supported associated image key for {file_name}.",
+            detail=f"{image_key} is not a supported associated image key for {image_path}.",
         )
-    ifd: IFD | None = None
-    if image_key == "thumbnail":
-        ifd = get_ifd_for_thumbnail(Path(file_name))
+    image_type = get_file_format_from_path(Path(image_path))
+    if not image_type:
+        raise HTTPException(
+            status_code=400, detail=f"{image_path} is not a supported file type. {image_type}"
+        )
+    if image_type == FileFormat.SVS or image_type == FileFormat.TIFF:
+        ifd: IFD | None = None
+        if image_key == "thumbnail":
+            ifd = get_ifd_for_thumbnail(Path(image_path))
+            if not ifd:
+                raise HTTPException(
+                    status_code=404, detail=f"Could not generate thumbnail image for {image_path}"
+                )
+            return get_image_response_from_ifd(ifd, image_path)
+
+        # image key is one of "macro", "label"
+        if not get_is_svs(Path(image_path)):
+            raise HTTPException(
+                status_code=404, detail=f"Image key {image_key} is not supported for {image_path}"
+            )
+
+        ifd = get_associated_image_svs(Path(image_path), image_key)
         if not ifd:
             raise HTTPException(
-                status_code=404, detail=f"Could not generate thumbnail image for {file_name}"
+                status_code=404, detail=f"No {image_key} image found for {image_path}"
             )
-        return get_image_response_from_ifd(ifd, file_name)
-
-    # image key is one of "macro", "label"
-    if not get_is_svs(Path(file_name)):
-        raise HTTPException(
-            status_code=404, detail=f"Image key {image_key} is not supported for {file_name}"
-        )
-
-    ifd = get_associated_image_svs(Path(file_name), image_key)
-    if not ifd:
-        raise HTTPException(status_code=404, detail=f"No {image_key} image found for {file_name}")
-    return get_image_response_from_ifd(ifd, file_name)
+        return get_image_response_from_ifd(ifd, image_path)
+    elif image_type == FileFormat.DICOM:
+        path = Path(image_path)
+        related_files = [
+            child
+            for child in path.parent.iterdir()
+            if child != path and file_is_same_series_as(path, child)
+        ]
+        slide = WsiDicom.open(related_files)
+        return get_image_response_dicom(slide, image_key)
 
 
 @app.post("/redact/")
