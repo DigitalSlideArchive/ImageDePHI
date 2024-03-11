@@ -19,6 +19,7 @@ from jinja2 import FunctionLoader
 from starlette.background import BackgroundTask
 import tifftools
 from wsidicom import WsiDicom
+from wsidicom.errors import WsiDicomNotFoundError
 
 from imagedephi.redact import iter_image_files, redact_images
 from imagedephi.rules import FileFormat
@@ -293,7 +294,13 @@ def get_associated_image(image_path: str = "", image_key: str = ""):
             if child != path and file_is_same_series_as(path, child)
         ]
         slide = WsiDicom.open(related_files)
-        return get_image_response_dicom(slide, image_key)
+        try:
+            image_response = get_image_response_dicom(slide, image_key)
+        except WsiDicomNotFoundError:
+            return PlainTextResponse(
+                f"Could not retrieve {image_key} image for {image_path}", status_code=404
+            )
+        return image_response
 
 
 @app.post("/redact/")
