@@ -43,7 +43,13 @@ def iter_image_files(directory: Path, recursive: bool = False) -> Generator[Path
     for child in sorted(directory.iterdir()):
         # Use first four bits to check if its a tiff file
         if child.is_file():
-            if get_file_format_from_path(child):
+            file_format = None
+            try:
+                file_format = get_file_format_from_path(child)
+            except PermissionError:
+                # Don't attempt to redact inaccessible files
+                pass
+            if file_format:
                 yield child
         elif child.is_dir() and recursive:
             yield from iter_image_files(child, recursive)
