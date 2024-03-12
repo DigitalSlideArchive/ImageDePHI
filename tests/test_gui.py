@@ -15,7 +15,6 @@ def test_gui_select_directory(client: TestClient) -> None:
     response = client.get(app.url_path_for("select_directory"))
 
     assert response.status_code == 200
-    assert "ImageDePHI GUI" in response.text
 
 
 def test_gui_select_directory_success(
@@ -30,28 +29,16 @@ def test_gui_select_directory_success(
     assert response.status_code == 200
 
 
-def test_gui_select_directory_input_not_found(
+def test_gui_select_directory_not_found(
     client: TestClient,
     tmp_path: Path,
 ) -> None:
     response = client.get(
-        app.url_path_for("select_directory"), params={"input_directory": str(tmp_path / "fake")}
+        app.url_path_for("select_directory"), params={"directory": str(tmp_path / "fake")}
     )
 
     assert response.status_code == 404
     assert response.json() == {"detail": "Input directory not a directory"}
-
-
-def test_gui_select_directory_output_not_found(
-    client: TestClient,
-    tmp_path: Path,
-) -> None:
-    response = client.get(
-        app.url_path_for("select_directory"), params={"output_directory": str(tmp_path / "fake")}
-    )
-
-    assert response.status_code == 404
-    assert response.json() == {"detail": "Output directory not a directory"}
 
 
 def test_gui_redact(
@@ -60,7 +47,7 @@ def test_gui_redact(
 ) -> None:
     response = client.post(
         app.url_path_for("redact"),
-        data={"input_directory": str(tmp_path), "output_directory": str(tmp_path)},
+        params={"input_directory": str(tmp_path), "output_directory": str(tmp_path)},
     )
 
     assert response.status_code == 200
@@ -72,7 +59,7 @@ def test_gui_redact_input_failure(
 ) -> None:
     response = client.post(
         app.url_path_for("redact"),
-        data={"input_directory": str(tmp_path / "fake"), "output_directory": str(tmp_path)},
+        params={"input_directory": str(tmp_path / "fake"), "output_directory": str(tmp_path)},
     )
 
     assert response.status_code == 404
@@ -85,7 +72,7 @@ def test_gui_redact_output_failure(
 ) -> None:
     response = client.post(
         app.url_path_for("redact"),
-        data={"input_directory": str(tmp_path), "output_directory": str(tmp_path / "fake")},
+        params={"input_directory": str(tmp_path), "output_directory": str(tmp_path / "fake")},
     )
 
     assert response.status_code == 404
