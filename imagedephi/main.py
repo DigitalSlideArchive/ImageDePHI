@@ -13,13 +13,15 @@ from hypercorn import Config
 from hypercorn.asyncio import serve
 import yaml
 
-from imagedephi.gui import app, shutdown_event
+from imagedephi.gui.app import app
 from imagedephi.redact import redact_images, show_redaction_plan
 from imagedephi.rules import Ruleset
 from imagedephi.utils.cli import FallthroughGroup, run_coroutine
 from imagedephi.utils.logger import logger
 from imagedephi.utils.network import unused_tcp_port, wait_for_port
 from imagedephi.utils.os import launched_from_windows_explorer
+
+shutdown_event = asyncio.Event()
 
 _global_options = [
     click.option(

@@ -2,23 +2,16 @@ import asyncio
 from collections.abc import Generator
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+import subprocess
 import sys
 
 from click.testing import CliRunner
 from freezegun import freeze_time
 import httpx
 import pytest
-from pytest_mock import MockerFixture
 
 from imagedephi import main
 from imagedephi.utils.network import wait_for_port
-
-
-@pytest.fixture
-def thread_executor() -> Generator[ThreadPoolExecutor, None, None]:
-    executor = ThreadPoolExecutor(max_workers=1)
-    yield executor
-    executor.shutdown(cancel_futures=True)
 
 
 @freeze_time("2023-05-12 12:12:53")
@@ -58,56 +51,45 @@ def test_e2e_plan(cli_runner: CliRunner, data_dir: Path, rules_dir: Path) -> Non
     assert result.exit_code == 0
 
 
-@freeze_time("2023-05-12 12:12:53")
-@pytest.mark.timeout(5)
 def test_e2e_gui(
-    cli_runner: CliRunner,
     unused_tcp_port: int,
     data_dir: Path,
     tmp_path: Path,
-    thread_executor: ThreadPoolExecutor,
-    mocker: MockerFixture,
 ) -> None:
-    def client_select_directory(port: int) -> httpx.Response:
-        # It's probably overkill to start an event loop,
-        # but wait_for_port provides exactly what's needed here.
-        # Use a timeout so a failing test won't be held up by this thread.
-        asyncio.run(asyncio.wait_for(wait_for_port(port), timeout=2))
-        return httpx.post(
-            f"http://127.0.0.1:{port}/redact/",
-            data={
-                "input_directory": str(data_dir / "input" / "tiff"),
-                "output_directory": str(tmp_path),
-            },
-        )
 
-    webbrowser_open_mock = mocker.patch("webbrowser.open")
-    # Ideally, we'd be able to use a running event loop to schedule the client
-    # requests. However, the CLI starts its own event loop, then blocks until
-    # completion. We could hook into or patch internal application events to
-    # get a callback with an already-running event loop, but that provides less
-    # isolation than just running the client in an independent thread.
-    # Note, Click's CliRunner expects to run in a single-threaded environment,
-    # but the new thread won't use any of the patched stdout, etc. streams and
-    # a ProcessPoolExecutor is slower and requires more delicate pickling. so
-    # we'll break that expection here.
-    client_future = thread_executor.submit(client_select_directory, unused_tcp_port)
+    port = unused_tcp_port
 
-    cli_result = cli_runner.invoke(main.imagedephi, ["gui", "--port", str(unused_tcp_port)])
-    # If an HTTP request is successfully sent, either the normal response from this endpoint or a
-    # 500 error should cause the CLI to halt. However, if halting fails, then this test is
-    # particularly susceptible to exceeding the timeout, which on Windows will crash pytest (due
-    # to the behavior of pytest-timeout).
+    gui = subprocess.Popen(
+        [sys.executable, "-m", "imagedephi", "gui", "--port", str(port)],
+    )
 
-    assert cli_result.exit_code == 0
-    webbrowser_open_mock.assert_called_once()
-    output_file = tmp_path / "Redacted_2023-05-12_12-12-53" / "study_slide_1.tif"
+    asyncio.run(asyncio.wait_for(wait_for_port(port), timeout=2))
+
+    # Check that the GUI is running
+    assert gui.poll() is None
+
+    check_gui = httpx.get(f"http://127.0.0.1:{port}")
+    assert check_gui.status_code == 200
+
+    # flake8: noqa: E501
+    check_redact = httpx.post(
+        f"http://127.0.0.1:{port}/redact/?input_directory={str(data_dir /'input' /'tiff')}&output_directory={str(tmp_path)}",
+    )
+
+    assert check_redact.status_code == 200
+
+    gui.terminate()
+    gui.wait()
+    # Check that the GUI has stopped
+    assert gui.poll() is not None
+
+    redacted_dirs = list(tmp_path.glob("*Redacted*"))
+    assert len(redacted_dirs) > 0
+    redacted_files = list(redacted_dirs[0].glob("*"))
+    assert len(redacted_files) > 0
+    output_file = redacted_dirs[0] / "study_slide_1.tif"
     output_file_bytes = output_file.read_bytes()
     assert b"large_image_converter" not in output_file_bytes
-    assert f"127.0.0.1:{unused_tcp_port}" in webbrowser_open_mock.call_args.args[0]
-    # Expect the client thread to be completed
-    client_response = client_future.result(timeout=0)
-    assert client_response.status_code == 200
 
 
 def test_e2e_version(cli_runner: CliRunner) -> None:
