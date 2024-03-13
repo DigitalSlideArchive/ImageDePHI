@@ -180,7 +180,7 @@ class SvsRedactionPlan(TiffRedactionPlan):
                 )
                 for key in self.no_match_description_keys:
                     logger.error(f"Missing key (Aperio ImageDescription): {key}")
-                    report[self.image_path.name]['missing_keys'].append(key)
+                    report[self.image_path.name]["missing_keys"].append(key)
 
     def report_plan(self) -> dict[str, dict[str, str]]:
         logger.info("Aperio (.svs) Metadata Redaction Plan\n")
