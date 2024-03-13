@@ -132,12 +132,12 @@ def redact_images(
 
 
 def show_redaction_plan(
-        input_path: Path,
-        override_rules: Ruleset | None = None,
-        recursive=False,
-        limit: int | None = None,
-        offset: int | None = None,
-        ) -> None:
+    input_path: Path,
+    override_rules: Ruleset | None = None,
+    recursive=False,
+    limit: int | None = None,
+    offset: int | None = None,
+) -> dict[str, dict[str, str]]:
     image_paths = iter_image_files(input_path, recursive) if input_path.is_dir() else [input_path]
     base_rules = get_base_rules()
     report = {}
@@ -161,11 +161,8 @@ def show_redaction_plan(
         report.update(redaction_plan.report_plan())
 
     sorted_dict = OrderedDict(
-        sorted(
-            report.items(),
-            key=lambda item: 'missing_tags' not in item[1]
-        )
+        sorted(report.items(), key=lambda item: "missing_tags" not in item[1])
     )
     if limit is not None and offset is not None:
-        sorted_dict = dict(list(sorted_dict.items())[offset:limit + offset])
+        sorted_dict = dict(list(sorted_dict.items())[offset : limit + offset])
     return sorted_dict

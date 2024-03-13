@@ -202,11 +202,11 @@ class TiffRedactionPlan(RedactionPlan):
         else:
             # keep this line in logger? Or should we restructure a bit
             logger.error("The following tags could not be redacted given the current set of rules.")
-            report[self.image_path.name]['missing_tags'] = []
+            report[self.image_path.name]["missing_tags"] = []
 
             for tag in self.no_match_tags:
                 logger.error(f"Missing tag (tiff): {tag.value} - {tag.name}")
-                report[self.image_path.name]['missing_tags'].append({tag.value: tag.name})
+                report[self.image_path.name]["missing_tags"].append({tag.value: tag.name})
 
     def report_plan(self) -> dict[str, dict[str, str]]:
         logger.info("Tiff Metadata Redaction Plan\n")
