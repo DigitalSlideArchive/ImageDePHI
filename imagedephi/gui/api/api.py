@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 import urllib.parse
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException, WebSocket
+from fastapi import APIRouter, HTTPException, WebSocket
 
 from imagedephi.gui.utils.directory import DirectoryData
 from imagedephi.gui.utils.image import get_image_response_dicom, get_image_response_from_ifd
@@ -103,14 +103,13 @@ def get_redaction_plan(
     if not input_path.is_dir():
         raise HTTPException(status_code=404, detail="Input directory not found")
 
-    return show_redaction_plan(input_path, limit=10, offset=0)
+    return show_redaction_plan(input_path, limit=10, offset=0)._asdict()
 
 
 @router.post("/redact/")
 def redact(
     input_directory: str,  # noqa: B008
     output_directory: str,  # noqa: B008
-    background_tasks: BackgroundTasks,
 ):
     input_path = Path(input_directory)
     output_path = Path(output_directory)

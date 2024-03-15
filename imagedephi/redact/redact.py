@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from collections import OrderedDict
+from collections import OrderedDict, namedtuple
 from collections.abc import Generator
 import datetime
 import importlib.resources
 from io import StringIO
 from pathlib import Path
+from typing import NamedTuple
 
 import click
 import tifftools
@@ -137,7 +138,7 @@ def show_redaction_plan(
     recursive=False,
     limit: int | None = None,
     offset: int | None = None,
-) -> dict[str, dict[str, str]]:
+) -> NamedTuple:
     image_paths = iter_image_files(input_path, recursive) if input_path.is_dir() else [input_path]
     base_rules = get_base_rules()
     report = {}
@@ -159,10 +160,12 @@ def show_redaction_plan(
             continue
         logger.info(f"Redaction plan for {image_path.name}")
         report.update(redaction_plan.report_plan())
-
+    total = len(report)
     sorted_dict = OrderedDict(
         sorted(report.items(), key=lambda item: "missing_tags" not in item[1])
     )
     if limit is not None and offset is not None:
         sorted_dict = dict(list(sorted_dict.items())[offset : limit + offset])
-    return sorted_dict
+    images_plan = namedtuple("RedactionPlan", ["data", "total"])
+
+    return images_plan(sorted_dict, total)
