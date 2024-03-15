@@ -35,7 +35,11 @@ def build_redaction_plan(
     file_format = get_file_format_from_path(image_path)
     if file_format == FileFormat.TIFF:
         # Since SVS is a subset of tiff, fall back on file extension
-        file_extension = FILE_EXTENSION_MAP[image_path.suffix]
+        file_extension = (
+            FILE_EXTENSION_MAP[image_path.suffix]
+            if image_path.suffix in FILE_EXTENSION_MAP
+            else file_format
+        )
         if file_extension == FileFormat.TIFF:
             merged_rules = base_rules.tiff.copy()
             if override_rules:
