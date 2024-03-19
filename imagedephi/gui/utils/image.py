@@ -1,9 +1,12 @@
 from io import BytesIO
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from PIL import Image, UnidentifiedImageError
 from fastapi.responses import StreamingResponse
 import tifftools
+from wsidicom import WsiDicom
+from wsidicom.errors import WsiDicomNotFoundError
 
 from imagedephi.gui.utils.constants import MAX_ASSOCIATED_IMAGE_HEIGHT
 
@@ -89,3 +92,26 @@ def get_image_response_from_ifd(ifd: "IFD", file_name: str):
             composite_image.save(jpeg_buffer, "JPEG")
             jpeg_buffer.seek(0)
             return StreamingResponse(jpeg_buffer, media_type="image/jpeg")
+
+
+def get_image_response_dicom(related_files: list[Path], key: str):
+    slide = WsiDicom.open(related_files)
+    image = None
+    try:
+        if key == "thumbnail":
+            image = slide.read_thumbnail()
+        elif key == "label":
+            image = slide.read_label()
+        elif key == "macro":
+            image = slide.read_overview()
+        if image:
+            # resize the image
+            scale_factor = MAX_ASSOCIATED_IMAGE_HEIGHT / image.size[1]
+            new_size = (int(image.size[0] * scale_factor), int(image.size[1] * scale_factor))
+            image.thumbnail(new_size, Image.LANCZOS)
+            img_buffer = BytesIO()
+            image.save(img_buffer, "JPEG")
+            img_buffer.seek(0)
+            return StreamingResponse(img_buffer, media_type="image/jpeg")
+    except WsiDicomNotFoundError:
+        return None
