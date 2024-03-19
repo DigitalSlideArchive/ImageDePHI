@@ -15,7 +15,7 @@ from imagedephi.rules import Ruleset
 from imagedephi.utils.logger import logger
 from imagedephi.utils.progress_log import push_progress
 
-from .build_redaction_plan import FILE_EXTENSION_MAP, build_redaction_plan
+from .build_redaction_plan import build_redaction_plan
 from .svs import MalformedAperioFileError
 from .tiff import UnsupportedFileTypeError
 
@@ -98,35 +98,38 @@ def redact_images(
     ) as bar:
         for image_file in bar:
             push_progress(output_file_counter, output_file_max)
-
-            if image_file.suffix in FILE_EXTENSION_MAP:
+            try:
                 redaction_plan = build_redaction_plan(image_file, base_rules, override_rules)
-                if not redaction_plan.is_comprehensive():
-                    logger.info(f"Redaction could not be performed for {image_file.name}.")
-                    redaction_plan.report_missing_rules()
-                else:
-                    redaction_plan.execute_plan()
-                    output_parent_dir = redact_dir
-                    if recursive:
-                        output_parent_dir = Path(
-                            str(image_file).replace(str(input_path), str(redact_dir), 1)
-                        ).parent
-                        output_parent_dir.mkdir(parents=True, exist_ok=True)
-                    output_path = (
-                        _get_output_path(
-                            image_file,
-                            output_parent_dir,
-                            output_file_name_base,
-                            output_file_counter,
-                            output_file_max,
-                        )
-                        if rename
-                        else output_parent_dir / image_file.name
+            # Handle and report other errors without stopping the process
+            except Exception as e:
+                logger.error(f"{image_file.name} could not be processed. {e.args[0]}")
+                continue
+            if not redaction_plan.is_comprehensive():
+                logger.info(f"Redaction could not be performed for {image_file.name}.")
+                redaction_plan.report_missing_rules()
+            else:
+                redaction_plan.execute_plan()
+                output_parent_dir = redact_dir
+                if recursive:
+                    output_parent_dir = Path(
+                        str(image_file).replace(str(input_path), str(redact_dir), 1)
+                    ).parent
+                    output_parent_dir.mkdir(parents=True, exist_ok=True)
+                output_path = (
+                    _get_output_path(
+                        image_file,
+                        output_parent_dir,
+                        output_file_name_base,
+                        output_file_counter,
+                        output_file_max,
                     )
-                    redaction_plan.save(output_path, overwrite)
-                    if output_file_counter == output_file_max:
-                        click.echo("Redactions completed")
-                output_file_counter += 1
+                    if rename
+                    else output_parent_dir / image_file.name
+                )
+                redaction_plan.save(output_path, overwrite)
+                if output_file_counter == output_file_max:
+                    click.echo("Redactions completed")
+            output_file_counter += 1
 
 
 def show_redaction_plan(
@@ -144,6 +147,10 @@ def show_redaction_plan(
             logger.error(f"{image_path.name} could not be processed as a valid Aperio file.")
             continue
         except UnsupportedFileTypeError as e:
+            logger.error(f"{image_path.name} could not be processed. {e.args[0]}")
+            continue
+        # Handle and report other errors without stopping the process
+        except Exception as e:
             logger.error(f"{image_path.name} could not be processed. {e.args[0]}")
             continue
         logger.info(f"Redaction plan for {image_path.name}")
