@@ -12,6 +12,7 @@ import tifftools.constants
 import yaml
 
 from imagedephi.rules import Ruleset
+from imagedephi.utils.image import get_file_format_from_path
 from imagedephi.utils.logger import logger
 from imagedephi.utils.progress_log import push_progress
 
@@ -42,17 +43,14 @@ def iter_image_files(directory: Path, recursive: bool = False) -> Generator[Path
     for child in sorted(directory.iterdir()):
         # Use first four bits to check if its a tiff file
         if child.is_file():
+            file_format = None
             try:
-                data = open(child, "rb").read(132)
+                file_format = get_file_format_from_path(child)
             except PermissionError:
+                # Don't attempt to redact inaccessible files
                 pass
-            else:
-                if data[:4] in (b"II\x2a\x00", b"MM\x00\x2a", b"II\x2b\x00", b"MM\x00\x2b"):
-                    # tiff
-                    yield child
-                elif data[128:] == b"DICM":
-                    # dicom
-                    yield child
+            if file_format:
+                yield child
         elif child.is_dir() and recursive:
             yield from iter_image_files(child, recursive)
 

@@ -8,8 +8,11 @@ import urllib.parse
 from fastapi import APIRouter, BackgroundTasks, HTTPException, WebSocket
 
 from imagedephi.gui.utils.directory import DirectoryData
-from imagedephi.gui.utils.image import get_image_response_from_ifd
+from imagedephi.gui.utils.image import get_image_response_dicom, get_image_response_from_ifd
 from imagedephi.redact import redact_images
+from imagedephi.rules import FileFormat
+from imagedephi.utils.dicom import file_is_same_series_as
+from imagedephi.utils.image import get_file_format_from_path
 from imagedephi.utils.progress_log import get_next_progress_message
 from imagedephi.utils.tiff import get_associated_image_svs, get_ifd_for_thumbnail, get_is_svs
 
@@ -45,30 +48,51 @@ def get_associated_image(file_name: str = "", image_key: str = ""):
     if not file_name:
         raise HTTPException(status_code=400, detail="file_name is a required parameter")
 
+    if not Path(file_name).exists():
+        raise HTTPException(status_code=404, detail=f"{file_name} does not exist")
+
     if image_key not in ["macro", "label", "thumbnail"]:
         raise HTTPException(
             status_code=400,
             detail=f"{image_key} is not a supported associated image key for {file_name}.",
         )
-    ifd: IFD | None = None
-    if image_key == "thumbnail":
-        ifd = get_ifd_for_thumbnail(Path(file_name))
+
+    image_type = get_file_format_from_path(Path(file_name))
+    if image_type == FileFormat.SVS or image_type == FileFormat.TIFF:
+        ifd: IFD | None = None
+        if image_key == "thumbnail":
+            ifd = get_ifd_for_thumbnail(Path(file_name))
+            if not ifd:
+                raise HTTPException(
+                    status_code=404, detail=f"Could not generate thumbnail image for {file_name}"
+                )
+            return get_image_response_from_ifd(ifd, file_name)
+
+        # image key is one of "macro", "label"
+        if not get_is_svs(Path(file_name)):
+            raise HTTPException(
+                status_code=404, detail=f"Image key {image_key} is not supported for {file_name}"
+            )
+
+        ifd = get_associated_image_svs(Path(file_name), image_key)
         if not ifd:
             raise HTTPException(
-                status_code=404, detail=f"Could not generate thumbnail image for {file_name}"
+                status_code=404, detail=f"No {image_key} image found for {file_name}"
             )
         return get_image_response_from_ifd(ifd, file_name)
-
-    # image key is one of "macro", "label"
-    if not get_is_svs(Path(file_name)):
+    elif image_type == FileFormat.DICOM:
+        path = Path(file_name)
+        related_files = [
+            child
+            for child in path.parent.iterdir()
+            if child != path and file_is_same_series_as(path, child)
+        ]
+        image_response = get_image_response_dicom(related_files, image_key)
+        if image_response:
+            return image_response
         raise HTTPException(
-            status_code=404, detail=f"Image key {image_key} is not supported for {file_name}"
+            status_code=404, detail=f"Could not retrieve {image_key} image for {file_name}"
         )
-
-    ifd = get_associated_image_svs(Path(file_name), image_key)
-    if not ifd:
-        raise HTTPException(status_code=404, detail=f"No {image_key} image found for {file_name}")
-    return get_image_response_from_ifd(ifd, file_name)
 
 
 @router.post("/redact/")
