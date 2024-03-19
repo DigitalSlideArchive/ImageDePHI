@@ -162,6 +162,9 @@ class DicomRedactionPlan(RedactionPlan):
         elif operation == "replace_dummy":
             element.value = VR_TO_DUMMY_VALUE[element.VR]
 
+    def _redact_associated_images(self):
+        pass
+
     def execute_plan(self) -> None:
         for element, dataset in DicomRedactionPlan._iter_dicom_elements(self.dicom_data):
             rule = self.metadata_redaction_steps[element.tag]

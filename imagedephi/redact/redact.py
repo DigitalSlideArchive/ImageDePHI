@@ -90,6 +90,13 @@ def redact_images(
     redact_dir = create_redact_dir(output_dir)
     show_redaction_plan(input_path)
 
+    # When we build a redaction plan for dicom, use all
+    # related files using the function from util/dicom.
+    # Use this set to skip over files previously included
+    # as part of some other DICOM image.
+    # TODO
+    redacted_dicom_series_ids = set()
+
     file = StringIO()
     with click.progressbar(
         images_to_redact, label="Redacting Images", show_pos=True, file=file, show_percent=True
