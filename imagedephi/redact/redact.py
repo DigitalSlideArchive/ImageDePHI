@@ -95,7 +95,7 @@ def redact_images(
         images_to_redact, label="Redacting Images", show_pos=True, file=file, show_percent=True
     ) as bar:
         for image_file in bar:
-            push_progress(image_file.name, output_file_counter, output_file_max)
+            push_progress(output_file_counter, output_file_max)
 
             if image_file.suffix in FILE_EXTENSION_MAP:
                 redaction_plan = build_redaction_plan(image_file, base_rules, override_rules)

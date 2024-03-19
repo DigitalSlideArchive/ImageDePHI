@@ -17,13 +17,13 @@ jobs:
           - macos-latest
           - windows-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           lfs: true
           # Tags are needed to compute the current version number
           fetch-depth: 0
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
       - name: Install tox
@@ -40,7 +40,7 @@ jobs:
         run: |
           dist/imagedephi --help
       - name: Upload binary artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: imagedephi-${{ matrix.os }}-binary
           path: |
