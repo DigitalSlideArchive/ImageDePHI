@@ -13,8 +13,12 @@ import { imageRedactionPlan } from '../store/imageStore';
     <input type="checkbox" />
     <div class="collapse-title text-xl font-medium">
       {{index}}
-      <i v-if="!image.missing_tags" class="ri-checkbox-circle-fill text-green-600"></i>
-      <i v-else-if="image.missing_tags.length > 0" class="ri-error-warning-fill text-red-600"></i>
+      <div v-if="!image.missing_tags" class="tooltip tooltip-right z-50 w-min" data-tip="Ready to redact.">
+          <i class="ri-checkbox-circle-fill text-green-600"></i>
+      </div>
+      <div v-else-if="image.missing_tags.length > 0" class="tooltip tooltip-right z-50 w-min" :data-tip="`${ image.missing_tags.length } tag(s) missing redaction rules.`">
+        <i class="ri-error-warning-fill text-red-600"></i>
+      </div>
 
     </div>
     <div class="collapse-content">
