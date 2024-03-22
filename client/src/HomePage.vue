@@ -71,7 +71,7 @@ ws.onmessage = (event) => {
           />
           <button
             type="submit"
-            class="btn btn-wide bg-accent m-auto"
+            class="btn btn-wide bg-accent m-auto text-white"
             :disabled="redacting"
             @click="
               redactImages(
