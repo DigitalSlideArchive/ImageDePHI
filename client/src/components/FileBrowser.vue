@@ -59,7 +59,7 @@ const updateSelectedDirectories = (path: string) => {
               {{ title }}
             </h2>
             <button
-              class="btn bg-primary float-right"
+              class="btn bg-primary float-right text-white"
               type="button"
               @click="closeModal(), title === 'Input Directory' ? updateImageData(selectedDirectories['inputDirectory']) : ''"
             >

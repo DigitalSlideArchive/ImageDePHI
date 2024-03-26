@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 import { getRedactionPlan } from '../api/rest';
 import { selectedDirectories } from '../store/directoryStore';
 import { imageRedactionPlan } from '../store/imageStore';
+import ImageDataTable from './ImageDataTable.vue';
 
 const page = ref(1);
 const rows = ref(10);
@@ -18,7 +19,7 @@ const updateImageList = async () => {
 </script>
 
 <template>
-  <div class="container ml-4 my-4 flex flex-col">
+  <div class="container ml-4 my-4 flex flex-col w-full">
     <div
       class="w-full max-w-7xl"
     >
@@ -40,8 +41,8 @@ const updateImageList = async () => {
           </div>
 
         </div>
-          <div class="collapse-content">
-            <p>hello</p>
+          <div class="collapse-content overflow-x-auto">
+            <ImageDataTable :image-data="image" />
           </div>
       </div>
     </div>
