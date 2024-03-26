@@ -3,6 +3,7 @@ import { ref } from "vue";
 
 import { redactImages } from "./api/rest";
 import { selectedDirectories } from "./store/directoryStore";
+import { imageRedactionPlan } from "./store/imageStore";
 
 import MenuSteps from "./components/MenuSteps.vue";
 import FileBrowser from "./components/FileBrowser.vue";
@@ -100,6 +101,6 @@ ws.onmessage = (event) => {
         ></progress>
       </div>
     </div>
-    <ImageList />
+    <ImageList v-if="imageRedactionPlan.data" />
   </div>
 </template>
