@@ -37,7 +37,7 @@ const updateDirectories = async (currentDirectory?: string) => {
 updateDirectories();
 
 const updateImageData = async (directory: string) => {
-  imageRedactionPlan.value = await getRedactionPlan(directory);
+  imageRedactionPlan.value = await getRedactionPlan(directory, 10, 0);
 };
 
 const closeModal = () => {
