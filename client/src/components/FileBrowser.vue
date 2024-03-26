@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, Ref } from "vue";
-import { getDirectoryInfo } from "../api/rest";
+import { getDirectoryInfo, getRedactionPlan } from "../api/rest";
 import { selectedDirectories } from "../store/directoryStore";
+import { imageRedactionPlan } from "../store/imageStore";
 import { DirectoryData } from "../store/types";
 
 const props = defineProps({
@@ -35,6 +36,10 @@ const updateDirectories = async (currentDirectory?: string) => {
 };
 updateDirectories();
 
+const updateImageData = async (directory: string) => {
+  imageRedactionPlan.value = await getRedactionPlan(directory, 10, 0);
+};
+
 const closeModal = () => {
   modal.value.close();
 };
@@ -54,9 +59,9 @@ const updateSelectedDirectories = (path: string) => {
               {{ title }}
             </h2>
             <button
-              class="btn bg-primary float-right"
+              class="btn bg-primary float-right text-white"
               type="button"
-              @click="closeModal"
+              @click="closeModal(), title === 'Input Directory' ? updateImageData(selectedDirectories['inputDirectory']) : ''"
             >
               Select
             </button>

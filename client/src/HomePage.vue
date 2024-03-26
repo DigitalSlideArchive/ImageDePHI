@@ -3,9 +3,11 @@ import { ref } from "vue";
 
 import { redactImages } from "./api/rest";
 import { selectedDirectories } from "./store/directoryStore";
+import { imageRedactionPlan } from "./store/imageStore";
 
 import MenuSteps from "./components/MenuSteps.vue";
 import FileBrowser from "./components/FileBrowser.vue";
+import ImageList from "./components/ImageList.vue";
 
 const inputModal = ref(null);
 const outputModal = ref(null);
@@ -50,13 +52,13 @@ ws.onmessage = (event) => {
             :step-number="1"
             step-title="Input Directory"
             help-text="Location of the images you’d like to process."
-            :input-modal="inputModal"
+            :input-modal="inputModal || undefined"
           />
           <MenuSteps
             :step-number="2"
             step-title="Output Directory"
             help-text="Location of the images after they are processed."
-            :output-modal="outputModal"
+            :output-modal="outputModal || undefined"
           />
           <FileBrowser
             ref="inputModal"
@@ -70,7 +72,7 @@ ws.onmessage = (event) => {
           />
           <button
             type="submit"
-            class="btn btn-wide bg-accent m-auto"
+            class="btn btn-wide bg-accent m-auto text-white"
             :disabled="redacting"
             @click="
               redactImages(
@@ -99,5 +101,6 @@ ws.onmessage = (event) => {
         ></progress>
       </div>
     </div>
+    <ImageList v-if="imageRedactionPlan.data" />
   </div>
 </template>

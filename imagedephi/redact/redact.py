@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+from collections import OrderedDict, namedtuple
 from collections.abc import Generator
 import datetime
 import importlib.resources
 from io import StringIO
 from pathlib import Path
+from typing import NamedTuple
 
 import click
 import tifftools
@@ -130,10 +132,15 @@ def redact_images(
 
 
 def show_redaction_plan(
-    input_path: Path, override_rules: Ruleset | None = None, recursive=False
-) -> None:
+    input_path: Path,
+    override_rules: Ruleset | None = None,
+    recursive=False,
+    limit: int | None = None,
+    offset: int | None = None,
+) -> NamedTuple:
     image_paths = iter_image_files(input_path, recursive) if input_path.is_dir() else [input_path]
     base_rules = get_base_rules()
+    report = {}
     for image_path in image_paths:
         try:
             redaction_plan = build_redaction_plan(image_path, base_rules, override_rules)
@@ -147,4 +154,13 @@ def show_redaction_plan(
             logger.error(f"{image_path.name} could not be processed. {e.args[0]}")
             continue
         logger.info(f"Redaction plan for {image_path.name}")
-        redaction_plan.report_plan()
+        report.update(redaction_plan.report_plan())
+    total = len(report)
+    sorted_dict = OrderedDict(
+        sorted(report.items(), key=lambda item: "missing_tags" not in item[1])
+    )
+    if limit is not None and offset is not None:
+        sorted_dict = dict(list(sorted_dict.items())[offset : limit + offset])
+    images_plan = namedtuple("RedactionPlan", ["data", "total"])
+
+    return images_plan(sorted_dict, total)

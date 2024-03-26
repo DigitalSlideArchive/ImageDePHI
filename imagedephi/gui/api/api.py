@@ -5,11 +5,11 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 import urllib.parse
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException, WebSocket
+from fastapi import APIRouter, HTTPException, WebSocket
 
 from imagedephi.gui.utils.directory import DirectoryData
 from imagedephi.gui.utils.image import get_image_response_from_ifd
-from imagedephi.redact import redact_images
+from imagedephi.redact import redact_images, show_redaction_plan
 from imagedephi.utils.progress_log import get_next_progress_message
 from imagedephi.utils.tiff import get_associated_image_svs, get_ifd_for_thumbnail, get_is_svs
 
@@ -71,11 +71,23 @@ def get_associated_image(file_name: str = "", image_key: str = ""):
     return get_image_response_from_ifd(ifd, file_name)
 
 
+@router.get("/redaction_plan")
+def get_redaction_plan(
+    input_directory: str = ("/"),  # noqa: B008
+    limit: int = 10,
+    offset: int = 0,
+):
+    input_path = Path(input_directory)
+    if not input_path.is_dir():
+        raise HTTPException(status_code=404, detail="Input directory not found")
+
+    return show_redaction_plan(input_path, limit=limit, offset=offset)._asdict()
+
+
 @router.post("/redact/")
 def redact(
     input_directory: str,  # noqa: B008
     output_directory: str,  # noqa: B008
-    background_tasks: BackgroundTasks,
 ):
     input_path = Path(input_directory)
     output_path = Path(output_directory)
