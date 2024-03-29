@@ -11,11 +11,13 @@ import ImageList from "./components/ImageList.vue";
 
 const inputModal = ref(null);
 const outputModal = ref(null);
+const redactionModal = ref();
 const redacting = ref(false);
 const progress = ref({
   count: 0,
-  max: 0,
+  max: imageRedactionPlan.value.total,
 });
+
 
 const wsBase = import.meta.env.VITE_APP_API_URL
   ? new URL(import.meta.env.VITE_APP_API_URL)
@@ -26,10 +28,20 @@ const ws = new WebSocket("ws:" + wsBase.host + "/ws");
 ws.onmessage = (event) => {
   const data = JSON.parse(event.data);
   progress.value = {
-    count: data.count,
-    max: data.max,
+    count: data.count || 0,
+    max: data.max || imageRedactionPlan.value.total,
   };
 };
+
+const redact_images = async () => {
+  redacting.value = true;
+  redactionModal.value.showModal();
+  const response = await redactImages(selectedDirectories.value.inputDirectory, selectedDirectories.value.outputDirectory);
+  if (response.status === 200) {
+    redacting.value = false;
+  }
+};
+
 </script>
 
 <template>
@@ -74,24 +86,22 @@ ws.onmessage = (event) => {
             type="submit"
             class="btn btn-wide bg-accent m-auto text-white"
             :disabled="redacting"
-            @click="
-              redactImages(
-                selectedDirectories.inputDirectory,
-                selectedDirectories.outputDirectory,
-              ),
-                (redacting = true)
-            "
+            @click="redact_images()"
           >
             De-phi Images
           </button>
         </div>
       </div>
     </div>
-    <div v-if="redacting" class="card w-96 bg-base-100 m-auto">
+    <dialog id="redactionModal" ref="redactionModal" class="modal">
+      <div class="modal-box  w-96">
+
+    <div class="card"
+    >
       <div class="card-body">
         <h2 class="card-title">Redaction in progress:</h2>
         <p>
-          Redacting image {{ progress.count }} of {{ progress.max }} images.
+          Redacting images <span class="float-right">{{ progress.count }}/{{ progress.max }}</span>
         </p>
         <progress
           v-if="redacting"
@@ -101,6 +111,8 @@ ws.onmessage = (event) => {
         ></progress>
       </div>
     </div>
-    <ImageList v-if="imageRedactionPlan.data" />
   </div>
-</template>
+</dialog>
+    <ImageList v-if="imageRedactionPlan.total > 0" />
+  </div>
+</template>$
