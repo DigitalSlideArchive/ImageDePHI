@@ -131,5 +131,8 @@ const updateSelectedDirectories = (path: string) => {
         </ul>
       </div>
     </div>
+    <form method="dialog" class="modal-backdrop w-screen h-screen absolute ">
+    <button>close</button>
+  </form>
   </dialog>
 </template>
