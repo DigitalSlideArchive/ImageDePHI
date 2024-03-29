@@ -196,17 +196,19 @@ class TiffRedactionPlan(RedactionPlan):
     def is_comprehensive(self) -> bool:
         return not self.no_match_tags
 
-    def report_missing_rules(self, report) -> None:
+    def report_missing_rules(self, report=None) -> None:
         if self.is_comprehensive():
             logger.info("This redaction plan is comprehensive.")
         else:
             # keep this line in logger? Or should we restructure a bit
             logger.error("The following tags could not be redacted given the current set of rules.")
-            report[self.image_path.name]["missing_tags"] = []
+            if report is not None:
+                report[self.image_path.name]["missing_tags"] = []
 
             for tag in self.no_match_tags:
                 logger.error(f"Missing tag (tiff): {tag.value} - {tag.name}")
-                report[self.image_path.name]["missing_tags"].append({tag.value: tag.name})
+                if report is not None:
+                    report[self.image_path.name]["missing_tags"].append({tag.value: tag.name})
 
     def report_plan(self) -> dict[str, dict[str, str]]:
         logger.info("Tiff Metadata Redaction Plan\n")
