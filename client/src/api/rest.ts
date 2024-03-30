@@ -16,11 +16,18 @@ export async function getDirectoryInfo(path?: string) {
   });
 }
 
-export async function getRedactionPlan(path: string, limit?: number, offset?: number) {
-  const response = await fetch(`${basePath}/redaction_plan?input_directory=${path}&limit=${limit}&offset=${offset}`, {
-    method: "GET",
-    mode: "cors",
-  });
+export async function getRedactionPlan(
+  path: string,
+  limit?: number,
+  offset?: number,
+) {
+  const response = await fetch(
+    `${basePath}/redaction_plan?input_directory=${path}&limit=${limit}&offset=${offset}`,
+    {
+      method: "GET",
+      mode: "cors",
+    },
+  );
   return response.json().then((data) => {
     return data;
   });

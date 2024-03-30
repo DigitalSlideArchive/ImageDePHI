@@ -18,7 +18,6 @@ const progress = ref({
   max: imageRedactionPlan.value.total,
 });
 
-
 const wsBase = import.meta.env.VITE_APP_API_URL
   ? new URL(import.meta.env.VITE_APP_API_URL)
   : new URL(import.meta.url);
@@ -36,12 +35,14 @@ ws.onmessage = (event) => {
 const redact_images = async () => {
   redacting.value = true;
   redactionModal.value.showModal();
-  const response = await redactImages(selectedDirectories.value.inputDirectory, selectedDirectories.value.outputDirectory);
+  const response = await redactImages(
+    selectedDirectories.value.inputDirectory,
+    selectedDirectories.value.outputDirectory,
+  );
   if (response.status === 200) {
     redacting.value = false;
   }
 };
-
 </script>
 
 <template>
@@ -94,25 +95,27 @@ const redact_images = async () => {
       </div>
     </div>
     <dialog id="redactionModal" ref="redactionModal" class="modal">
-      <div class="modal-box  w-96">
-
-    <div class="card"
-    >
-      <div class="card-body">
-        <h2 class="card-title">Redaction in progress:</h2>
-        <p>
-          Redacting images <span class="float-right">{{ progress.count }}/{{ progress.max }}</span>
-        </p>
-        <progress
-          v-if="redacting"
-          class="progress progress-primary"
-          :value="progress.count"
-          :max="progress.max"
-        ></progress>
+      <div class="modal-box w-96">
+        <div class="card">
+          <div class="card-body">
+            <h2 class="card-title">Redaction in progress:</h2>
+            <p>
+              Redacting images
+              <span class="float-right"
+                >{{ progress.count }}/{{ progress.max }}</span
+              >
+            </p>
+            <progress
+              v-if="redacting"
+              class="progress progress-primary"
+              :value="progress.count"
+              :max="progress.max"
+            ></progress>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
-</dialog>
+    </dialog>
     <ImageList v-if="imageRedactionPlan.total > 0" />
   </div>
-</template>$
+</template>
+$

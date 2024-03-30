@@ -61,7 +61,12 @@ const updateSelectedDirectories = (path: string) => {
             <button
               class="btn bg-primary float-right text-white"
               type="button"
-              @click="closeModal(), title === 'Input Directory' ? updateImageData(selectedDirectories['inputDirectory']) : ''"
+              @click="
+                closeModal(),
+                  title === 'Input Directory'
+                    ? updateImageData(selectedDirectories['inputDirectory'])
+                    : ''
+              "
             >
               Select
             </button>
@@ -131,8 +136,8 @@ const updateSelectedDirectories = (path: string) => {
         </ul>
       </div>
     </div>
-    <form method="dialog" class="modal-backdrop w-screen h-screen absolute ">
-    <button>close</button>
-  </form>
+    <form method="dialog" class="modal-backdrop w-screen h-screen absolute">
+      <button>close</button>
+    </form>
   </dialog>
 </template>
