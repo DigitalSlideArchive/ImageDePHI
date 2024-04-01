@@ -17,7 +17,10 @@ FILE_EXTENSION_MAP: dict[str, FileFormat] = {
 
 
 def build_redaction_plan(
-    image_path: Path, base_rules: Ruleset, override_rules: Ruleset | None = None
+    image_path: Path,
+    base_rules: Ruleset,
+    override_rules: Ruleset | None = None,
+    dcm_uid_map: dict[str, str] | None = None,
 ) -> RedactionPlan:
     file_format = get_file_format_from_path(image_path)
     if file_format == FileFormat.TIFF:
@@ -46,6 +49,6 @@ def build_redaction_plan(
         if override_rules:
             dicom_rules.metadata.update(override_rules.dicom.metadata)
             dicom_rules.delete_custom_metadata = override_rules.dicom.delete_custom_metadata
-        return DicomRedactionPlan(image_path, dicom_rules)
+        return DicomRedactionPlan(image_path, dicom_rules, dcm_uid_map)
     else:
         raise UnsupportedFileTypeError(f"File format for {image_path} not supported.")

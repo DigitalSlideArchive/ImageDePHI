@@ -79,13 +79,17 @@ class DicomRedactionPlan(RedactionPlan):
             else:
                 yield element, dicom_dataset
 
-    def __init__(self, image_path: Path, rules: DicomRules) -> None:
+    def __init__(self, image_path: Path, rules: DicomRules, uid_map: dict[str, str] | None) -> None:
         self.image_path = image_path
         self.dicom_data = pydicom.dcmread(image_path)
 
         self.metadata_redaction_steps = {}
         self.no_match_tags = []
-        self.uid_map = {}
+
+        # When redacting many files at a time, keep track of all UIDs across all files,
+        # since the DICOM format uses separate files for different resolutions and
+        # associated images.
+        self.uid_map = uid_map if uid_map else {}
 
         for element, _ in DicomRedactionPlan._iter_dicom_elements(self.dicom_data):
             custom_metadata_key = "CustomMetadataItem"

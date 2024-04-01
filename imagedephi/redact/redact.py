@@ -90,6 +90,8 @@ def redact_images(
     redact_dir = create_redact_dir(output_dir)
     show_redaction_plan(input_path)
 
+    dcm_uid_map = {}
+
     # When we build a redaction plan for dicom, use all
     # related files using the function from util/dicom.
     # Use this set to skip over files previously included
@@ -104,7 +106,9 @@ def redact_images(
         for image_file in bar:
             push_progress(output_file_counter, output_file_max)
             try:
-                redaction_plan = build_redaction_plan(image_file, base_rules, override_rules)
+                redaction_plan = build_redaction_plan(
+                    image_file, base_rules, override_rules, dcm_uid_map=dcm_uid_map
+                )
             # Handle and report other errors without stopping the process
             except Exception as e:
                 logger.error(f"{image_file.name} could not be processed. {e.args[0]}")
