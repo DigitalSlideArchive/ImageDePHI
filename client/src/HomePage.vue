@@ -28,7 +28,7 @@ ws.onmessage = (event) => {
   const data = JSON.parse(event.data);
   progress.value = {
     count: data.count || 0,
-    max: data.max || imageRedactionPlan.value.total,
+    max: imageRedactionPlan.value.total,
   };
 };
 
@@ -41,6 +41,7 @@ const redact_images = async () => {
   );
   if (response.status === 200) {
     redacting.value = false;
+    redactionModal.value.close();
   }
 };
 </script>

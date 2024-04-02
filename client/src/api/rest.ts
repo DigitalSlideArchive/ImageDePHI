@@ -44,7 +44,5 @@ export async function redactImages(
       mode: "cors",
     },
   );
-  return response.json().then((data) => {
-    return data;
-  });
+  return response
 }
