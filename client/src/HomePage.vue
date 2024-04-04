@@ -13,6 +13,8 @@ const inputModal = ref(null);
 const outputModal = ref(null);
 const redactionModal = ref();
 const redacting = ref(false);
+const redactionComplete = ref(false);
+const showImageList = ref(false);
 const progress = ref({
   count: 0,
   max: imageRedactionPlan.value.total,
@@ -41,7 +43,9 @@ const redact_images = async () => {
   );
   if (response.status === 200) {
     redacting.value = false;
+    redactionComplete.value = true;
     redactionModal.value.close();
+    showImageList.value = false;
   }
 };
 </script>
@@ -78,6 +82,7 @@ const redact_images = async () => {
             ref="inputModal"
             :modal-id="'inputDirectory'"
             :title="'Input Directory'"
+            @update-image-list="showImageList = true"
           />
           <FileBrowser
             ref="outputModal"
@@ -116,7 +121,12 @@ const redact_images = async () => {
         </div>
       </div>
     </dialog>
-    <ImageList v-if="imageRedactionPlan.total > 0" />
+    <ImageList v-if="showImageList" />
+    <div v-if="redactionComplete" class="card">
+      <div class="card-body">
+        <h2 class="card-title">Redaction Complete</h2>
+        <p>Redacted images now in {{ selectedDirectories.outputDirectory }}</p>
+      </div>
+    </div>
   </div>
 </template>
-$

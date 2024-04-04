@@ -44,5 +44,5 @@ export async function redactImages(
       mode: "cors",
     },
   );
-  return response
+  return response;
 }

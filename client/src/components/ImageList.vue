@@ -26,6 +26,12 @@ const updateImageList = async () => {
   <div class="container ml-4 my-4 flex flex-col w-full">
     <div class="w-full max-w-7xl">
       <div
+        v-if="!imageRedactionPlan.total"
+        class="m-auto h-full flex justify-center"
+      >
+        Loading.. <span class="loading loading-bars loading-md"></span>
+      </div>
+      <div
         v-for="(image, index) in imageRedactionPlan.data"
         :key="index"
         class="collapse collapse-arrow bg-base-100 rounded-none border border-base-300 w-full"
@@ -53,7 +59,7 @@ const updateImageList = async () => {
         </div>
       </div>
     </div>
-    <div class="join flex justify-center">
+    <div v-if="totalPages && totalPages > 1" class="join flex justify-center">
       <button
         class="join-item btn btn-base-100 btn-xs"
         @click="page--, updateImageList()"

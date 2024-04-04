@@ -18,6 +18,7 @@ const props = defineProps({
 
 const modal = ref();
 defineExpose({ modal });
+defineEmits(["update-image-list"]);
 
 const directoryData: Ref<DirectoryData> = ref({
   directory: "",
@@ -62,7 +63,8 @@ const updateSelectedDirectories = (path: string) => {
               class="btn bg-primary float-right text-white"
               type="button"
               @click="
-                closeModal(),
+                $emit('update-image-list'),
+                  closeModal(),
                   title === 'Input Directory'
                     ? updateImageData(selectedDirectories['inputDirectory'])
                     : ''
