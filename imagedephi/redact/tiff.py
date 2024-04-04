@@ -210,11 +210,11 @@ class TiffRedactionPlan(RedactionPlan):
                 if report is not None:
                     report[self.image_path.name]["missing_tags"].append({tag.value: tag.name})
 
-    def report_plan(self) -> dict[str, dict[str, str]]:
+    def report_plan(self) -> dict[str, dict[str | int, str | int]]:
         logger.info("Tiff Metadata Redaction Plan\n")
         offset = -1
         ifd_count = 0
-        report = {}
+        report: dict[str, dict[str | int, str | int]] = {}
         report[self.image_path.name] = {}
 
         for tag, ifd in self._iter_tiff_tag_entries(self.tiff_info["ifds"]):

@@ -18,6 +18,7 @@ const updateImageList = async () => {
     selectedDirectories.value.inputDirectory,
     rows.value,
     offset,
+    false,
   );
 };
 </script>
@@ -62,6 +63,7 @@ const updateImageList = async () => {
     <div v-if="totalPages && totalPages > 1" class="join flex justify-center">
       <button
         class="join-item btn btn-base-100 btn-xs"
+        :disabled="page === 1"
         @click="page--, updateImageList()"
       >
         <i class="ri-arrow-left-s-line"></i>
@@ -75,6 +77,7 @@ const updateImageList = async () => {
       {{ totalPages }}
       <button
         class="join-item btn btn-base-100 btn-xs"
+        :disabled="page === totalPages"
         @click="page++, updateImageList()"
       >
         <i class="ri-arrow-right-s-line"></i>

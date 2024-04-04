@@ -100,12 +100,13 @@ def get_redaction_plan(
     input_directory: str = ("/"),  # noqa: B008
     limit: int = 10,
     offset: int = 0,
+    update: bool = True,
 ):
     input_path = Path(input_directory)
     if not input_path.is_dir():
         raise HTTPException(status_code=404, detail="Input directory not found")
 
-    return show_redaction_plan(input_path, limit=limit, offset=offset)._asdict()
+    return show_redaction_plan(input_path, limit=limit, offset=offset, update=update)._asdict()
 
 
 @router.post("/redact/")

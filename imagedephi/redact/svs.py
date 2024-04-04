@@ -167,7 +167,7 @@ class SvsRedactionPlan(TiffRedactionPlan):
     def is_comprehensive(self) -> bool:
         return super().is_comprehensive() and not self.no_match_description_keys
 
-    def report_missing_rules(self, report) -> None:
+    def report_missing_rules(self, report=None) -> None:
         if self.is_comprehensive():
             logger.info("The redaction plan is comprehensive.")
         else:
@@ -180,13 +180,14 @@ class SvsRedactionPlan(TiffRedactionPlan):
                 )
                 for key in self.no_match_description_keys:
                     logger.error(f"Missing key (Aperio ImageDescription): {key}")
-                    report[self.image_path.name]["missing_keys"].append(key)
+                    if report is not None:
+                        report[self.image_path.name]["missing_keys"].append(key)
 
-    def report_plan(self) -> dict[str, dict[str, str]]:
+    def report_plan(self) -> dict[str, dict[str | int, str | int]]:
         logger.info("Aperio (.svs) Metadata Redaction Plan\n")
         offset = -1
         ifd_count = 0
-        report = {}
+        report: dict[str, dict[str | int, str | int]] = {}
         report[self.image_path.name] = {}
         for tag, ifd in self._iter_tiff_tag_entries(self.tiff_info["ifds"]):
             if ifd["offset"] != offset:
@@ -218,10 +219,9 @@ class SvsRedactionPlan(TiffRedactionPlan):
                 f"{match_counts[key]} image(s) match rule:"
                 f" {key} - {self.rules.associated_images[key].action}"
             )
-            report[self.image_path.name] = (
-                f"{match_counts[key]} image(s) match rule:"
-                f" {key} - {self.rules.associated_images[key].action}"
-            )
+            report[self.image_path.name][match_counts[key]] = self.rules.associated_images[
+                key
+            ].action
 
         return report
 

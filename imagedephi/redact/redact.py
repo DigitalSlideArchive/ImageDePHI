@@ -138,34 +138,41 @@ def show_redaction_plan(
     recursive=False,
     limit: int | None = None,
     offset: int | None = None,
+    update: bool = True,
 ) -> NamedTuple:
     image_paths = iter_image_files(input_path, recursive) if input_path.is_dir() else [input_path]
     base_rules = get_base_rules()
-    report = {}
-    for image_path in image_paths:
-        try:
-            redaction_plan = build_redaction_plan(image_path, base_rules, override_rules)
-        except tifftools.TifftoolsError:
-            logger.error(f"Could not open {image_path.name} as a tiff.")
-            continue
-        except MalformedAperioFileError:
-            logger.error(f"{image_path.name} could not be processed as a valid Aperio file.")
-            continue
-        except UnsupportedFileTypeError as e:
-            logger.error(f"{image_path.name} could not be processed. {e.args[0]}")
-            continue
-        # Handle and report other errors without stopping the process
-        except Exception as e:
-            logger.error(f"{image_path.name} could not be processed. {e.args[0]}")
-            continue
-        logger.info(f"Redaction plan for {image_path.name}")
-        report.update(redaction_plan.report_plan())
-    total = len(report)
+
+    if update:
+        global redaction_plan_report
+        redaction_plan_report = {}  # type: ignore
+        for image_path in image_paths:
+            try:
+                redaction_plan = build_redaction_plan(image_path, base_rules, override_rules)
+            except tifftools.TifftoolsError:
+                logger.error(f"Could not open {image_path.name} as a tiff.")
+                continue
+            except MalformedAperioFileError:
+                logger.error(f"{image_path.name} could not be processed as a valid Aperio file.")
+                continue
+            except UnsupportedFileTypeError as e:
+                logger.error(f"{image_path.name} could not be processed. {e.args[0]}")
+                continue
+            # Handle and report other errors without stopping the process
+            except Exception as e:
+                logger.error(f"{image_path.name} could not be processed. {e.args[0]}")
+                continue
+            logger.info(f"Redaction plan for {image_path.name}")
+            redaction_plan_report.update(redaction_plan.report_plan())  # type: ignore
+    total = len(redaction_plan_report)  # type: ignore
     sorted_dict = OrderedDict(
-        sorted(report.items(), key=lambda item: "missing_tags" not in item[1])
+        sorted(
+            redaction_plan_report.items(),  # type: ignore
+            key=lambda item: "missing_tags" not in item[1],
+        )
     )
     if limit is not None and offset is not None:
-        sorted_dict = dict(list(sorted_dict.items())[offset : limit + offset])
-    images_plan = namedtuple("RedactionPlan", ["data", "total"])
+        sorted_dict = OrderedDict(list(sorted_dict.items())[offset : limit + offset])
+    images_plan = namedtuple("images_plan", ["data", "total"])
 
     return images_plan(sorted_dict, total)

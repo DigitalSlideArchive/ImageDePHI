@@ -20,9 +20,10 @@ export async function getRedactionPlan(
   path: string,
   limit?: number,
   offset?: number,
+  update?: boolean,
 ) {
   const response = await fetch(
-    `${basePath}/redaction_plan?input_directory=${path}&limit=${limit}&offset=${offset}`,
+    `${basePath}/redaction_plan?input_directory=${path}&limit=${limit}&offset=${offset}&update=${update}`,
     {
       method: "GET",
       mode: "cors",
