@@ -31,7 +31,7 @@ def override_rule_set(rules_dir: Path):
     params=[PurePath("svs"), PurePath("svs") / "test_svs_image_blank.svs"],
     ids=["input_dir", "input_file"],
 )
-def svs_input_path(data_dir, request) -> Path:
+def svs_input_path(test_image_svs, data_dir, request) -> Path:
     return data_dir / "input" / request.param
 
 
@@ -39,7 +39,7 @@ def svs_input_path(data_dir, request) -> Path:
     params=[PurePath("dcm"), PurePath("dcm") / "test_dcm_image.dcm"],
     ids=["input_dir", "input_file"],
 )
-def dcm_input_path(data_dir, request) -> Path:
+def dcm_input_path(data_dir, test_image_dcm, request) -> Path:
     return data_dir / "input" / request.param
 
 
@@ -97,11 +97,10 @@ def test_associated_image_key_no_description(data_dir, base_rule_set):
 
 
 @freeze_time("2023-05-12 12:12:53")
-def test_remove_orphaned_metadata(data_dir, tmp_path, override_rule_set):
-    input_path = data_dir / "input" / "secret_metadata.tiff"
-    input_bytes = input_path.read_bytes()
+def test_remove_orphaned_metadata(secret_metadata_image, tmp_path, override_rule_set):
+    input_bytes = secret_metadata_image.read_bytes()
 
-    redact.redact_images(input_path, tmp_path, override_rule_set)
+    redact.redact_images(secret_metadata_image, tmp_path, override_rule_set)
 
     output_file = tmp_path / "Redacted_2023-05-12_12-12-53" / "my_study_slide_1.tiff"
     output_bytes = output_file.read_bytes()
@@ -111,8 +110,8 @@ def test_remove_orphaned_metadata(data_dir, tmp_path, override_rule_set):
 
 
 @freeze_time("2023-05-12 12:12:53")
-def test_redact_dcm(dcm_input_path, tmp_path, override_rule_set):
-    redact.redact_images(dcm_input_path, tmp_path, override_rule_set)
+def test_redact_dcm(test_image_dcm, tmp_path, override_rule_set):
+    redact.redact_images(test_image_dcm, tmp_path, override_rule_set)
 
     output_file = tmp_path / "Redacted_2023-05-12_12-12-53" / "my_study_slide_1.dcm"
     dcm_output_file_bytes = output_file.read_bytes()
@@ -120,9 +119,9 @@ def test_redact_dcm(dcm_input_path, tmp_path, override_rule_set):
     assert b"Sample" not in dcm_output_file_bytes
 
 
-def test_plan_dcm(caplog, dcm_input_path):
+def test_plan_dcm(caplog, test_image_dcm):
     logger.setLevel(logging.INFO)
-    redact.show_redaction_plan(dcm_input_path)
+    redact.show_redaction_plan(test_image_dcm)
 
     assert "DICOM Metadata Redaction Plan" in caplog.text
     assert "SeriesDescription: delete" in caplog.text
