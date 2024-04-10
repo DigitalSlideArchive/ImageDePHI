@@ -1,6 +1,9 @@
 # Build artifacts
 /imagedephi/web_static/
 
+# Test data retrieved by pooch
+/tests/data/*
+
 # Developer tools
 .envrc
 .vscode/*
