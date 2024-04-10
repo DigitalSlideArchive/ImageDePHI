@@ -8,7 +8,7 @@
     "lint:tsc": "vue-tsc --noEmit",
     "lint:check": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --ignore-path .gitignore --fix ",
     "lint:format": "prettier src  --write",
-    "lint": "npm-run-all lint:*",
+    "lint": "npm-run-all lint:tsc lint:check lint:format",
     "dev": "NODE_ENV=development vite --port 8080",
     "build:clean": "rimraf ../imagedephi/web_static",
     "build:compile": "vite build --outDir ../imagedephi/web_static",
@@ -36,5 +36,6 @@
     "vite": "^4.5.5",
     "vue-eslint-parser": "^9.4.2",
     "vue-tsc": "^1.8.5"
-  }
+  },
+  "packageManager": "yarn@4.1.1"
 }
