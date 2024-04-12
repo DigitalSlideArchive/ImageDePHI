@@ -2154,6 +2154,9 @@ fill-range@^7.1.1:
     vue: "npm:^3.3.4"
     vue-eslint-parser: "npm:^9.4.2"
     vue-tsc: "npm:^1.8.5"
+  dependenciesMeta:
+    remixicon@3.7.0:
+      unplugged: true
   languageName: unknown
   linkType: soft
 
