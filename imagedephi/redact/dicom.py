@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Generator
+from enum import Enum
 from pathlib import Path
 from uuid import uuid4
 
@@ -48,6 +49,15 @@ for vr in valuerep.LIST_VR:
 for vr in valuerep.BYTES_VR:
     VR_TO_EXPECTED_TYPE[vr] = bytes
 
+WSI_IMAGE_TYPE_INDEX = 2
+
+
+class WsiImageType(Enum):
+    OVERVIEW = "OVERVIEW"
+    VOLUME = "VOLUME"
+    THUMBNAIL = "THUMBNAIL"
+    LABEL = "LABEL"
+
 
 class DicomRedactionPlan(RedactionPlan):
     """
@@ -59,6 +69,7 @@ class DicomRedactionPlan(RedactionPlan):
     file_format = FileFormat.DICOM
     image_path: Path
     dicom_data: pydicom.FileDataset
+    image_type: WsiImageType
     metadata_redaction_steps: dict[int, ConcreteMetadataRule]
     no_match_tags: list[BaseTag]
     uid_map: dict[str, str]
@@ -82,9 +93,17 @@ class DicomRedactionPlan(RedactionPlan):
     def __init__(self, image_path: Path, rules: DicomRules, uid_map: dict[str, str] | None) -> None:
         self.image_path = image_path
         self.dicom_data = pydicom.dcmread(image_path)
+        self.image_type = WsiImageType(self.dicom_data.ImageType[WSI_IMAGE_TYPE_INDEX])
 
         self.metadata_redaction_steps = {}
         self.no_match_tags = []
+
+        # Determine what, if any, action to take with this file's
+        # image data. Currently only matters for label and overview
+        # images.
+        self.associated_image_rule = rules.associated_images.get(
+            self.image_type.value.lower(), None
+        )
 
         # When redacting many files at a time, keep track of all UIDs across all files,
         # since the DICOM format uses separate files for different resolutions and
@@ -140,6 +159,13 @@ class DicomRedactionPlan(RedactionPlan):
 
     def report_plan(self) -> None:
         logger.info("DICOM Metadata Redaction Plan\n")
+        if self.associated_image_rule:
+            if self.associated_image_rule.action == "delete":
+                logger.info(
+                    f"This image is a DICOM {self.image_type.value}."
+                    "This file will not be written to the output directory."
+                )
+                return
         for element, _ in DicomRedactionPlan._iter_dicom_elements(self.dicom_data):
             rule = self.metadata_redaction_steps.get(element.tag, None)
             if rule:
@@ -166,10 +192,12 @@ class DicomRedactionPlan(RedactionPlan):
         elif operation == "replace_dummy":
             element.value = VR_TO_DUMMY_VALUE[element.VR]
 
-    def _redact_associated_images(self):
-        pass
-
     def execute_plan(self) -> None:
+        if self.associated_image_rule:
+            if self.associated_image_rule.action != "delete":
+                raise NotImplementedError(
+                    "Only 'delete' is supported for associated DICOM images at this time."
+                )
         for element, dataset in DicomRedactionPlan._iter_dicom_elements(self.dicom_data):
             rule = self.metadata_redaction_steps[element.tag]
             if rule is not None:
@@ -187,6 +215,9 @@ class DicomRedactionPlan(RedactionPlan):
                 logger.error(f"Missing tag (dicom): {tag} - {keyword_for_tag(tag)}")
 
     def save(self, output_path: Path, overwrite: bool) -> None:
+        if self.associated_image_rule and self.associated_image_rule.action == "delete":
+            # Don't write this file to the output directory if it is marked to be deleted
+            return
         if output_path.exists():
             if overwrite:
                 logger.info(f"Found existing redaction for {self.image_path.name}. Overwriting...")
