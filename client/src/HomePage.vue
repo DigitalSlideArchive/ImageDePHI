@@ -89,14 +89,16 @@ const redact_images = async () => {
             :modal-id="'outputDirectory'"
             :title="'Output Directory'"
           />
+          <div class="p-4 w-full">
           <button
             type="submit"
-            class="btn btn-wide bg-accent m-auto text-white"
+            class="btn btn-block bg-accent text-white uppercase rounded-lg"
             :disabled="redacting"
             @click="redact_images()"
           >
             De-phi Images
           </button>
+          </div>
         </div>
       </div>
     </div>

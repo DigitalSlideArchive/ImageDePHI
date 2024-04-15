@@ -60,7 +60,7 @@ const updateSelectedDirectories = (path: string) => {
               {{ title }}
             </h2>
             <button
-              class="btn bg-primary float-right text-white"
+              class="btn bg-primary float-right text-white uppercase"
               type="button"
               @click="
                 $emit('update-image-list'),
