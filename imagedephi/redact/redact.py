@@ -90,14 +90,7 @@ def redact_images(
     redact_dir = create_redact_dir(output_dir)
     show_redaction_plan(input_path)
 
-    dcm_uid_map = {}
-
-    # When we build a redaction plan for dicom, use all
-    # related files using the function from util/dicom.
-    # Use this set to skip over files previously included
-    # as part of some other DICOM image.
-    # TODO
-    redacted_dicom_series_ids = set()
+    dcm_uid_map: dict[str, str] = {}
 
     file = StringIO()
     with click.progressbar(
