@@ -8,6 +8,8 @@ ImageDePHI is an application to redact personal data (PHI) from whole slide imag
 
 * Unzip the downloaded file, which will extract the executable named `imagedephi` (or `imagedephi.exe` on Windows).
 
+* Please note that on Linux, only Ubuntu 20.04+ is supported.
+
 ## Usage
 From a command line, execute the application to get full usage help.
 
