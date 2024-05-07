@@ -3,10 +3,8 @@ from __future__ import annotations
 from collections.abc import Generator
 import datetime
 import importlib.resources
-from io import StringIO
 from pathlib import Path
 
-import click
 import tifftools
 import tifftools.constants
 from tqdm import tqdm
