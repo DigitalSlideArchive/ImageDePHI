@@ -83,6 +83,7 @@ class SvsRedactionPlan(TiffRedactionPlan):
         self.rules = rules
         self.image_redaction_steps = {}
         self.description_redaction_steps = {}
+        self.no_match_description_keys = set()
         super().__init__(image_path, rules, strict)
 
         # For strict mode redactions, treat Aperio (.svs) images as if they were
@@ -93,7 +94,6 @@ class SvsRedactionPlan(TiffRedactionPlan):
                 raise MalformedAperioFileError()
             del self.metadata_redaction_steps[image_description_tag.value]
 
-            self.no_match_description_keys = set()
             ifds = self.tiff_info["ifds"]
             for tag, ifd in self._iter_tiff_tag_entries(ifds):
                 if tag.value != image_description_tag.value:

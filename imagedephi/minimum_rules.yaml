@@ -4,6 +4,9 @@ description: A set of rules that defines a minimum amount of metadata for images
 output_file_name: study_slide
 tiff:
   metadata_fallback_action: delete
+  associated_images:
+    default:
+      action: delete
   metadata:
     ImageWidth:
       action: keep
@@ -87,6 +90,9 @@ tiff:
       action: keep
 svs:
   metadata_fallback_action: delete
+  associated_images:
+    default:
+      action: delete
   metadata:
     ImageWidth:
       action: keep

@@ -119,7 +119,11 @@ def imagedephi(
 )
 @click.option("--rename/--skip-rename", default=True)
 @click.option(
-    "--strict", default=False, help="Delete all metadata not required by format standards"
+    "-s",
+    "--strict",
+    is_flag=True,
+    default=False,
+    help="Delete all metadata not required by format standards",
 )
 @click.pass_obj
 def run(

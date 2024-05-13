@@ -145,10 +145,11 @@ class TiffRedactionPlan(RedactionPlan):
         for ifd in self._iter_ifds(ifds):
             if not self.is_tiled(ifd):
                 associated_image_key = self.get_associated_image_key_for_ifd(ifd)
+                associated_image_rule = rules.associated_images.get(associated_image_key, None)
+                if not associated_image_rule:
+                    associated_image_rule = rules.associated_images["default"]
                 # IFD offset is a useful unique identifier for the IFD itself
-                self.image_redaction_steps[ifd["offset"]] = rules.associated_images[
-                    associated_image_key
-                ]
+                self.image_redaction_steps[ifd["offset"]] = associated_image_rule
 
     def is_match(self, rule: ConcreteMetadataRule, tag: tifftools.TiffTag) -> bool:
         if rule.action in ["keep", "delete", "replace", "check_type"]:
