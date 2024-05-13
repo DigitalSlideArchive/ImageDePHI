@@ -78,11 +78,12 @@ class SvsRedactionPlan(TiffRedactionPlan):
         self,
         image_path: Path,
         rules: SvsRules,
+        strict: bool,
     ) -> None:
         self.rules = rules
         self.image_redaction_steps = {}
         self.description_redaction_steps = {}
-        super().__init__(image_path, rules)
+        super().__init__(image_path, rules, strict)
 
         image_description_tag = tifftools.constants.Tag["ImageDescription"]
         if image_description_tag.value not in self.metadata_redaction_steps:

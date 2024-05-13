@@ -47,6 +47,8 @@ class TiffRedactionPlan(RedactionPlan):
     image_redaction_steps: dict[int, ConcreteImageRule]
     no_match_tags: list[tifftools.TiffTag]
 
+    strict: bool
+
     @staticmethod
     def is_tiled(ifd: IFD):
         """Determine if an IFD represents a tiled image."""
@@ -101,13 +103,10 @@ class TiffRedactionPlan(RedactionPlan):
         """
         return "default"
 
-    def __init__(
-        self,
-        image_path: Path,
-        rules: TiffRules,
-    ) -> None:
+    def __init__(self, image_path: Path, rules: TiffRules, strict: bool) -> None:
         self.image_path = image_path
         self.tiff_info = tifftools.read_tiff(str(image_path))
+        self.strict = strict
 
         self.metadata_redaction_steps = {}
         self.image_redaction_steps = {}

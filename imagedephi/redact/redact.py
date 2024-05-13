@@ -31,8 +31,12 @@ def _get_output_path(
     return output_dir / f"{base_name}_{count:0{len(str(max))}}{file_path.suffix}"
 
 
-def get_base_rules():
-    base_rules_path = importlib.resources.files("imagedephi") / "base_rules.yaml"
+def get_base_rules(strict=False) -> Ruleset:
+    base_rules_path = (
+        importlib.resources.files("imagedephi") / "minimum_rules.yaml"
+        if strict
+        else importlib.resources.files("imagedephi") / "base_rules.yaml"
+    )
     with base_rules_path.open() as base_rules_stream:
         base_rule_set = Ruleset.parse_obj(yaml.safe_load(base_rules_stream))
         return base_rule_set
@@ -74,10 +78,11 @@ def redact_images(
     output_dir: Path,
     override_rules: Ruleset | None = None,
     rename: bool = True,
+    strict: bool = False,
     overwrite: bool = False,
     recursive: bool = False,
 ) -> None:
-    base_rules = get_base_rules()
+    base_rules = get_base_rules(strict)
     output_file_name_base = (
         override_rules.output_file_name if override_rules else base_rules.output_file_name
     )
@@ -97,7 +102,9 @@ def redact_images(
         for image_file in bar:
             push_progress(output_file_counter, output_file_max)
             try:
-                redaction_plan = build_redaction_plan(image_file, base_rules, override_rules)
+                redaction_plan = build_redaction_plan(
+                    image_file, base_rules, override_rules, strict=strict
+                )
             # Handle and report other errors without stopping the process
             except Exception as e:
                 logger.error(f"{image_file.name} could not be processed. {e.args[0]}")

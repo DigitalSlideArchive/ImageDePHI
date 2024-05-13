@@ -17,7 +17,7 @@ FILE_EXTENSION_MAP: dict[str, FileFormat] = {
 
 
 def build_redaction_plan(
-    image_path: Path, base_rules: Ruleset, override_rules: Ruleset | None = None
+    image_path: Path, base_rules: Ruleset, override_rules: Ruleset | None = None, strict=False
 ) -> RedactionPlan:
     file_format = get_file_format_from_path(image_path)
     if file_format == FileFormat.TIFF:
@@ -32,13 +32,13 @@ def build_redaction_plan(
             if override_rules:
                 merged_rules.metadata.update(override_rules.tiff.metadata)
 
-            return TiffRedactionPlan(image_path, merged_rules)
+            return TiffRedactionPlan(image_path, merged_rules, strict)
         elif file_extension == FileFormat.SVS:
             merged_rules = base_rules.svs.copy()
             if override_rules:
                 merged_rules.metadata.update(override_rules.svs.metadata)
                 merged_rules.image_description.update(override_rules.svs.image_description)
-            return SvsRedactionPlan(image_path, merged_rules)
+            return SvsRedactionPlan(image_path, merged_rules, strict)
         else:
             raise UnsupportedFileTypeError(f"File format for {image_path} not supported.")
     elif file_format == FileFormat.DICOM:

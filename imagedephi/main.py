@@ -118,12 +118,16 @@ def imagedephi(
     type=click.Path(exists=True, file_okay=False, readable=True, writable=True, path_type=Path),
 )
 @click.option("--rename/--skip-rename", default=True)
+@click.option(
+    "--strict", default=False, help="Delete all metadata not required by format standards"
+)
 @click.pass_obj
 def run(
     obj: ImagedephiContext,
     input_path: Path,
     output_dir: Path,
     rename: bool,
+    strict: bool,
     recursive,
     verbose,
     quiet,
@@ -132,7 +136,9 @@ def run(
     """Perform the redaction of images."""
     if verbose or quiet or log_file:
         set_logging_config(verbose, quiet, log_file)
-    redact_images(input_path, output_dir, obj.override_rule_set, rename, recursive=recursive)
+    redact_images(
+        input_path, output_dir, obj.override_rule_set, rename, recursive=recursive, strict=strict
+    )
 
 
 @imagedephi.command
