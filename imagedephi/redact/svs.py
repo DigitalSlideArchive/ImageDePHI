@@ -78,7 +78,7 @@ class SvsRedactionPlan(TiffRedactionPlan):
         self,
         image_path: Path,
         rules: SvsRules,
-        strict: bool,
+        strict: bool = False,
     ) -> None:
         self.rules = rules
         self.image_redaction_steps = {}

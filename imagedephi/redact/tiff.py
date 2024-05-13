@@ -105,7 +105,7 @@ class TiffRedactionPlan(RedactionPlan):
         """
         return "default"
 
-    def __init__(self, image_path: Path, rules: TiffRules, strict: bool) -> None:
+    def __init__(self, image_path: Path, rules: TiffRules, strict: bool = False) -> None:
         self.image_path = image_path
         self.tiff_info = tifftools.read_tiff(str(image_path))
         self.strict = strict
