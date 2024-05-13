@@ -104,7 +104,7 @@ class BaseRules(BaseModel):
 class TiffRules(BaseModel):
     associated_images: dict[str, ConcreteImageRule] = {}
     metadata: dict[str, ConcreteMetadataRule] = {}
-    metadata_fallback: ConcreteImageRule | None = None
+    metadata_fallback_action: Literal["delete"] | Literal["keep"] | None = None
     associated_image_fallback: ConcreteImageRule | None = None
 
     # TODO: is pre necessary?

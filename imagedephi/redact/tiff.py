@@ -13,8 +13,10 @@ import tifftools.constants
 from imagedephi.rules import (
     ConcreteImageRule,
     ConcreteMetadataRule,
+    DeleteRule,
     FileFormat,
     ImageReplaceRule,
+    KeepRule,
     MetadataReplaceRule,
     RedactionOperation,
     TiffRules,
@@ -124,6 +126,18 @@ class TiffRedactionPlan(RedactionPlan):
                 tag_rule = rules.metadata.get(name, None)
                 if tag_rule and self.is_match(tag_rule, tag):
                     self.metadata_redaction_steps[tag.value] = tag_rule
+                    break
+                elif strict:
+                    # If there's no rule defined for this tag and we're in
+                    # strict mode, use the fallback action to create a rule on
+                    # the fly.
+                    if rules.metadata_fallback_action == "keep":
+                        fallback_rule = KeepRule(
+                            key_name=tag.name, action=rules.metadata_fallback_action
+                        )
+                    else:
+                        fallback_rule = DeleteRule(key_name=tag.name, action="delete")
+                    self.metadata_redaction_steps[tag.value] = fallback_rule
                     break
             else:
                 self.no_match_tags.append(tag)
