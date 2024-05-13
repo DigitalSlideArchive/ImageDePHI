@@ -132,7 +132,7 @@ class TiffRedactionPlan(RedactionPlan):
                     # strict mode, use the fallback action to create a rule on
                     # the fly.
                     if rules.metadata_fallback_action == "keep":
-                        fallback_rule = KeepRule(
+                        fallback_rule: ConcreteMetadataRule = KeepRule(
                             key_name=tag.name, action=rules.metadata_fallback_action
                         )
                     else:
