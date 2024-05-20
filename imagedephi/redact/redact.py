@@ -3,12 +3,12 @@ from __future__ import annotations
 from collections.abc import Generator
 import datetime
 import importlib.resources
-from io import StringIO
 from pathlib import Path
 
-import click
 import tifftools
 import tifftools.constants
+from tqdm import tqdm
+from tqdm.contrib.logging import logging_redirect_tqdm
 import yaml
 
 from imagedephi.rules import Ruleset
@@ -88,13 +88,9 @@ def redact_images(
     output_file_counter = 1
     output_file_max = len(images_to_redact)
     redact_dir = create_redact_dir(output_dir)
-    show_redaction_plan(input_path)
 
-    file = StringIO()
-    with click.progressbar(
-        images_to_redact, label="Redacting Images", show_pos=True, file=file, show_percent=True
-    ) as bar:
-        for image_file in bar:
+    with logging_redirect_tqdm(loggers=[logger]):
+        for image_file in tqdm(images_to_redact, desc="Redacting images", position=0, leave=True):
             push_progress(output_file_counter, output_file_max)
             try:
                 redaction_plan = build_redaction_plan(image_file, base_rules, override_rules)
@@ -106,6 +102,7 @@ def redact_images(
                 logger.info(f"Redaction could not be performed for {image_file.name}.")
                 redaction_plan.report_missing_rules()
             else:
+                redaction_plan.report_plan()
                 redaction_plan.execute_plan()
                 output_parent_dir = redact_dir
                 if recursive:
@@ -126,7 +123,7 @@ def redact_images(
                 )
                 redaction_plan.save(output_path, overwrite)
                 if output_file_counter == output_file_max:
-                    click.echo("Redactions completed")
+                    logger.info("Redactions completed")
             output_file_counter += 1
 
 
