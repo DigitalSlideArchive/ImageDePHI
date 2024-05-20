@@ -8,6 +8,11 @@ from .redaction_plan import RedactionPlan
 from .svs import SvsRedactionPlan
 from .tiff import TiffRedactionPlan, UnsupportedFileTypeError
 
+
+class ImageDePHIRedactionError(Exception):
+    """Thrown when the program encounters problems with current configuration and image files."""
+
+
 FILE_EXTENSION_MAP: dict[str, FileFormat] = {
     ".tif": FileFormat.TIFF,
     ".tiff": FileFormat.TIFF,
@@ -42,6 +47,10 @@ def build_redaction_plan(
         else:
             raise UnsupportedFileTypeError(f"File format for {image_path} not supported.")
     elif file_format == FileFormat.DICOM:
+        if strict:
+            raise ImageDePHIRedactionError(
+                "strict redaction is not currently supported for DICOM images"
+            )
         dicom_rules = base_rules.dicom.copy()
         if override_rules:
             dicom_rules.metadata.update(override_rules.dicom.metadata)
