@@ -194,7 +194,7 @@ class SvsRedactionPlan(TiffRedactionPlan):
                 offset = ifd["offset"]
                 ifd_count += 1
                 logger.info(f"IFD {ifd_count}:")
-            if tag.value == tifftools.constants.Tag["ImageDescription"]:
+            if tag.value == tifftools.constants.Tag["ImageDescription"] and not self.strict:
                 image_description = SvsDescription(str(ifd["tags"][tag.value]["data"]))
                 for key_name, _data in image_description.metadata.items():
                     rule = self.description_redaction_steps[key_name]
