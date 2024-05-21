@@ -34,6 +34,16 @@ export async function getRedactionPlan(
   });
 }
 
+export async function fetchRules() {
+  const response = await fetch(`${basePath}/rules`, {
+    method: "GET",
+    mode: "cors",
+  });
+  return response.json().then((data) => {
+    return data;
+  });
+}
+
 export async function redactImages(
   inputDirectory: string,
   outputDirectory: string,
@@ -46,4 +56,14 @@ export async function redactImages(
     },
   );
   return response;
+}
+
+export async function getImages(path: string, imageKey: string) {
+  const response = await fetch(
+    `${basePath}/image/?file_name=${path}&image_key=${imageKey}`,
+  {
+    method: "GET",
+    mode: "cors",
+  });
+  return response
 }

@@ -87,7 +87,7 @@ def get_image_response_from_ifd(
     file_name: str,
     max_width=MAX_ASSOCIATED_IMAGE_SIZE,
     max_height=MAX_ASSOCIATED_IMAGE_SIZE,
-):
+) -> StreamingResponse:
     # Make sure the image isn't too big
     height = int(ifd["tags"][tifftools.Tag.ImageLength.value]["data"][0])
     width = int(ifd["tags"][tifftools.Tag.ImageWidth.value]["data"][0])
@@ -108,8 +108,6 @@ def get_image_response_from_ifd(
         image.save(jpeg_buffer, "JPEG")
         jpeg_buffer.seek(0)
 
-        # return an image response
-        return StreamingResponse(jpeg_buffer, media_type="image/jpeg")
     except UnidentifiedImageError:
         #  Extract a thumbnail from the original image if the IFD can't be opened by PIL
         composite_image = extract_thumbnail_from_image_bytes(ifd, file_name, max_width, max_height)
@@ -167,4 +165,4 @@ def get_image_response_dicom(
             img_buffer.seek(0)
             return StreamingResponse(img_buffer, media_type="image/jpeg")
     except WsiDicomNotFoundError:
-        return None
+        return StreamingResponse(img_buffer, status_code=404)
