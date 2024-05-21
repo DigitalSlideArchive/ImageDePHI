@@ -58,8 +58,15 @@ def iter_image_files(directory: Path, recursive: bool = False) -> Generator[Path
             yield from iter_image_files(child, recursive)
 
 
-def create_redact_dir(base_output_dir: Path, time_stamp: str) -> Path:
-    """Given a directory, create and return a timestamped sub-directory within it."""
+def create_redact_dir(base_output_dir: Path, identifier: str | None = None) -> Path:
+    """
+    Given a directory, create and return a sub-directory within it.
+
+    `identifier` should be a unique string for the new directory. If no value
+    is supplied, a timestamp is used.
+    """
+    if not identifier:
+        identifier = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     redact_dir = base_output_dir / f"Redacted_{time_stamp}"
     try:
         redact_dir.mkdir(parents=True)
