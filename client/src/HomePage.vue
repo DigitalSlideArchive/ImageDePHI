@@ -7,14 +7,14 @@ import { imageRedactionPlan } from "./store/imageStore";
 
 import MenuSteps from "./components/MenuSteps.vue";
 import FileBrowser from "./components/FileBrowser.vue";
-import ImageList from "./components/ImageList.vue";
+import ImageDataTable from "./components/ImageDataTable.vue";
 
 const inputModal = ref(null);
 const outputModal = ref(null);
 const redactionModal = ref();
 const redacting = ref(false);
 const redactionComplete = ref(false);
-const showImageList = ref(false);
+const showImageTable = ref(false);
 const progress = ref({
   count: 0,
   max: imageRedactionPlan.value.total,
@@ -45,7 +45,7 @@ const redact_images = async () => {
     redacting.value = false;
     redactionComplete.value = true;
     redactionModal.value.close();
-    showImageList.value = false;
+    showImageTable.value = false;
   }
 };
 </script>
@@ -82,7 +82,7 @@ const redact_images = async () => {
             ref="inputModal"
             :modal-id="'inputDirectory'"
             :title="'Input Directory'"
-            @update-image-list="showImageList = true"
+            @update-image-list="showImageTable = true"
           />
           <FileBrowser
             ref="outputModal"
@@ -90,14 +90,14 @@ const redact_images = async () => {
             :title="'Output Directory'"
           />
           <div class="p-4 w-full">
-          <button
-            type="submit"
-            class="btn btn-block bg-accent text-white uppercase rounded-lg"
-            :disabled="redacting"
-            @click="redact_images()"
-          >
-            De-phi Images
-          </button>
+            <button
+              type="submit"
+              class="btn btn-block bg-accent text-white uppercase rounded-lg"
+              :disabled="redacting"
+              @click="redact_images()"
+            >
+              De-phi Images
+            </button>
           </div>
         </div>
       </div>
@@ -123,7 +123,7 @@ const redact_images = async () => {
         </div>
       </div>
     </dialog>
-    <ImageList v-if="showImageList" />
+    <ImageDataTable v-if="imageRedactionPlan.total && showImageTable" />
     <div v-if="redactionComplete" class="card">
       <div class="card-body">
         <h2 class="card-title">Redaction Complete</h2>
