@@ -88,7 +88,7 @@ def test_e2e_gui(
     # Check that the GUI has stopped
     assert gui.poll() is not None
 
-    redacted_dirs = list(tmp_path.glob("*Redacted*"))
+    redacted_dirs = [path for path in tmp_path.glob("*Redacted*") if path.is_dir()]
     assert len(redacted_dirs) > 0
     redacted_files = list(redacted_dirs[0].glob("*"))
     assert len(redacted_files) > 0
