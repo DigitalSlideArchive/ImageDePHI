@@ -134,14 +134,18 @@ class DicomRedactionPlan(RedactionPlan):
             return rule.action
         return "delete"
 
-    def report_plan(self) -> None:
+    def report_plan(self) -> dict[str, dict[str | int, str | int]]:
         logger.info("DICOM Metadata Redaction Plan\n")
+        report: dict[str, dict[str | int, str | int]] = {}
+        report[self.image_path.name] = {}
         for element, _ in DicomRedactionPlan._iter_dicom_elements(self.dicom_data):
             rule = self.metadata_redaction_steps.get(element.tag, None)
             if rule:
                 operation = self.determine_redaction_operation(rule, element)
                 logger.info(f"DICOM Tag {element.tag} - {rule.key_name}: {operation}")
-        self.report_missing_rules()
+                report[self.image_path.name][f"{element.tag}_{rule.key_name}"] = operation
+        self.report_missing_rules(report)
+        return report
 
     def apply(self, rule: ConcreteMetadataRule, element: DataElement, dataset: Dataset):
         operation = self.determine_redaction_operation(rule, element)
@@ -171,13 +175,18 @@ class DicomRedactionPlan(RedactionPlan):
     def is_comprehensive(self) -> bool:
         return not self.no_match_tags
 
-    def report_missing_rules(self) -> None:
+    def report_missing_rules(self, report=None) -> None:
         if self.is_comprehensive():
             logger.info("The redaction plan is comprehensive.")
         else:
             logger.error("The following tags could not be redacted given the current set of rules.")
+            if report is not None:
+                report[self.image_path.name]["missing_tags"] = []
+
             for tag in self.no_match_tags:
                 logger.error(f"Missing tag (dicom): {tag} - {keyword_for_tag(tag)}")
+                if report is not None:
+                    report[self.image_path.name]["missing_tags"].append({tag: keyword_for_tag(tag)})
 
     def save(self, output_path: Path, overwrite: bool) -> None:
         if output_path.exists():

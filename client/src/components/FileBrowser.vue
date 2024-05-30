@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, Ref } from "vue";
-import { getDirectoryInfo } from "../api/rest";
+import { getDirectoryInfo, getRedactionPlan } from "../api/rest";
 import { selectedDirectories } from "../store/directoryStore";
+import { imageRedactionPlan } from "../store/imageStore";
 import { DirectoryData } from "../store/types";
 
 const props = defineProps({
@@ -17,6 +18,7 @@ const props = defineProps({
 
 const modal = ref();
 defineExpose({ modal });
+defineEmits(["update-image-list"]);
 
 const directoryData: Ref<DirectoryData> = ref({
   directory: "",
@@ -34,6 +36,10 @@ const updateDirectories = async (currentDirectory?: string) => {
   };
 };
 updateDirectories();
+
+const updateImageData = async (directory: string) => {
+  imageRedactionPlan.value = await getRedactionPlan(directory, 10, 0, true);
+};
 
 const closeModal = () => {
   modal.value.close();
@@ -54,9 +60,15 @@ const updateSelectedDirectories = (path: string) => {
               {{ title }}
             </h2>
             <button
-              class="btn bg-primary float-right"
+              class="btn bg-primary float-right text-white"
               type="button"
-              @click="closeModal"
+              @click="
+                $emit('update-image-list'),
+                  closeModal(),
+                  title === 'Input Directory'
+                    ? updateImageData(selectedDirectories['inputDirectory'])
+                    : ''
+              "
             >
               Select
             </button>
@@ -126,5 +138,8 @@ const updateSelectedDirectories = (path: string) => {
         </ul>
       </div>
     </div>
+    <form method="dialog" class="modal-backdrop w-screen h-screen absolute">
+      <button>close</button>
+    </form>
   </dialog>
 </template>

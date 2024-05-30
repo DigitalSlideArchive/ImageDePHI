@@ -16,6 +16,24 @@ export async function getDirectoryInfo(path?: string) {
   });
 }
 
+export async function getRedactionPlan(
+  path: string,
+  limit?: number,
+  offset?: number,
+  update?: boolean,
+) {
+  const response = await fetch(
+    `${basePath}/redaction_plan?input_directory=${path}&limit=${limit}&offset=${offset}&update=${update}`,
+    {
+      method: "GET",
+      mode: "cors",
+    },
+  );
+  return response.json().then((data) => {
+    return data;
+  });
+}
+
 export async function redactImages(
   inputDirectory: string,
   outputDirectory: string,
@@ -27,7 +45,5 @@ export async function redactImages(
       mode: "cors",
     },
   );
-  return response.json().then((data) => {
-    return data;
-  });
+  return response;
 }
