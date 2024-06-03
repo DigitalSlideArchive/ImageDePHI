@@ -224,11 +224,11 @@ class TiffRedactionPlan(RedactionPlan):
                 if report is not None:
                     report[self.image_path.name]["missing_tags"].append({tag.value: tag.name})
 
-    def report_plan(self) -> dict[str, dict[str | int, str | int]]:
+    def report_plan(self) -> dict[str, dict[str, str | int | dict[str, str | int]]]:
         logger.info("Tiff Metadata Redaction Plan\n")
         offset = -1
         ifd_count = 0
-        report: dict[str, dict[str | int, str | int]] = {}
+        report: dict[str, dict[str, str | int | dict[str, str | int]]] = {}
         report[self.image_path.name] = {}
 
         for tag, ifd in self._iter_tiff_tag_entries(self.tiff_info["ifds"]):
@@ -240,7 +240,8 @@ class TiffRedactionPlan(RedactionPlan):
                 rule = self.metadata_redaction_steps[tag.value]
                 operation = self.determine_redaction_operation(rule, ifd)
                 logger.info(f"Tiff Tag {tag.value} - {rule.key_name}: {operation}")
-                report[self.image_path.name][rule.key_name] = operation
+                report[self.image_path.name][rule.key_name] = {"action": operation, "value": tag.value}
+
         self.report_missing_rules(report)
         logger.info("Tiff Associated Image Redaction Plan\n")
         logger.info(f"Found {len(self.image_redaction_steps)} associated images")
