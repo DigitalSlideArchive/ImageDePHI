@@ -157,7 +157,7 @@ class DicomRedactionPlan(RedactionPlan):
             return rule.action
         return "delete"
 
-    def report_plan(self) -> dict[str, dict[str | int, str | int]]:
+    def report_plan(self) -> dict[str, dict[str, str | int | dict[str, str | int]]]:
         logger.info("DICOM Metadata Redaction Plan\n")
         if self.associated_image_rule:
             if self.associated_image_rule.action == "delete":
@@ -166,14 +166,14 @@ class DicomRedactionPlan(RedactionPlan):
                     "This file will not be written to the output directory."
                 )
                 return {}
-        report: dict[str, dict[str | int, str | int]] = {}
+        report: dict[str, dict[str, str | int | dict[str, str | int]]] = {}
         report[self.image_path.name] = {}
         for element, _ in DicomRedactionPlan._iter_dicom_elements(self.dicom_data):
             rule = self.metadata_redaction_steps.get(element.tag, None)
             if rule:
                 operation = self.determine_redaction_operation(rule, element)
                 logger.info(f"DICOM Tag {element.tag} - {rule.key_name}: {operation}")
-                report[self.image_path.name][f"{element.tag}_{rule.key_name}"] = operation
+                report[self.image_path.name][f"{element.tag}_{rule.key_name}"] = {"action": operation, "value": element.value}
         self.report_missing_rules(report)
         return report
 
