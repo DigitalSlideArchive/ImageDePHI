@@ -43,6 +43,13 @@ _global_options = [
     click.option(
         "-r", "--recursive", is_flag=True, help="Apply the command to images in subdirectories"
     ),
+    click.option(
+        "-s",
+        "--strict",
+        is_flag=True,
+        default=False,
+        help="Delete all metadata not required by format standards",
+    ),
 ]
 
 
@@ -118,21 +125,14 @@ def imagedephi(
     type=click.Path(exists=True, file_okay=False, readable=True, writable=True, path_type=Path),
 )
 @click.option("--rename/--skip-rename", default=True)
-@click.option(
-    "-s",
-    "--strict",
-    is_flag=True,
-    default=False,
-    help="Delete all metadata not required by format standards",
-)
 @click.pass_obj
 def run(
     obj: ImagedephiContext,
     input_path: Path,
     output_dir: Path,
     rename: bool,
-    strict: bool,
     recursive,
+    strict: bool,
     verbose,
     quiet,
     log_file,
@@ -149,13 +149,15 @@ def run(
 @global_options
 @click.argument("input-path", type=click.Path(exists=True, readable=True, path_type=Path))
 @click.pass_obj
-def plan(obj: ImagedephiContext, input_path: Path, recursive, quiet, verbose, log_file) -> None:
+def plan(
+    obj: ImagedephiContext, input_path: Path, recursive, strict, quiet, verbose, log_file
+) -> None:
     """Print the redaction plan for images."""
     # Even if the user doesn't use the verbose flag, ensure logging level is set to
     # show info output of this command.
     v = verbose if verbose else 1
     set_logging_config(v, quiet, log_file)
-    show_redaction_plan(input_path, obj.override_rule_set, recursive)
+    show_redaction_plan(input_path, obj.override_rule_set, recursive, strict)
 
 
 @imagedephi.command

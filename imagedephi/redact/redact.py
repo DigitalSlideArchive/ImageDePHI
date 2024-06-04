@@ -138,13 +138,15 @@ def redact_images(
 
 
 def show_redaction_plan(
-    input_path: Path, override_rules: Ruleset | None = None, recursive=False
+    input_path: Path, override_rules: Ruleset | None = None, recursive=False, strict=False
 ) -> None:
     image_paths = iter_image_files(input_path, recursive) if input_path.is_dir() else [input_path]
     base_rules = get_base_rules()
     for image_path in image_paths:
         try:
-            redaction_plan = build_redaction_plan(image_path, base_rules, override_rules)
+            redaction_plan = build_redaction_plan(
+                image_path, base_rules, override_rules, strict=strict
+            )
         except tifftools.TifftoolsError:
             logger.error(f"Could not open {image_path.name} as a tiff.")
             continue
