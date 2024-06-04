@@ -208,20 +208,24 @@ class SvsRedactionPlan(TiffRedactionPlan):
             report[self.image_path.name][rule.key_name] = operation
         self.report_missing_rules(report)
         logger.info("Aperio (.svs) Associated Image Redaction Plan\n")
-        match_counts = {}
+        # Report the number of associated images found in the image that match each associated
+        # image rule.
+        associated_image_count_by_rule = {}
         for _, image_rule in self.image_redaction_steps.items():
-            if image_rule.key_name not in match_counts:
-                match_counts[image_rule.key_name] = 1
+            if image_rule.key_name not in associated_image_count_by_rule:
+                associated_image_count_by_rule[image_rule.key_name] = 1
             else:
-                match_counts[image_rule.key_name] = match_counts[image_rule.key_name] + 1
-        for key in match_counts:
+                associated_image_count_by_rule[image_rule.key_name] = (
+                    associated_image_count_by_rule[image_rule.key_name] + 1
+                )
+        for key in associated_image_count_by_rule:
             logger.info(
-                f"{match_counts[key]} image(s) match rule:"
+                f"{associated_image_count_by_rule[key]} image(s) match rule:"
                 f" {key} - {self.rules.associated_images[key].action}"
             )
-            report[self.image_path.name][match_counts[key]] = self.rules.associated_images[
-                key
-            ].action
+            report[self.image_path.name][associated_image_count_by_rule[key]] = (
+                self.rules.associated_images[key].action
+            )
 
         return report
 
