@@ -132,9 +132,10 @@ class SvsRules(TiffRules):
 
 class DicomRules(BaseModel):
     metadata: dict[str, ConcreteMetadataRule] = {}
+    associated_images: dict[str, ConcreteImageRule] = {}
     delete_custom_metadata: bool = True
 
-    @validator("metadata", pre=True)
+    @validator("metadata", "associated_images", pre=True)
     @classmethod
     def set_tag_name(cls, metadata: Any):
         if isinstance(metadata, dict):
