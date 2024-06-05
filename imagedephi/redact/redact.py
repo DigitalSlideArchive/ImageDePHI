@@ -1,14 +1,16 @@
 from __future__ import annotations
 
+from collections import OrderedDict, namedtuple
 from collections.abc import Generator
 import datetime
 import importlib.resources
-from io import StringIO
 from pathlib import Path
+from typing import NamedTuple
 
-import click
 import tifftools
 import tifftools.constants
+from tqdm import tqdm
+from tqdm.contrib.logging import logging_redirect_tqdm
 import yaml
 
 from imagedephi.rules import Ruleset
@@ -93,17 +95,15 @@ def redact_images(
     output_file_counter = 1
     output_file_max = len(images_to_redact)
     redact_dir = create_redact_dir(output_dir)
-    show_redaction_plan(input_path)
 
-    file = StringIO()
-    with click.progressbar(
-        images_to_redact, label="Redacting Images", show_pos=True, file=file, show_percent=True
-    ) as bar:
-        for image_file in bar:
+    dcm_uid_map: dict[str, str] = {}
+
+    with logging_redirect_tqdm(loggers=[logger]):
+        for image_file in tqdm(images_to_redact, desc="Redacting images", position=0, leave=True):
             push_progress(output_file_counter, output_file_max)
             try:
                 redaction_plan = build_redaction_plan(
-                    image_file, base_rules, override_rules, strict=strict
+                    image_file, base_rules, override_rules, dcm_uid_map=dcm_uid_map, strict=strict
                 )
             # Handle and report other errors without stopping the process
             except Exception as e:
@@ -113,6 +113,7 @@ def redact_images(
                 logger.info(f"Redaction could not be performed for {image_file.name}.")
                 redaction_plan.report_missing_rules()
             else:
+                redaction_plan.report_plan()
                 redaction_plan.execute_plan()
                 output_parent_dir = redact_dir
                 if recursive:
@@ -133,39 +134,52 @@ def redact_images(
                 )
                 redaction_plan.save(output_path, overwrite)
                 if output_file_counter == output_file_max:
-                    click.echo("Redactions completed")
+                    logger.info("Redactions completed")
             output_file_counter += 1
 
 
 def show_redaction_plan(
-    input_path: Path, override_rules: Ruleset | None = None, recursive=False, strict=False
-) -> None:
-    image_paths = list(
-        iter_image_files(input_path, recursive) if input_path.is_dir() else [input_path]
-    )
+    input_path: Path,
+    override_rules: Ruleset | None = None,
+    recursive=False,
+    strict=False,
+    limit: int | None = None,
+    offset: int | None = None,
+    update: bool = True,
+) -> NamedTuple:
+    image_paths = iter_image_files(input_path, recursive) if input_path.is_dir() else [input_path]
     base_rules = get_base_rules()
-    for i, image_path in enumerate(image_paths):
-        iteration = f"{i + 1}/{len(image_paths)}"
-        try:
-            redaction_plan = build_redaction_plan(
-                image_path, base_rules, override_rules, strict=strict
-            )
-        except tifftools.TifftoolsError:
-            logger.error(f"({iteration}) Could not open {image_path.name} as a tiff.")
-            continue
-        except MalformedAperioFileError:
-            logger.error(
-                f"({iteration}) {image_path.name} could not be processed as a valid Aperio file."
-            )
-            continue
-        except UnsupportedFileTypeError as e:
-            logger.error(f"({iteration}) {image_path.name} could not be processed. {e.args[0]}")
-            continue
-        # Handle and report other errors without stopping the process
-        except Exception as e:
-            logger.error(f"({iteration}) {image_path.name} could not be processed. {e.args[0]}")
-            continue
-        logger.info(f"({iteration}) Redaction plan for {image_path.name}")
-        if strict:
-            logger.info("Strict mode enabled. Only metadata required by the standard will be kept.")
-        redaction_plan.report_plan()
+
+    if update:
+        global redaction_plan_report
+        redaction_plan_report = {}  # type: ignore
+        for image_path in image_paths:
+            try:
+                redaction_plan = build_redaction_plan(image_path, base_rules, override_rules)
+            except tifftools.TifftoolsError:
+                logger.error(f"Could not open {image_path.name} as a tiff.")
+                continue
+            except MalformedAperioFileError:
+                logger.error(f"{image_path.name} could not be processed as a valid Aperio file.")
+                continue
+            except UnsupportedFileTypeError as e:
+                logger.error(f"{image_path.name} could not be processed. {e.args[0]}")
+                continue
+            # Handle and report other errors without stopping the process
+            except Exception as e:
+                logger.error(f"{image_path.name} could not be processed. {e.args[0]}")
+                continue
+            logger.info(f"Redaction plan for {image_path.name}")
+            redaction_plan_report.update(redaction_plan.report_plan())  # type: ignore
+    total = len(redaction_plan_report)  # type: ignore
+    sorted_dict = OrderedDict(
+        sorted(
+            redaction_plan_report.items(),  # type: ignore
+            key=lambda item: "missing_tags" not in item[1],
+        )
+    )
+    if limit is not None and offset is not None:
+        sorted_dict = OrderedDict(list(sorted_dict.items())[offset : limit + offset])
+    images_plan = namedtuple("images_plan", ["data", "total"])
+
+    return images_plan(sorted_dict, total)

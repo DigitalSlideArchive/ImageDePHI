@@ -816,6 +816,13 @@ svs:
     Scan Warning:
       action: delete
 dicom:
+  associated_images:
+    overview:
+      action: delete
+    label:
+      action: delete
+    default:
+      action: keep
   delete_custom_metadata: true
   metadata:
     AccessionNumber:
