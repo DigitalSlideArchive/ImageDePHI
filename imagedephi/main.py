@@ -101,6 +101,7 @@ def imagedephi(
     quiet: int,
     log_file: Path,
     recursive: bool,
+    strict: bool,
 ) -> None:
     """Redact microscopy whole slide images."""
     obj = ImagedephiContext()

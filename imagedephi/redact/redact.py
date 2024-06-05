@@ -16,7 +16,7 @@ from imagedephi.utils.image import get_file_format_from_path
 from imagedephi.utils.logger import logger
 from imagedephi.utils.progress_log import push_progress
 
-from .build_redaction_plan import build_redaction_plan
+from .build_redaction_plan import ImageDePHIRedactionError, build_redaction_plan
 from .svs import MalformedAperioFileError
 from .tiff import UnsupportedFileTypeError
 
@@ -140,25 +140,32 @@ def redact_images(
 def show_redaction_plan(
     input_path: Path, override_rules: Ruleset | None = None, recursive=False, strict=False
 ) -> None:
-    image_paths = iter_image_files(input_path, recursive) if input_path.is_dir() else [input_path]
+    image_paths = list(
+        iter_image_files(input_path, recursive) if input_path.is_dir() else [input_path]
+    )
     base_rules = get_base_rules()
-    for image_path in image_paths:
+    for i, image_path in enumerate(image_paths):
+        iteration = f"{i + 1}/{len(image_paths)}"
         try:
             redaction_plan = build_redaction_plan(
                 image_path, base_rules, override_rules, strict=strict
             )
         except tifftools.TifftoolsError:
-            logger.error(f"Could not open {image_path.name} as a tiff.")
+            logger.error(f"({iteration}) Could not open {image_path.name} as a tiff.")
             continue
         except MalformedAperioFileError:
-            logger.error(f"{image_path.name} could not be processed as a valid Aperio file.")
+            logger.error(
+                f"({iteration}) {image_path.name} could not be processed as a valid Aperio file."
+            )
             continue
         except UnsupportedFileTypeError as e:
-            logger.error(f"{image_path.name} could not be processed. {e.args[0]}")
+            logger.error(f"({iteration}) {image_path.name} could not be processed. {e.args[0]}")
             continue
         # Handle and report other errors without stopping the process
         except Exception as e:
-            logger.error(f"{image_path.name} could not be processed. {e.args[0]}")
+            logger.error(f"({iteration}) {image_path.name} could not be processed. {e.args[0]}")
             continue
-        logger.info(f"Redaction plan for {image_path.name}")
+        logger.info(f"({iteration}) Redaction plan for {image_path.name}")
+        if strict:
+            logger.info("Strict mode enabled. Only metadata required by the standard will be kept.")
         redaction_plan.report_plan()
