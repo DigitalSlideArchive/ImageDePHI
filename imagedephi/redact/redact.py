@@ -18,7 +18,7 @@ from imagedephi.utils.image import get_file_format_from_path
 from imagedephi.utils.logger import logger
 from imagedephi.utils.progress_log import push_progress
 
-from .build_redaction_plan import ImageDePHIRedactionError, build_redaction_plan
+from .build_redaction_plan import build_redaction_plan
 from .svs import MalformedAperioFileError
 from .tiff import UnsupportedFileTypeError
 
@@ -155,7 +155,9 @@ def show_redaction_plan(
         redaction_plan_report = {}  # type: ignore
         for image_path in image_paths:
             try:
-                redaction_plan = build_redaction_plan(image_path, base_rules, override_rules)
+                redaction_plan = build_redaction_plan(
+                    image_path, base_rules, override_rules, strict=strict
+                )
             except tifftools.TifftoolsError:
                 logger.error(f"Could not open {image_path.name} as a tiff.")
                 continue
