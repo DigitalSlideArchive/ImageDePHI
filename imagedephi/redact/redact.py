@@ -58,24 +58,25 @@ def iter_image_files(directory: Path, recursive: bool = False) -> Generator[Path
             yield from iter_image_files(child, recursive)
 
 
-def create_redact_dir(base_output_dir: Path, identifier: str | None = None) -> Path:
+def create_redact_dir_and_manifest(base_output_dir: Path) -> tuple[Path, Path]:
     """
     Given a directory, create and return a sub-directory within it.
 
     `identifier` should be a unique string for the new directory. If no value
     is supplied, a timestamp is used.
     """
-    if not identifier:
-        identifier = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    redact_dir = base_output_dir / f"Redacted_{identifier}"
+    time_stamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    redact_dir = base_output_dir / f"Redacted_{time_stamp}"
+    manifest_file = base_output_dir / f"Redacted_{time_stamp}_manifest.csv"
     try:
         redact_dir.mkdir(parents=True)
+        manifest_file.touch()
     except PermissionError:
         logger.error("Cannnot create an output directory, permission error.")
         raise
     else:
         logger.info(f"Created redaction folder: {redact_dir}")
-        return redact_dir
+        return redact_dir, manifest_file
 
 
 def redact_images(
@@ -100,8 +101,7 @@ def redact_images(
     )
     output_file_counter = 1
     output_file_max = len(images_to_redact)
-    time_stamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    redact_dir = create_redact_dir(output_dir, time_stamp)
+    redact_dir, manifest_file = create_redact_dir_and_manifest(output_dir)
 
     dcm_uid_map: dict[str, str] = {}
 
@@ -149,8 +149,6 @@ def redact_images(
                 if output_file_counter == output_file_max:
                     logger.info("Redactions completed")
             output_file_counter += 1
-    # Create manifest file using same timestamp as redact dir
-    manifest_file = output_dir / f"Redacted_{time_stamp}_manifest.csv"
     logger.info(f"Writing manifest to {manifest_file}")
     with open(manifest_file, "w") as manifest:
         fieldnames = ["input_path", "output_path"]

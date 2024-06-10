@@ -7,7 +7,7 @@ import pytest
 import yaml
 
 from imagedephi import redact
-from imagedephi.redact.redact import create_redact_dir
+from imagedephi.redact.redact import create_redact_dir_and_manifest
 from imagedephi.redact.svs import SvsRedactionPlan
 from imagedephi.rules import Ruleset
 from imagedephi.utils.logger import logger
@@ -44,10 +44,12 @@ def dcm_input_path(data_dir, test_image_dcm, request) -> Path:
 
 
 @freeze_time("2023-05-12 12:12:53")
-def test_create_redact_dir(tmp_path):
-    output_dir = create_redact_dir(tmp_path / "fake")
+def test_create_redact_dir_and_manifest(tmp_path):
+    output_dir, manifest = create_redact_dir_and_manifest(tmp_path / "fake")
     assert output_dir.exists()
     assert output_dir.name == "Redacted_2023-05-12_12-12-53"
+    assert manifest.exists()
+    assert manifest.name == "Redacted_2023-05-12_12-12-53_manifest.csv"
 
 
 @freeze_time("2023-05-12 12:12:53")
