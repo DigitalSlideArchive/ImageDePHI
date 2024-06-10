@@ -67,7 +67,7 @@ def create_redact_dir(base_output_dir: Path, identifier: str | None = None) -> P
     """
     if not identifier:
         identifier = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    redact_dir = base_output_dir / f"Redacted_{time_stamp}"
+    redact_dir = base_output_dir / f"Redacted_{identifier}"
     try:
         redact_dir.mkdir(parents=True)
     except PermissionError:
