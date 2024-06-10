@@ -94,6 +94,21 @@ def get_image_response_from_ifd(ifd: "IFD", file_name: str):
             return StreamingResponse(jpeg_buffer, media_type="image/jpeg")
 
 
+def get_image_response_from_tiff(file_name: str):
+    """
+    Use as a fallback when we can't find the best IFD for a thumbnail imate.
+    This happens when attempting to extract a thumbnail from a non-tiled tiff.
+    """
+    jpeg_buffer = BytesIO()
+    image = Image.open(file_name)
+    scale_factor = MAX_ASSOCIATED_IMAGE_HEIGHT / image.size[1]
+    new_size = (int(image.size[0] * scale_factor), int(image.size[1] * scale_factor))
+    image.thumbnail(new_size, Image.LANCZOS)
+    image.save(jpeg_buffer, "JPEG")
+    jpeg_buffer.seek(0)
+    return StreamingResponse(jpeg_buffer, media_type="image/jpeg")
+
+
 def get_image_response_dicom(related_files: list[Path], key: str):
     slide = WsiDicom.open(related_files)
     image = None

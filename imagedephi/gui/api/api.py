@@ -8,7 +8,11 @@ import urllib.parse
 from fastapi import APIRouter, HTTPException, WebSocket
 
 from imagedephi.gui.utils.directory import DirectoryData
-from imagedephi.gui.utils.image import get_image_response_dicom, get_image_response_from_ifd
+from imagedephi.gui.utils.image import (
+    get_image_response_dicom,
+    get_image_response_from_ifd,
+    get_image_response_from_tiff,
+)
 from imagedephi.redact import redact_images, show_redaction_plan
 from imagedephi.rules import FileFormat
 from imagedephi.utils.dicom import file_is_same_series_as
@@ -63,9 +67,18 @@ def get_associated_image(file_name: str = "", image_key: str = ""):
         if image_key == "thumbnail":
             ifd = get_ifd_for_thumbnail(Path(file_name))
             if not ifd:
-                raise HTTPException(
-                    status_code=404, detail=f"Could not generate thumbnail image for {file_name}"
-                )
+                # TODO: support non-tiled thumbnails
+                # if image_key == "thumbnail":
+                #    ...
+                # If we can't find the lowest resolution IFD, try reading the image
+                # with PIL to generate a thumbnail
+                try:
+                    return get_image_response_from_tiff(file_name)
+                finally:
+                    raise HTTPException(
+                        status_code=404,
+                        detail=f"Could not generate thumbnail image for {file_name}",
+                    )
             return get_image_response_from_ifd(ifd, file_name)
 
         # image key is one of "macro", "label"
