@@ -67,12 +67,9 @@ def get_associated_image(file_name: str = "", image_key: str = ""):
         if image_key == "thumbnail":
             ifd = get_ifd_for_thumbnail(Path(file_name))
             if not ifd:
-                # TODO: support non-tiled thumbnails
-                # if image_key == "thumbnail":
-                #    ...
-                # If we can't find the lowest resolution IFD, try reading the image
-                # with PIL to generate a thumbnail
                 try:
+                    # If the image is not tiled, no appropriate IFD was found. In this case
+                    # attempt to get a thumbnail using the entire image.
                     return get_image_response_from_tiff(file_name)
                 except Exception as e:
                     raise HTTPException(
