@@ -98,7 +98,13 @@ def get_image_response_from_tiff(file_name: str):
     """
     Use as a fallback when we can't find the best IFD for a thumbnail imate.
     This happens when attempting to extract a thumbnail from a non-tiled tiff.
+
+    Since we completely trust the input (images on the current machine), we disable
+    max image size. This should probably be revisited in the future if ImageDePHI needs
+    to work over the web.
     """
+    max_size = Image.MAX_IMAGE_PIXELS
+    Image.MAX_IMAGE_PIXELS = None
     jpeg_buffer = BytesIO()
     image = Image.open(file_name)
     scale_factor = MAX_ASSOCIATED_IMAGE_HEIGHT / image.size[1]
@@ -106,6 +112,7 @@ def get_image_response_from_tiff(file_name: str):
     image.thumbnail(new_size, Image.LANCZOS)
     image.save(jpeg_buffer, "JPEG")
     jpeg_buffer.seek(0)
+    Image.MAX_IMAGE_PIXELS = max_size
     return StreamingResponse(jpeg_buffer, media_type="image/jpeg")
 
 

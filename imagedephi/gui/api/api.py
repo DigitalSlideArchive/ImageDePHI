@@ -74,10 +74,10 @@ def get_associated_image(file_name: str = "", image_key: str = ""):
                 # with PIL to generate a thumbnail
                 try:
                     return get_image_response_from_tiff(file_name)
-                finally:
+                except Exception as e:
                     raise HTTPException(
                         status_code=404,
-                        detail=f"Could not generate thumbnail image for {file_name}",
+                        detail=f"Could not generate thumbnail image for {file_name}: {e.args[0]}",
                     )
             return get_image_response_from_ifd(ifd, file_name)
 
