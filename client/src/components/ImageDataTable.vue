@@ -95,7 +95,9 @@ getThumbnail();
           </div>
         </td>
         <td v-for="tag in usedColumns" :key="tag">
-          {{ image[tag] }}
+          <span v-if="image[tag]" >
+          {{ image[tag].value}}
+          </span>
         </td>
         </tr>
 
