@@ -97,8 +97,8 @@ def get_image_response_from_ifd(ifd: "IFD", file_name: str):
 def get_image_response_from_tiff(file_name: str):
     """
     Use as a fallback when we can't find the best IFD for a thumbnail imate.
-    This happens when attempting to extract a thumbnail from a non-tiled tiff.
 
+    This happens when attempting to extract a thumbnail from a non-tiled tiff.
     Since we completely trust the input (images on the current machine), we disable
     max image size. This should probably be revisited in the future if ImageDePHI needs
     to work over the web.
