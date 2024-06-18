@@ -78,31 +78,35 @@ class SvsRedactionPlan(TiffRedactionPlan):
         self,
         image_path: Path,
         rules: SvsRules,
+        strict: bool = False,
     ) -> None:
         self.rules = rules
         self.image_redaction_steps = {}
         self.description_redaction_steps = {}
-        super().__init__(image_path, rules)
-
-        image_description_tag = tifftools.constants.Tag["ImageDescription"]
-        if image_description_tag.value not in self.metadata_redaction_steps:
-            raise MalformedAperioFileError()
-        del self.metadata_redaction_steps[image_description_tag.value]
-
         self.no_match_description_keys = set()
-        ifds = self.tiff_info["ifds"]
-        for tag, ifd in self._iter_tiff_tag_entries(ifds):
-            if tag.value != image_description_tag.value:
-                continue
+        super().__init__(image_path, rules, strict)
 
-            svs_description = SvsDescription(str(ifd["tags"][tag.value]["data"]))
+        # For strict mode redactions, treat Aperio (.svs) images as if they were
+        # plain tiffs. Skip special handling of image description metadata.
+        if not strict:
+            image_description_tag = tifftools.constants.Tag["ImageDescription"]
+            if image_description_tag.value not in self.metadata_redaction_steps:
+                raise MalformedAperioFileError()
+            del self.metadata_redaction_steps[image_description_tag.value]
 
-            for key in svs_description.metadata.keys():
-                key_rule = rules.image_description.get(key, None)
-                if key_rule and self.is_match(key_rule, key):
-                    self.description_redaction_steps[key] = key_rule
-                else:
-                    self.no_match_description_keys.add(key)
+            ifds = self.tiff_info["ifds"]
+            for tag, ifd in self._iter_tiff_tag_entries(ifds):
+                if tag.value != image_description_tag.value:
+                    continue
+
+                svs_description = SvsDescription(str(ifd["tags"][tag.value]["data"]))
+
+                for key in svs_description.metadata.keys():
+                    key_rule = rules.image_description.get(key, None)
+                    if key_rule and self.is_match(key_rule, key):
+                        self.description_redaction_steps[key] = key_rule
+                    else:
+                        self.no_match_description_keys.add(key)
 
     def get_associated_image_key_for_ifd(self, ifd: IFD) -> str:
         """
@@ -194,7 +198,7 @@ class SvsRedactionPlan(TiffRedactionPlan):
                 offset = ifd["offset"]
                 ifd_count += 1
                 logger.info(f"IFD {ifd_count}:")
-            if tag.value == tifftools.constants.Tag["ImageDescription"]:
+            if tag.value == tifftools.constants.Tag["ImageDescription"] and not self.strict:
                 image_description = SvsDescription(str(ifd["tags"][tag.value]["data"]))
                 for key_name, _data in image_description.metadata.items():
                     rule = self.description_redaction_steps[key_name]
@@ -249,6 +253,6 @@ class SvsRedactionPlan(TiffRedactionPlan):
             rule = self.metadata_redaction_steps.get(tag.value)
             if rule is not None:
                 self.apply(rule, ifd)
-            elif tag.value == image_description_tag.value:
+            elif tag.value == image_description_tag.value and not self.strict:
                 self._redact_svs_image_description(ifd)
         self.tiff_info["ifds"] = new_ifds

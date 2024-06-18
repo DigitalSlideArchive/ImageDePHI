@@ -125,3 +125,22 @@ def test_plan_dcm(caplog, test_image_dcm):
 
     assert "DICOM Metadata Redaction Plan" in caplog.text
     assert "SeriesDescription: delete" in caplog.text
+
+
+@freeze_time("2023-05-12 12:12:53")
+@pytest.mark.timeout(5)
+def test_strict(svs_input_path, tmp_path) -> None:
+    redact.redact_images(svs_input_path, tmp_path, strict=True)
+    output_file = tmp_path / "Redacted_2023-05-12_12-12-53" / "study_slide_1.svs"
+    output_file_bytes = output_file.read_bytes()
+    assert b"Aperio" not in output_file_bytes
+    assert b"macro" not in output_file_bytes
+
+
+@freeze_time("2023-05-12 12:12:53")
+@pytest.mark.timeout(5)
+def test_strict_skip_dcm(dcm_input_path, tmp_path) -> None:
+    redact.redact_images(dcm_input_path, tmp_path, strict=True)
+    output_dir = tmp_path / "Redacted_2023-05-12_12-12-53"
+    assert output_dir.is_dir()
+    assert len(list(output_dir.iterdir())) == 0

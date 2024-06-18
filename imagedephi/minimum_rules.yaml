@@ -1,0 +1,176 @@
+name: Minimum Rules
+description: A set of rules that defines a minimum amount of metadata for images
+  to be read. Metadata not specified by a rule is deleted (controlled by the metadata_fallback_action).
+output_file_name: study_slide
+tiff:
+  metadata_fallback_action: delete
+  associated_images:
+    default:
+      action: delete
+  metadata:
+    ImageWidth:
+      action: keep
+    ImageLength:
+      action: keep
+    BitsPerSample:
+      action: keep
+    Compression:
+      action: keep
+    PhotometricInterpretation:
+      action: keep
+    StripOffsets:
+      action: keep
+    SamplesPerPixel:
+      action: keep
+    RowsPerStrip:
+      action: keep
+    StripByteCounts:
+      action: keep
+    XResolution:
+      action: keep
+    YResolution:
+      action: keep
+    ResolutionUnit:
+      action: keep
+    NewSubfileType:
+      action: keep
+    FillOrder:
+      action: keep
+    Orientation:
+      action: keep
+    Predictor:
+      action: keep
+    ColorMap:
+      action: keep
+    TileWidth:
+      action: keep
+    TileLength:
+      action: keep
+    TileOffsets:
+      action: keep
+    TileByteCounts:
+      action: keep
+    SubIFD:
+      action: keep
+    ExtraSamples:
+      action: keep
+    SampleFormat:
+      action: keep
+    Indexed:
+      action: keep
+    JPEGTables:
+      action: keep
+    StripRowCounts:
+      action: keep
+    ICCProfile:
+      action: keep
+    JPEGProc:
+      action: keep
+    JPEGIFOffset:
+      action: keep
+    JPEGIFByteCount:
+      action: keep
+    JPEGRestartInterval:
+      action: keep
+    JPEGLosslessPredictors:
+      action: keep
+    JPEGPointTransform:
+      action: keep
+    JPEGQTables:
+      action: keep
+    JPEGDCTables:
+      action: keep
+    JPEGACTables:
+      action: keep
+    YCbCrCoefficients:
+      action: keep
+    YCbCrSubsampling:
+      action: keep
+    YCbCrPositioning:
+      action: keep
+svs:
+  metadata_fallback_action: delete
+  associated_images:
+    default:
+      action: delete
+  metadata:
+    ImageWidth:
+      action: keep
+    ImageLength:
+      action: keep
+    BitsPerSample:
+      action: keep
+    Compression:
+      action: keep
+    PhotometricInterpretation:
+      action: keep
+    StripOffsets:
+      action: keep
+    SamplesPerPixel:
+      action: keep
+    RowsPerStrip:
+      action: keep
+    StripByteCounts:
+      action: keep
+    XResolution:
+      action: keep
+    YResolution:
+      action: keep
+    ResolutionUnit:
+      action: keep
+    NewSubfileType:
+      action: keep
+    FillOrder:
+      action: keep
+    Orientation:
+      action: keep
+    Predictor:
+      action: keep
+    ColorMap:
+      action: keep
+    TileWidth:
+      action: keep
+    TileLength:
+      action: keep
+    TileOffsets:
+      action: keep
+    TileByteCounts:
+      action: keep
+    SubIFD:
+      action: keep
+    ExtraSamples:
+      action: keep
+    SampleFormat:
+      action: keep
+    Indexed:
+      action: keep
+    JPEGTables:
+      action: keep
+    StripRowCounts:
+      action: keep
+    ICCProfile:
+      action: keep
+    JPEGProc:
+      action: keep
+    JPEGIFOffset:
+      action: keep
+    JPEGIFByteCount:
+      action: keep
+    JPEGRestartInterval:
+      action: keep
+    JPEGLosslessPredictors:
+      action: keep
+    JPEGPointTransform:
+      action: keep
+    JPEGQTables:
+      action: keep
+    JPEGDCTables:
+      action: keep
+    JPEGACTables:
+      action: keep
+    YCbCrCoefficients:
+      action: keep
+    YCbCrSubsampling:
+      action: keep
+    YCbCrPositioning:
+      action: keep
