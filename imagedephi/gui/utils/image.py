@@ -13,6 +13,8 @@ from imagedephi.gui.utils.constants import MAX_ASSOCIATED_IMAGE_HEIGHT
 if TYPE_CHECKING:
     from tifftools.tifftools import IFD
 
+IMAGE_DEPHI_MAX_IMAGE_PIXELS = 1000000000
+
 
 def extract_thumbnail_from_image_bytes(ifd: "IFD", file_name: str) -> Image.Image | None:
     offsets = ifd["tags"][tifftools.Tag.TileOffsets.value]["data"]
@@ -99,12 +101,11 @@ def get_image_response_from_tiff(file_name: str):
     Use as a fallback when we can't find the best IFD for a thumbnail imate.
 
     This happens when attempting to extract a thumbnail from a non-tiled tiff.
-    Since we completely trust the input (images on the current machine), we disable
-    max image size. This should probably be revisited in the future if ImageDePHI needs
-    to work over the web.
+    We expect users to be opening very large images, so we override the default
+    MAX_IMAGE_PIXELS of PIL.Image with our own value.
     """
     max_size = Image.MAX_IMAGE_PIXELS
-    Image.MAX_IMAGE_PIXELS = None
+    Image.MAX_IMAGE_PIXELS = IMAGE_DEPHI_MAX_IMAGE_PIXELS
     jpeg_buffer = BytesIO()
     image = Image.open(file_name)
     scale_factor = MAX_ASSOCIATED_IMAGE_HEIGHT / image.size[1]
