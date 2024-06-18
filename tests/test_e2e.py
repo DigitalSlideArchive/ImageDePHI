@@ -38,6 +38,26 @@ def test_e2e_run(
     assert b"Redacted by ImageDePHI" in output_file_bytes
 
 
+@freeze_time("2024-05-20 11:46:00")
+@pytest.mark.timeout(5)
+def test_e2e_strict(
+    cli_runner: CliRunner, data_dir: Path, test_image_tiff: Path, rules_dir: Path, tmp_path: Path
+) -> None:
+    result = cli_runner.invoke(
+        main.imagedephi,
+        [
+            "run",
+            str(data_dir / "input" / "tiff"),
+            "--strict",
+            "--output-dir",
+            str(tmp_path),
+        ],
+    )
+    assert result.exit_code == 0
+    output_file = tmp_path / "Redacted_2024-05-20_11-46-00" / "study_slide_1.tif"
+    assert output_file.exists()
+
+
 @pytest.mark.timeout(5)
 def test_e2e_plan(
     cli_runner: CliRunner, data_dir: Path, test_image_tiff: Path, rules_dir: Path

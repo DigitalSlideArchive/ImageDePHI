@@ -29,6 +29,9 @@ When `imagedephi` determines the steps to redact a file, it checks each piece of
 
 If neither the override rule set or base rule set cover a piece of metadata, redaction will fail, and the program will list the metadata that it could not redact. There is no default behavior for unknown metadata.
 
+### Stict Redaction
+For whole slide image formats based on the tiff standard, `imagedephi` allows a strict type of redaction. Using the `--strict` flag when calling `imagedephi` from the CLI will use this mode. In this mode, only tags strictly required by the tiff standard will remain, and all other metadata will be stripped from the images. For a full list of metadata tags that will remain after strict redaction, see the [minimum rules file](https://github.com/DigitalSlideArchive/ImageDePHI/blob/main/imagedephi/minimum_rules.yaml).
+
 
 ## Ruleset Format Overview
 In order to read the base rules and build your own custom rule sets, it is important to understand the format in which rulesets are specified. Rulesets are defined by `.yml` files (one ruleset per file), and are a dictionary with the following top-level tags: `name`, `description`, `output_file_name`, `tiff`, and `svs`.

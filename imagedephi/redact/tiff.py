@@ -13,8 +13,10 @@ import tifftools.constants
 from imagedephi.rules import (
     ConcreteImageRule,
     ConcreteMetadataRule,
+    DeleteRule,
     FileFormat,
     ImageReplaceRule,
+    KeepRule,
     MetadataReplaceRule,
     RedactionOperation,
     TiffRules,
@@ -46,6 +48,8 @@ class TiffRedactionPlan(RedactionPlan):
     metadata_redaction_steps: dict[int, ConcreteMetadataRule]
     image_redaction_steps: dict[int, ConcreteImageRule]
     no_match_tags: list[tifftools.TiffTag]
+
+    strict: bool
 
     @staticmethod
     def is_tiled(ifd: IFD):
@@ -101,13 +105,10 @@ class TiffRedactionPlan(RedactionPlan):
         """
         return "default"
 
-    def __init__(
-        self,
-        image_path: Path,
-        rules: TiffRules,
-    ) -> None:
+    def __init__(self, image_path: Path, rules: TiffRules, strict: bool = False) -> None:
         self.image_path = image_path
         self.tiff_info = tifftools.read_tiff(str(image_path))
+        self.strict = strict
 
         self.metadata_redaction_steps = {}
         self.image_redaction_steps = {}
@@ -126,16 +127,29 @@ class TiffRedactionPlan(RedactionPlan):
                 if tag_rule and self.is_match(tag_rule, tag):
                     self.metadata_redaction_steps[tag.value] = tag_rule
                     break
+                elif strict:
+                    # If there's no rule defined for this tag and we're in
+                    # strict mode, use the fallback action to create a rule on
+                    # the fly.
+                    if rules.metadata_fallback_action == "keep":
+                        fallback_rule: ConcreteMetadataRule = KeepRule(
+                            key_name=tag.name, action=rules.metadata_fallback_action
+                        )
+                    else:
+                        fallback_rule = DeleteRule(key_name=tag.name, action="delete")
+                    self.metadata_redaction_steps[tag.value] = fallback_rule
+                    break
             else:
                 self.no_match_tags.append(tag)
 
         for ifd in self._iter_ifds(ifds):
             if not self.is_tiled(ifd):
                 associated_image_key = self.get_associated_image_key_for_ifd(ifd)
+                associated_image_rule = rules.associated_images.get(associated_image_key, None)
+                if not associated_image_rule:
+                    associated_image_rule = rules.associated_images["default"]
                 # IFD offset is a useful unique identifier for the IFD itself
-                self.image_redaction_steps[ifd["offset"]] = rules.associated_images[
-                    associated_image_key
-                ]
+                self.image_redaction_steps[ifd["offset"]] = associated_image_rule
 
     def is_match(self, rule: ConcreteMetadataRule, tag: tifftools.TiffTag) -> bool:
         if rule.action in ["keep", "delete", "replace", "check_type"]:

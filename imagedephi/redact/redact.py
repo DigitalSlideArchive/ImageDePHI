@@ -34,8 +34,12 @@ def _get_output_path(
     return output_dir / f"{base_name}_{count:0{len(str(max))}}{file_path.suffix}"
 
 
-def get_base_rules():
-    base_rules_path = importlib.resources.files("imagedephi") / "base_rules.yaml"
+def get_base_rules(strict=False) -> Ruleset:
+    base_rules_path = (
+        importlib.resources.files("imagedephi") / "minimum_rules.yaml"
+        if strict
+        else importlib.resources.files("imagedephi") / "base_rules.yaml"
+    )
     with base_rules_path.open() as base_rules_stream:
         base_rule_set = Ruleset.parse_obj(yaml.safe_load(base_rules_stream))
         return base_rule_set
@@ -84,6 +88,7 @@ def redact_images(
     output_dir: Path,
     override_rules: Ruleset | None = None,
     rename: bool = True,
+    strict: bool = False,
     overwrite: bool = False,
     recursive: bool = False,
 ) -> None:
@@ -91,7 +96,7 @@ def redact_images(
     # (original_name, output_name) as bare minimum
     # error message? rule set (base/override)?
     run_summary = []
-    base_rules = get_base_rules()
+    base_rules = get_base_rules(strict)
     output_file_name_base = (
         override_rules.output_file_name if override_rules else base_rules.output_file_name
     )
@@ -110,7 +115,7 @@ def redact_images(
             push_progress(output_file_counter, output_file_max)
             try:
                 redaction_plan = build_redaction_plan(
-                    image_file, base_rules, override_rules, dcm_uid_map=dcm_uid_map
+                    image_file, base_rules, override_rules, dcm_uid_map=dcm_uid_map, strict=strict
                 )
             # Handle and report other errors without stopping the process
             except Exception as e:
@@ -162,6 +167,7 @@ def show_redaction_plan(
     input_path: Path,
     override_rules: Ruleset | None = None,
     recursive=False,
+    strict=False,
     limit: int | None = None,
     offset: int | None = None,
     update: bool = True,
@@ -174,7 +180,9 @@ def show_redaction_plan(
         redaction_plan_report = {}  # type: ignore
         for image_path in image_paths:
             try:
-                redaction_plan = build_redaction_plan(image_path, base_rules, override_rules)
+                redaction_plan = build_redaction_plan(
+                    image_path, base_rules, override_rules, strict=strict
+                )
             except tifftools.TifftoolsError:
                 logger.error(f"Could not open {image_path.name} as a tiff.")
                 continue
