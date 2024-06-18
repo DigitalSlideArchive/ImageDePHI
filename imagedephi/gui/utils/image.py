@@ -72,6 +72,12 @@ def extract_thumbnail_from_image_bytes(ifd: "IFD", file_name: str) -> Image.Imag
 
 
 def get_image_response_from_ifd(ifd: "IFD", file_name: str):
+    # Make sure the image isn't too big
+    height = int(ifd["tags"][tifftools.Tag.ImageLength.value]["data"][0])
+    width = int(ifd["tags"][tifftools.Tag.ImageWidth.value]["data"][0])
+    if height * width > IMAGE_DEPHI_MAX_IMAGE_PIXELS:
+        raise Exception(f"{file_name} too large to create thumbnail")
+
     # use tifftools and PIL to create a jpeg of the associated image, sized for the browser
     tiff_buffer = BytesIO()
     jpeg_buffer = BytesIO()
