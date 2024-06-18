@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections import OrderedDict, namedtuple
 from collections.abc import Generator
+from csv import DictWriter
 import datetime
 import importlib.resources
 from pathlib import Path
@@ -61,18 +62,25 @@ def iter_image_files(directory: Path, recursive: bool = False) -> Generator[Path
             yield from iter_image_files(child, recursive)
 
 
-def create_redact_dir(base_output_dir: Path) -> Path:
-    """Given a directory, create and return a timestamped sub-directory within it."""
+def create_redact_dir_and_manifest(base_output_dir: Path) -> tuple[Path, Path]:
+    """
+    Given a directory, create and return a sub-directory within it.
+
+    `identifier` should be a unique string for the new directory. If no value
+    is supplied, a timestamp is used.
+    """
     time_stamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     redact_dir = base_output_dir / f"Redacted_{time_stamp}"
+    manifest_file = base_output_dir / f"Redacted_{time_stamp}_manifest.csv"
     try:
         redact_dir.mkdir(parents=True)
+        manifest_file.touch()
     except PermissionError:
         logger.error("Cannnot create an output directory, permission error.")
         raise
     else:
         logger.info(f"Created redaction folder: {redact_dir}")
-        return redact_dir
+        return redact_dir, manifest_file
 
 
 def redact_images(
@@ -84,6 +92,10 @@ def redact_images(
     overwrite: bool = False,
     recursive: bool = False,
 ) -> None:
+    # Keep track of information about this run to write to a persistent log file (csv?)
+    # (original_name, output_name) as bare minimum
+    # error message? rule set (base/override)?
+    run_summary = []
     base_rules = get_base_rules(strict)
     output_file_name_base = (
         override_rules.output_file_name if override_rules else base_rules.output_file_name
@@ -94,7 +106,7 @@ def redact_images(
     )
     output_file_counter = 1
     output_file_max = len(images_to_redact)
-    redact_dir = create_redact_dir(output_dir)
+    redact_dir, manifest_file = create_redact_dir_and_manifest(output_dir)
 
     dcm_uid_map: dict[str, str] = {}
 
@@ -133,9 +145,22 @@ def redact_images(
                     else output_parent_dir / image_file.name
                 )
                 redaction_plan.save(output_path, overwrite)
+                run_summary.append(
+                    {
+                        "input_path": image_file,
+                        "output_path": output_path,
+                    }
+                )
                 if output_file_counter == output_file_max:
                     logger.info("Redactions completed")
             output_file_counter += 1
+    logger.info(f"Writing manifest to {manifest_file}")
+    with open(manifest_file, "w") as manifest:
+        fieldnames = ["input_path", "output_path"]
+        writer = DictWriter(manifest, fieldnames=fieldnames)
+        writer.writeheader()
+        for row in run_summary:
+            writer.writerow(row)
 
 
 def show_redaction_plan(

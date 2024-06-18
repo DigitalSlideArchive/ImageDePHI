@@ -108,7 +108,7 @@ def test_e2e_gui(
     # Check that the GUI has stopped
     assert gui.poll() is not None
 
-    redacted_dirs = list(tmp_path.glob("*Redacted*"))
+    redacted_dirs = [path for path in tmp_path.glob("*Redacted*") if path.is_dir()]
     assert len(redacted_dirs) > 0
     redacted_files = list(redacted_dirs[0].glob("*"))
     assert len(redacted_files) > 0
@@ -183,3 +183,20 @@ def test_e2e_recursive(
 
     if recursive:
         assert len(list(output_subdir.iterdir()))
+
+
+@freeze_time("2024-01-04 10:48:00")
+@pytest.mark.timeout(5)
+def test_e2e_manifest(cli_runner, data_dir: Path, tmp_path: Path, test_image_tiff: Path):
+    args = ["run", str(data_dir / "input" / "tiff"), "--output-dir", str(tmp_path)]
+    result = cli_runner.invoke(main.imagedephi, args)
+
+    assert result.exit_code == 0
+    manifest_path = tmp_path / "Redacted_2024-01-04_10-48-00_manifest.csv"
+    assert manifest_path.exists()
+
+    output_file_name = tmp_path / "Redacted_2024-01-04_10-48-00" / "study_slide_1.tif"
+    assert output_file_name.exists()
+    manifest_file_bytes = manifest_path.read_bytes()
+    assert b"study_slide_1.tif" in manifest_file_bytes
+    assert str(test_image_tiff).encode() in manifest_file_bytes
