@@ -7,7 +7,7 @@ import { imageRedactionPlan } from "./store/imageStore";
 
 import MenuSteps from "./components/MenuSteps.vue";
 import FileBrowser from "./components/FileBrowser.vue";
-import ImageDataTable from "./components/ImageDataTable.vue";
+import ImageDataTable from "./components/ImageDataDisplay.vue";
 
 const inputModal = ref(null);
 const outputModal = ref(null);
