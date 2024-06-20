@@ -98,7 +98,7 @@ def get_image_response_from_ifd(ifd: "IFD", file_name: str):
 
 def get_image_response_from_tiff(file_name: str):
     """
-    Use as a fallback when we can't find the best IFD for a thumbnail imate.
+    Use as a fallback when we can't find the best IFD for a thumbnail image.
 
     This happens when attempting to extract a thumbnail from a non-tiled tiff.
     We expect users to be opening very large images, so we override the default
