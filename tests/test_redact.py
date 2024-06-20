@@ -22,7 +22,7 @@ def base_rule_set():
 
 @pytest.fixture
 def override_rule_set(rules_dir: Path):
-    rule_file = rules_dir / "example_user_rules.yml"
+    rule_file = rules_dir / "example_user_rules.yaml"
     with rule_file.open() as rule_stream:
         return Ruleset.parse_obj(yaml.safe_load(rule_stream))
 
