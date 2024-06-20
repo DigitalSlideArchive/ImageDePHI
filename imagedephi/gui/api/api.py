@@ -73,10 +73,17 @@ def get_associated_image(file_name: str = "", image_key: str = ""):
                     return get_image_response_from_tiff(file_name)
                 except Exception as e:
                     raise HTTPException(
-                        status_code=404,
+                        status_code=422,  # unprocessable content
                         detail=f"Could not generate thumbnail image for {file_name}: {e.args[0]}",
                     )
-            return get_image_response_from_ifd(ifd, file_name)
+            else:
+                try:
+                    return get_image_response_from_ifd(ifd, file_name)
+                except Exception as e:
+                    raise HTTPException(
+                        status_code=422,  # unprocessable content
+                        detail=f"Could not generate thumbnail image for {file_name}: {e.args[0]}",
+                    )
 
         # image key is one of "macro", "label"
         if not get_is_svs(Path(file_name)):
@@ -89,7 +96,13 @@ def get_associated_image(file_name: str = "", image_key: str = ""):
             raise HTTPException(
                 status_code=404, detail=f"No {image_key} image found for {file_name}"
             )
-        return get_image_response_from_ifd(ifd, file_name)
+        try:
+            return get_image_response_from_ifd(ifd, file_name)
+        except Exception as e:
+            raise HTTPException(
+                status_code=422,  # unprocessable content
+                detail=f"Could not generate thumbnail image for {file_name}: {e.args[0]}",
+            )
     elif image_type == FileFormat.DICOM:
         path = Path(file_name)
         related_files = [
