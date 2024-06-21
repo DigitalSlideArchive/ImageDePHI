@@ -7,3 +7,8 @@ ignore: |
 
 rules:
   line-length: disable
+  truthy:
+    # github actions use the "on" key, which is interpreted as
+    # needing a boolean value by yamllint
+    ignore: |
+      .github/workflows/*.yaml
