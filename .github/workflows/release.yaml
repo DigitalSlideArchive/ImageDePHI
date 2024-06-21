@@ -1,25 +1,23 @@
-name: ci
+---
+name: release
 on:
-  pull_request:
-  push:
-    branches:
-      - main
+  release:
+    types: [published]
 jobs:
-  test:
+  publish:
     runs-on: ${{ matrix.os }}
     strategy:
-      # Seeing whether a failure is exclusive to one platform is useful
-      fail-fast: false
       matrix:
         os:
           # Use an older Linux: https://pyinstaller.org/en/stable/usage.html#making-gnu-linux-apps-forward-compatible
           - ubuntu-20.04
-          - macos-14
+          - macos-latest
           - windows-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          lfs: true
+          # LFS data is not needed for release
+          lfs: false
           # Tags are needed to compute the current version number
           fetch-depth: 0
       - name: Set up Python
@@ -30,21 +28,12 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install tox
-      - name: Run tests
-        run: |
-          tox
       - name: Build binary
         run: |
           tox -e binary
-      - name: Test binary runs
+      - name: Zip and upload binary
         run: |
-          dist/imagedephi --help
-      - name: Upload binary artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: imagedephi-${{ matrix.os }}-binary
-          path: |
-            dist/imagedephi
-            dist/imagedephi.exe
-          retention-days: 5
-          if-no-files-found: error
+          .github/zip_and_upload_package.sh ${{ runner.os }} ${{ github.event.release.tag_name }}
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
