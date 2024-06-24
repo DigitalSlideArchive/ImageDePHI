@@ -206,7 +206,7 @@ def show_redaction_plan(
         )
     )
     if limit is not None and offset is not None:
-        sorted_dict = OrderedDict(list(sorted_dict.items())[offset : limit + offset])
+        sorted_dict = OrderedDict(list(sorted_dict.items())[offset * limit : (offset + 1) * limit])
     images_plan = namedtuple("images_plan", ["data", "total"])
 
     return images_plan(sorted_dict, total)
