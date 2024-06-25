@@ -48,7 +48,7 @@ def select_directory(
 
 
 @router.get("/image/")
-def get_associated_image(file_name: str = "", image_key: str = ""):
+def get_associated_image(file_name: str = "", image_key: str = "", max_height=160, max_width=160):
     if not file_name:
         raise HTTPException(status_code=400, detail="file_name is a required parameter")
 
@@ -70,7 +70,7 @@ def get_associated_image(file_name: str = "", image_key: str = ""):
                 try:
                     # If the image is not tiled, no appropriate IFD was found. In this case
                     # attempt to get a thumbnail using the entire image.
-                    return get_image_response_from_tiff(file_name)
+                    return get_image_response_from_tiff(file_name, max_width, max_height)
                 except Exception as e:
                     raise HTTPException(
                         status_code=422,  # unprocessable content
@@ -78,7 +78,7 @@ def get_associated_image(file_name: str = "", image_key: str = ""):
                     )
             else:
                 try:
-                    return get_image_response_from_ifd(ifd, file_name)
+                    return get_image_response_from_ifd(ifd, file_name, max_width, max_height)
                 except Exception as e:
                     raise HTTPException(
                         status_code=422,  # unprocessable content
@@ -91,7 +91,7 @@ def get_associated_image(file_name: str = "", image_key: str = ""):
                 status_code=404, detail=f"Image key {image_key} is not supported for {file_name}"
             )
 
-        ifd = get_associated_image_svs(Path(file_name), image_key)
+        ifd = get_associated_image_svs(Path(file_name), image_key, max_width, max_height)
         if not ifd:
             raise HTTPException(
                 status_code=404, detail=f"No {image_key} image found for {file_name}"
@@ -110,7 +110,7 @@ def get_associated_image(file_name: str = "", image_key: str = ""):
             for child in path.parent.iterdir()
             if child != path and file_is_same_series_as(path, child)
         ]
-        image_response = get_image_response_dicom(related_files, image_key)
+        image_response = get_image_response_dicom(related_files, image_key, max_width, max_height)
         if image_response:
             return image_response
         raise HTTPException(

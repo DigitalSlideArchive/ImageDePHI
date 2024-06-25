@@ -16,7 +16,15 @@ if TYPE_CHECKING:
 IMAGE_DEPHI_MAX_IMAGE_PIXELS = 1000000000
 
 
-def extract_thumbnail_from_image_bytes(ifd: "IFD", file_name: str) -> Image.Image | None:
+def get_scale_factor(max_dimensions: tuple[int, int], image_dimensions: tuple[int, int]) -> float:
+    height_scale = max_dimensions[1] / image_dimensions[1]
+    width_scale = max_dimensions[0] / image_dimensions[0]
+    return min(height_scale, width_scale)
+
+
+def extract_thumbnail_from_image_bytes(
+    ifd: "IFD", file_name: str, max_width=160, max_height=160
+) -> Image.Image | None:
     offsets = ifd["tags"][tifftools.Tag.TileOffsets.value]["data"]
     byte_counts = ifd["tags"][tifftools.Tag.TileByteCounts.value]["data"]
     num_tiles = len(offsets)
@@ -62,7 +70,7 @@ def extract_thumbnail_from_image_bytes(ifd: "IFD", file_name: str) -> Image.Imag
     if not image_canvas:
         return None
 
-    scale_factor = MAX_ASSOCIATED_IMAGE_HEIGHT / image_canvas.size[1]
+    scale_factor = get_scale_factor((max_width, max_height), image_canvas.size)
     new_size = (
         int(image_canvas.size[0] * scale_factor),
         int(image_canvas.size[1] * scale_factor),
@@ -71,7 +79,9 @@ def extract_thumbnail_from_image_bytes(ifd: "IFD", file_name: str) -> Image.Imag
     return resized_image
 
 
-def get_image_response_from_ifd(ifd: "IFD", file_name: str):
+def get_image_response_from_ifd(
+    ifd: "IFD", file_name: str, max_height: number = 160, max_width: number = 160
+):
     # Make sure the image isn't too big
     height = int(ifd["tags"][tifftools.Tag.ImageLength.value]["data"][0])
     width = int(ifd["tags"][tifftools.Tag.ImageWidth.value]["data"][0])
@@ -85,7 +95,8 @@ def get_image_response_from_ifd(ifd: "IFD", file_name: str):
     try:
         image = Image.open(tiff_buffer)
 
-        scale_factor = MAX_ASSOCIATED_IMAGE_HEIGHT / image.size[1]
+        scale_factor = get_scale_factor((max_width, max_height), image.size)
+
         new_size = (int(image.size[0] * scale_factor), int(image.size[1] * scale_factor))
         image.thumbnail(new_size, Image.LANCZOS)
         image.save(jpeg_buffer, "JPEG")
@@ -102,7 +113,7 @@ def get_image_response_from_ifd(ifd: "IFD", file_name: str):
             return StreamingResponse(jpeg_buffer, media_type="image/jpeg")
 
 
-def get_image_response_from_tiff(file_name: str):
+def get_image_response_from_tiff(file_name: str, max_width: 160, max_height: 160):
     """
     Use as a fallback when we can't find the best IFD for a thumbnail image.
 
@@ -114,7 +125,7 @@ def get_image_response_from_tiff(file_name: str):
     Image.MAX_IMAGE_PIXELS = IMAGE_DEPHI_MAX_IMAGE_PIXELS
     jpeg_buffer = BytesIO()
     image = Image.open(file_name)
-    scale_factor = MAX_ASSOCIATED_IMAGE_HEIGHT / image.size[1]
+    scale_factor = get_scale_factor((max_width, max_height), image.size)
     new_size = (int(image.size[0] * scale_factor), int(image.size[1] * scale_factor))
     image.thumbnail(new_size, Image.LANCZOS)
     image.save(jpeg_buffer, "JPEG")
@@ -123,7 +134,7 @@ def get_image_response_from_tiff(file_name: str):
     return StreamingResponse(jpeg_buffer, media_type="image/jpeg")
 
 
-def get_image_response_dicom(related_files: list[Path], key: str):
+def get_image_response_dicom(related_files: list[Path], key: str, max_width=160, max_height=160):
     slide = WsiDicom.open(related_files)
     image = None
     try:
@@ -135,7 +146,7 @@ def get_image_response_dicom(related_files: list[Path], key: str):
             image = slide.read_overview()
         if image:
             # resize the image
-            scale_factor = MAX_ASSOCIATED_IMAGE_HEIGHT / image.size[1]
+            scale_factor = get_scale_factor((max_width, max_height), image.size)
             new_size = (int(image.size[0] * scale_factor), int(image.size[1] * scale_factor))
             image.thumbnail(new_size, Image.LANCZOS)
             img_buffer = BytesIO()
