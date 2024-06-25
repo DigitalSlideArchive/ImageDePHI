@@ -8,7 +8,11 @@ import urllib.parse
 from fastapi import APIRouter, HTTPException, WebSocket
 
 from imagedephi.gui.utils.directory import DirectoryData
-from imagedephi.gui.utils.image import get_image_response_dicom, get_image_response_from_ifd
+from imagedephi.gui.utils.image import (
+    get_image_response_dicom,
+    get_image_response_from_ifd,
+    get_image_response_from_tiff,
+)
 from imagedephi.redact import redact_images, show_redaction_plan
 from imagedephi.rules import FileFormat
 from imagedephi.utils.dicom import file_is_same_series_as
@@ -63,10 +67,23 @@ def get_associated_image(file_name: str = "", image_key: str = ""):
         if image_key == "thumbnail":
             ifd = get_ifd_for_thumbnail(Path(file_name))
             if not ifd:
-                raise HTTPException(
-                    status_code=404, detail=f"Could not generate thumbnail image for {file_name}"
-                )
-            return get_image_response_from_ifd(ifd, file_name)
+                try:
+                    # If the image is not tiled, no appropriate IFD was found. In this case
+                    # attempt to get a thumbnail using the entire image.
+                    return get_image_response_from_tiff(file_name)
+                except Exception as e:
+                    raise HTTPException(
+                        status_code=422,  # unprocessable content
+                        detail=f"Could not generate thumbnail image for {file_name}: {e.args[0]}",
+                    )
+            else:
+                try:
+                    return get_image_response_from_ifd(ifd, file_name)
+                except Exception as e:
+                    raise HTTPException(
+                        status_code=422,  # unprocessable content
+                        detail=f"Could not generate thumbnail image for {file_name}: {e.args[0]}",
+                    )
 
         # image key is one of "macro", "label"
         if not get_is_svs(Path(file_name)):
@@ -79,7 +96,13 @@ def get_associated_image(file_name: str = "", image_key: str = ""):
             raise HTTPException(
                 status_code=404, detail=f"No {image_key} image found for {file_name}"
             )
-        return get_image_response_from_ifd(ifd, file_name)
+        try:
+            return get_image_response_from_ifd(ifd, file_name)
+        except Exception as e:
+            raise HTTPException(
+                status_code=422,  # unprocessable content
+                detail=f"Could not generate thumbnail image for {file_name}: {e.args[0]}",
+            )
     elif image_type == FileFormat.DICOM:
         path = Path(file_name)
         related_files = [

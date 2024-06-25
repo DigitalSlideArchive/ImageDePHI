@@ -13,6 +13,8 @@ from imagedephi.gui.utils.constants import MAX_ASSOCIATED_IMAGE_HEIGHT
 if TYPE_CHECKING:
     from tifftools.tifftools import IFD
 
+IMAGE_DEPHI_MAX_IMAGE_PIXELS = 1000000000
+
 
 def extract_thumbnail_from_image_bytes(ifd: "IFD", file_name: str) -> Image.Image | None:
     offsets = ifd["tags"][tifftools.Tag.TileOffsets.value]["data"]
@@ -70,6 +72,12 @@ def extract_thumbnail_from_image_bytes(ifd: "IFD", file_name: str) -> Image.Imag
 
 
 def get_image_response_from_ifd(ifd: "IFD", file_name: str):
+    # Make sure the image isn't too big
+    height = int(ifd["tags"][tifftools.Tag.ImageLength.value]["data"][0])
+    width = int(ifd["tags"][tifftools.Tag.ImageWidth.value]["data"][0])
+    if height * width > IMAGE_DEPHI_MAX_IMAGE_PIXELS:
+        raise Exception(f"{file_name} too large to create thumbnail")
+
     # use tifftools and PIL to create a jpeg of the associated image, sized for the browser
     tiff_buffer = BytesIO()
     jpeg_buffer = BytesIO()
@@ -92,6 +100,27 @@ def get_image_response_from_ifd(ifd: "IFD", file_name: str):
             composite_image.save(jpeg_buffer, "JPEG")
             jpeg_buffer.seek(0)
             return StreamingResponse(jpeg_buffer, media_type="image/jpeg")
+
+
+def get_image_response_from_tiff(file_name: str):
+    """
+    Use as a fallback when we can't find the best IFD for a thumbnail image.
+
+    This happens when attempting to extract a thumbnail from a non-tiled tiff.
+    We expect users to be opening very large images, so we override the default
+    MAX_IMAGE_PIXELS of PIL.Image with our own value.
+    """
+    max_size = Image.MAX_IMAGE_PIXELS
+    Image.MAX_IMAGE_PIXELS = IMAGE_DEPHI_MAX_IMAGE_PIXELS
+    jpeg_buffer = BytesIO()
+    image = Image.open(file_name)
+    scale_factor = MAX_ASSOCIATED_IMAGE_HEIGHT / image.size[1]
+    new_size = (int(image.size[0] * scale_factor), int(image.size[1] * scale_factor))
+    image.thumbnail(new_size, Image.LANCZOS)
+    image.save(jpeg_buffer, "JPEG")
+    jpeg_buffer.seek(0)
+    Image.MAX_IMAGE_PIXELS = max_size
+    return StreamingResponse(jpeg_buffer, media_type="image/jpeg")
 
 
 def get_image_response_dicom(related_files: list[Path], key: str):
