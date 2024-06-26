@@ -91,13 +91,13 @@ def get_associated_image(file_name: str = "", image_key: str = "", max_height=16
                 status_code=404, detail=f"Image key {image_key} is not supported for {file_name}"
             )
 
-        ifd = get_associated_image_svs(Path(file_name), image_key, max_width, max_height)
+        ifd = get_associated_image_svs(Path(file_name), image_key)
         if not ifd:
             raise HTTPException(
                 status_code=404, detail=f"No {image_key} image found for {file_name}"
             )
         try:
-            return get_image_response_from_ifd(ifd, file_name)
+            return get_image_response_from_ifd(ifd, file_name, max_height, max_width)
         except Exception as e:
             raise HTTPException(
                 status_code=422,  # unprocessable content
