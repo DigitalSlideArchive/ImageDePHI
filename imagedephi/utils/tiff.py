@@ -96,11 +96,11 @@ def get_associated_image_svs(image_path: Path, image_key: str) -> IFD | None:
     return None
 
 
-def get_ifd_for_thumbnail(image_path: Path) -> IFD | None:
+def get_ifd_for_thumbnail(image_path: Path, thumbnail_width=0, thumbnail_height=0) -> IFD | None:
     """Given a path to a TIFF image, return the IFD for the lowest resolution tiled image."""
     image_info = tifftools.read_tiff(image_path)
 
-    min_width = float("inf")
+    lowest_width_seen = float("inf")
     lowest_res_ifd = None
     for ifd in iter_ifds(image_info["ifds"]):
         # We are interested in the lowest res tiled image.
@@ -108,9 +108,23 @@ def get_ifd_for_thumbnail(image_path: Path) -> IFD | None:
             continue
 
         image_width = int(ifd["tags"][tifftools.Tag.ImageWidth.value]["data"][0])
-        if image_width and (not min_width or image_width < min_width):
-            min_width = int(image_width)
-            lowest_res_ifd = ifd
+        image_height = int(ifd["tags"][tifftools.Tag.ImageHeight.value]["data"][0])
+
+        if image_width and (not lowest_width_seen or image_width < lowest_width_seen):
+            # If the IFD's width is less than the minimum width we've seen
+            # so far, clock it as the lowest res and update the minimum
+            # seen width
+            # Additionally, check to make sure that the image width and height
+            # are both larger than the height/width of the thumbnail we are creating
+            # Only do this if we've found a candidate IFD already.
+            if lowest_res_ifd and (
+                image_width > thumbnail_width and image_height > thumbnail_height
+            ):
+                lowest_res_ifd = ifd
+                lowest_width_seen = int(image_width)
+            else:
+                lowest_width_seen = int(image_width)
+                lowest_res_ifd = ifd
 
     return lowest_res_ifd
 
