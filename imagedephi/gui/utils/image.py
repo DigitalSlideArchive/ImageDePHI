@@ -85,8 +85,8 @@ def extract_thumbnail_from_image_bytes(
 def get_image_response_from_ifd(
     ifd: "IFD",
     file_name: str,
-    max_height=MAX_ASSOCIATED_IMAGE_SIZE,
     max_width=MAX_ASSOCIATED_IMAGE_SIZE,
+    max_height=MAX_ASSOCIATED_IMAGE_SIZE,
 ):
     # Make sure the image isn't too big
     height = int(ifd["tags"][tifftools.Tag.ImageLength.value]["data"][0])
@@ -112,7 +112,7 @@ def get_image_response_from_ifd(
         return StreamingResponse(jpeg_buffer, media_type="image/jpeg")
     except UnidentifiedImageError:
         #  Extract a thumbnail from the original image if the IFD can't be opened by PIL
-        composite_image = extract_thumbnail_from_image_bytes(ifd, file_name)
+        composite_image = extract_thumbnail_from_image_bytes(ifd, file_name, max_width, max_height)
         if composite_image:
             composite_image.save(jpeg_buffer, "JPEG")
             jpeg_buffer.seek(0)

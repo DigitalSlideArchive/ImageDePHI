@@ -65,7 +65,7 @@ def get_associated_image(file_name: str = "", image_key: str = "", max_height=16
     if image_type == FileFormat.SVS or image_type == FileFormat.TIFF:
         ifd: IFD | None = None
         if image_key == "thumbnail":
-            ifd = get_ifd_for_thumbnail(Path(file_name))
+            ifd = get_ifd_for_thumbnail(Path(file_name), int(max_width), int(max_height))
             if not ifd:
                 try:
                     # If the image is not tiled, no appropriate IFD was found. In this case
