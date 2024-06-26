@@ -163,6 +163,26 @@ def redact_images(
             writer.writerow(row)
 
 
+def custom_sort(item):
+    key, value = item
+    if key == 'missing_keys':
+        return (0, '')
+    elif isinstance(value, dict) and value['action'] == 'delete':
+        return (1, key)
+    else:
+        return (2, key)
+
+
+def sort_data(data):
+    sorted_data = {}
+    for image_name, tags in data.items():
+        # Sort tags within each image
+        sorted_tags = OrderedDict(sorted(tags.items(), key=custom_sort))
+        sorted_data[image_name] = sorted_tags
+    sorted_data = OrderedDict(sorted(sorted_data.items(), key=lambda x: (0 if 'missing_tags' in x[1] else 1, x[0])))
+    return sorted_data
+
+
 def show_redaction_plan(
     input_path: Path,
     override_rules: Ruleset | None = None,
@@ -199,12 +219,7 @@ def show_redaction_plan(
             logger.info(f"Redaction plan for {image_path.name}")
             redaction_plan_report.update(redaction_plan.report_plan())  # type: ignore
     total = len(redaction_plan_report)  # type: ignore
-    sorted_dict = OrderedDict(
-        sorted(
-            redaction_plan_report.items(),  # type: ignore
-            key=lambda item: "missing_tags" not in item[1],
-        )
-    )
+    sorted_dict = sort_data(redaction_plan_report)  # type: ignore
     if limit is not None and offset is not None:
         sorted_dict = OrderedDict(list(sorted_dict.items())[offset * limit : (offset + 1) * limit])
     images_plan = namedtuple("images_plan", ["data", "total"])
