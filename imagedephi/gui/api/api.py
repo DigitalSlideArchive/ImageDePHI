@@ -7,6 +7,7 @@ import urllib.parse
 
 from fastapi import APIRouter, HTTPException, WebSocket
 
+from imagedephi.gui.utils.constants import MAX_ASSOCIATED_IMAGE_SIZE
 from imagedephi.gui.utils.directory import DirectoryData
 from imagedephi.gui.utils.image import (
     get_image_response_dicom,
@@ -48,7 +49,12 @@ def select_directory(
 
 
 @router.get("/image/")
-def get_associated_image(file_name: str = "", image_key: str = "", max_height=160, max_width=160):
+def get_associated_image(
+    file_name: str = "",
+    image_key: str = "",
+    max_height=MAX_ASSOCIATED_IMAGE_SIZE,
+    max_width=MAX_ASSOCIATED_IMAGE_SIZE,
+):
     if not file_name:
         raise HTTPException(status_code=400, detail="file_name is a required parameter")
 
