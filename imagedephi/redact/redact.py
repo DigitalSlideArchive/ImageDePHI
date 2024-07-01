@@ -163,21 +163,44 @@ def redact_images(
             writer.writerow(row)
 
 
-def custom_sort(item):
+def _custom_sort(item):
     key, value = item
-    if key == 'missing_keys':
-        return (0, '')
+    if key == 'missing_tags':
+        return (0, key)
     elif isinstance(value, dict) and value['action'] == 'delete':
         return (1, key)
     else:
         return (2, key)
 
 
-def sort_data(data):
+def _sort_data(data):
+    """
+        Sort images based on the presence of missing tags and then by image name.
+        Sort tags within each image based on the action and tag name.
+    """
+    global tags_used
+    tags_used = OrderedDict()
     sorted_data = {}
+    # List of tags that can't be edited and should be excluded from the redaction plan
+    excluded_tags = [
+        'StripOffsets',
+        'StripByteCounts',
+        'FreeOffsets',
+        'FreeByteCounts',
+        'TileOffsets',
+        'TileByteCounts',
+        'JPEGIFOffset',
+        'JPEGIFByteCount'
+        ]
+
     for image_name, tags in data.items():
+        # Remove excluded tags
+        for tag in excluded_tags:
+            tags.pop(tag, None)
+
         # Sort tags within each image
-        sorted_tags = OrderedDict(sorted(tags.items(), key=custom_sort))
+        sorted_tags = OrderedDict(sorted(tags.items(), key=_custom_sort))
+        tags_used.update(sorted_tags)
         sorted_data[image_name] = sorted_tags
     sorted_data = OrderedDict(sorted(sorted_data.items(), key=lambda x: (0 if 'missing_tags' in x[1] else 1, x[0])))
     return sorted_data
@@ -219,9 +242,8 @@ def show_redaction_plan(
             logger.info(f"Redaction plan for {image_path.name}")
             redaction_plan_report.update(redaction_plan.report_plan())  # type: ignore
     total = len(redaction_plan_report)  # type: ignore
-    sorted_dict = sort_data(redaction_plan_report)  # type: ignore
+    sorted_dict = _sort_data(redaction_plan_report)  # type: ignore
     if limit is not None and offset is not None:
         sorted_dict = OrderedDict(list(sorted_dict.items())[offset * limit : (offset + 1) * limit])
-    images_plan = namedtuple("images_plan", ["data", "total"])
-
-    return images_plan(sorted_dict, total)
+    images_plan = namedtuple("images_plan", ["data", "total", "tags"])
+    return images_plan(sorted_dict, total, list(tags_used))
