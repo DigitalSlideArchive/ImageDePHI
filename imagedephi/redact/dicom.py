@@ -173,7 +173,10 @@ class DicomRedactionPlan(RedactionPlan):
             if rule:
                 operation = self.determine_redaction_operation(rule, element)
                 logger.info(f"DICOM Tag {element.tag} - {rule.key_name}: {operation}")
-                report[self.image_path.name][f"{element.tag}_{rule.key_name}"] = {"action": operation, "value": element.value}
+                report[self.image_path.name][f"{element.tag}_{rule.key_name}"] = {
+                    "action": operation,
+                    "value": element.value,
+                }
         self.report_missing_rules(report)
         return report
 

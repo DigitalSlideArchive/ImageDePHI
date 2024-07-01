@@ -124,7 +124,9 @@ def get_associated_image(
             status_code=404, detail=f"Could not retrieve {image_key} image for {file_name}"
         )
 
-    return HTTPException(status_code=404, detail=f"Could not retrieve {image_key} image for {file_name}")
+    return HTTPException(
+        status_code=404, detail=f"Could not retrieve {image_key} image for {file_name}"
+    )
 
 
 @router.get("/redaction_plan")
@@ -159,7 +161,7 @@ def redact(
 @router.get("/rules")
 def get_rules():
     # TODO: Add support for overriding rules and additional rulesets
-    return {'base_rules': get_base_rules()}
+    return {"base_rules": get_base_rules()}
 
 
 @router.websocket("/ws")
