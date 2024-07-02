@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING
 
 import tifftools
 
+from imagedephi.gui.utils.image import IMAGE_DEPHI_MAX_IMAGE_PIXELS
+
 if TYPE_CHECKING:
     from tifftools.tifftools import IFD
 
@@ -100,8 +102,9 @@ def get_ifd_for_thumbnail(image_path: Path, thumbnail_width=0, thumbnail_height=
     """Given a path to a TIFF image, return the IFD for the lowest resolution tiled image."""
     image_info = tifftools.read_tiff(image_path)
 
-    lowest_width_seen = float("inf")
-    lowest_res_ifd = None
+    candidate_width = float("inf")
+    candidate_height = float("inf")
+    candidate_ifd = None
     for ifd in iter_ifds(image_info["ifds"]):
         # We are interested in the lowest res tiled image.
         if tifftools.Tag.TileWidth.value not in ifd["tags"]:
@@ -110,23 +113,38 @@ def get_ifd_for_thumbnail(image_path: Path, thumbnail_width=0, thumbnail_height=
         image_width = int(ifd["tags"][tifftools.Tag.ImageWidth.value]["data"][0])
         image_height = int(ifd["tags"][tifftools.Tag.ImageHeight.value]["data"][0])
 
-        if image_width and (not lowest_width_seen or image_width < lowest_width_seen):
-            # If the IFD's width is less than the minimum width we've seen
-            # so far, clock it as the lowest res and update the minimum
-            # seen width
-            # Additionally, check to make sure that the image width and height
-            # are both larger than the height/width of the thumbnail we are creating
-            # Only do this if we've found a candidate IFD already.
-            if lowest_res_ifd and (
-                image_width > thumbnail_width and image_height > thumbnail_height
-            ):
-                lowest_res_ifd = ifd
-                lowest_width_seen = int(image_width)
-            else:
-                lowest_width_seen = int(image_width)
-                lowest_res_ifd = ifd
+        # Pass over images that are too big or lacking information
+        if (
+            not image_width
+            or not image_height
+            or image_width * image_height > IMAGE_DEPHI_MAX_IMAGE_PIXELS
+        ):
+            continue
 
-    return lowest_res_ifd
+        if candidate_ifd is None:
+            candidate_ifd = ifd
+            candidate_width = image_width
+            candidate_height = image_height
+        else:
+            # Look at the candidate_ifd, the current ifd, and the thumbnail size
+            if candidate_width > image_width:
+                # This is case 1. If the current IFD is smaller than
+                # the candidate AND is larger than the desired
+                # thumbnail size, it is the new candidate
+                if image_width >= thumbnail_width and image_height >= thumbnail_height:
+                    candidate_ifd = ifd
+                    candidate_width = image_width
+                    candidate_height = image_height
+            else:
+                # candidate_width <= image_width
+                # Case 2. The candidate should be replaced if it is smaller
+                # than the desired thumbnail size
+                if candidate_height < thumbnail_height or candidate_width < thumbnail_width:
+                    candidate_ifd = ifd
+                    candidate_width = image_width
+                    candidate_height = image_height
+
+    return candidate_ifd
 
 
 def get_is_svs(image_path: Path) -> bool:
