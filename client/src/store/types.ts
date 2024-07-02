@@ -8,6 +8,7 @@ export type DirectoryData = {
 export type imagePlanResponse = {
   data: Record<string, Record<string, string>>;
   total: number;
+  tags: string[];
 };
 
 export interface Path {
