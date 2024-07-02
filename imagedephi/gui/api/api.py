@@ -7,6 +7,7 @@ import urllib.parse
 
 from fastapi import APIRouter, HTTPException, WebSocket
 
+from imagedephi.gui.utils.constants import MAX_ASSOCIATED_IMAGE_SIZE
 from imagedephi.gui.utils.directory import DirectoryData
 from imagedephi.gui.utils.image import (
     get_image_response_dicom,
@@ -48,7 +49,12 @@ def select_directory(
 
 
 @router.get("/image/")
-def get_associated_image(file_name: str = "", image_key: str = ""):
+def get_associated_image(
+    file_name: str = "",
+    image_key: str = "",
+    max_height=MAX_ASSOCIATED_IMAGE_SIZE,
+    max_width=MAX_ASSOCIATED_IMAGE_SIZE,
+):
     if not file_name:
         raise HTTPException(status_code=400, detail="file_name is a required parameter")
 
@@ -65,12 +71,12 @@ def get_associated_image(file_name: str = "", image_key: str = ""):
     if image_type == FileFormat.SVS or image_type == FileFormat.TIFF:
         ifd: IFD | None = None
         if image_key == "thumbnail":
-            ifd = get_ifd_for_thumbnail(Path(file_name))
+            ifd = get_ifd_for_thumbnail(Path(file_name), int(max_width), int(max_height))
             if not ifd:
                 try:
                     # If the image is not tiled, no appropriate IFD was found. In this case
                     # attempt to get a thumbnail using the entire image.
-                    return get_image_response_from_tiff(file_name)
+                    return get_image_response_from_tiff(file_name, max_width, max_height)
                 except Exception as e:
                     raise HTTPException(
                         status_code=422,  # unprocessable content
@@ -78,7 +84,7 @@ def get_associated_image(file_name: str = "", image_key: str = ""):
                     )
             else:
                 try:
-                    return get_image_response_from_ifd(ifd, file_name)
+                    return get_image_response_from_ifd(ifd, file_name, max_width, max_height)
                 except Exception as e:
                     raise HTTPException(
                         status_code=422,  # unprocessable content
@@ -97,7 +103,7 @@ def get_associated_image(file_name: str = "", image_key: str = ""):
                 status_code=404, detail=f"No {image_key} image found for {file_name}"
             )
         try:
-            return get_image_response_from_ifd(ifd, file_name)
+            return get_image_response_from_ifd(ifd, file_name, max_height, max_width)
         except Exception as e:
             raise HTTPException(
                 status_code=422,  # unprocessable content
@@ -110,7 +116,7 @@ def get_associated_image(file_name: str = "", image_key: str = ""):
             for child in path.parent.iterdir()
             if child != path and file_is_same_series_as(path, child)
         ]
-        image_response = get_image_response_dicom(related_files, image_key)
+        image_response = get_image_response_dicom(related_files, image_key, max_width, max_height)
         if image_response:
             return image_response
         raise HTTPException(
