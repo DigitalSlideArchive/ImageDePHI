@@ -158,12 +158,6 @@ def redact(
     redact_images(input_path, output_path)
 
 
-@router.get("/rules")
-def get_rules():
-    # TODO: Add support for overriding rules and additional rulesets
-    return {"base_rules": get_base_rules()}
-
-
 @router.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
