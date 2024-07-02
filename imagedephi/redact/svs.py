@@ -260,9 +260,9 @@ class SvsRedactionPlan(TiffRedactionPlan):
                 f"{associated_image_count_by_rule[key]} image(s) match rule:"
                 f" {key} - {self.rules.associated_images[key].action}"
             )
-            report[self.image_path.name]['associated_image_count'] = {
-                'action': self.rules.associated_images[key].action,
-                'value': associated_image_count_by_rule[key]
+            report[self.image_path.name]["associated_image_count"] = {
+                "action": self.rules.associated_images[key].action,
+                "value": associated_image_count_by_rule[key],
             }
 
         return report

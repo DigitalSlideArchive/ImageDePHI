@@ -23,6 +23,9 @@ from .build_redaction_plan import build_redaction_plan
 from .svs import MalformedAperioFileError
 from .tiff import UnsupportedFileTypeError
 
+tags_used = OrderedDict()
+redaction_plan_report = {}
+
 
 def _get_output_path(
     file_path: Path,
@@ -180,7 +183,6 @@ def _sort_data(data):
     Sort tags within each image based on the action and tag name.
     """
     global tags_used
-    tags_used = OrderedDict()
     sorted_data = {}
     # List of tags that can't be edited and should be excluded from the redaction plan
     excluded_tags = [
@@ -220,9 +222,11 @@ def show_redaction_plan(
     image_paths = iter_image_files(input_path, recursive) if input_path.is_dir() else [input_path]
     base_rules = get_base_rules()
 
+    global tags_used
+
     if update:
         global redaction_plan_report
-        redaction_plan_report = {}  # type: ignore
+
         for image_path in image_paths:
             try:
                 redaction_plan = build_redaction_plan(

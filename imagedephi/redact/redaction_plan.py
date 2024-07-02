@@ -8,7 +8,15 @@ class RedactionPlan:
     file_format: FileFormat
 
     @abc.abstractmethod
-    def report_plan(self) -> dict[str, dict[str | int, str | int]]: ...
+    def report_plan(self) -> dict[
+        str,
+        dict[
+            str,
+            int
+            | str
+            | dict[str, str | int | float | bytes | list[int | float] | dict[str, str | int]],
+        ],
+    ]: ...
 
     @abc.abstractmethod
     def execute_plan(self) -> None: ...

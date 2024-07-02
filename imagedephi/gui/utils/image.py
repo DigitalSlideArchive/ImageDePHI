@@ -114,7 +114,7 @@ def get_image_response_from_ifd(
         if composite_image:
             composite_image.save(jpeg_buffer, "JPEG")
             jpeg_buffer.seek(0)
-            return StreamingResponse(jpeg_buffer, media_type="image/jpeg")
+    return StreamingResponse(jpeg_buffer, media_type="image/jpeg")
 
 
 def get_image_response_from_tiff(
