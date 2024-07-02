@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 import urllib.parse
 
 from fastapi import APIRouter, HTTPException, WebSocket
+from fastapi.responses import FileResponse
 
 from imagedephi.gui.utils.directory import DirectoryData
 from imagedephi.gui.utils.image import (
@@ -13,7 +14,7 @@ from imagedephi.gui.utils.image import (
     get_image_response_from_ifd,
     get_image_response_from_tiff,
 )
-from imagedephi.redact import redact_images, show_redaction_plan
+from imagedephi.redact import get_base_rules, redact_images, show_redaction_plan
 from imagedephi.rules import FileFormat
 from imagedephi.utils.dicom import file_is_same_series_as
 from imagedephi.utils.image import get_file_format_from_path
@@ -47,7 +48,7 @@ def select_directory(
     )
 
 
-@router.get("/image/")
+@router.get("/image/", response_class=FileResponse)
 def get_associated_image(file_name: str = "", image_key: str = ""):
     if not file_name:
         raise HTTPException(status_code=400, detail="file_name is a required parameter")
@@ -116,6 +117,10 @@ def get_associated_image(file_name: str = "", image_key: str = ""):
         raise HTTPException(
             status_code=404, detail=f"Could not retrieve {image_key} image for {file_name}"
         )
+
+    return HTTPException(
+        status_code=404, detail=f"Could not retrieve {image_key} image for {file_name}"
+    )
 
 
 @router.get("/redaction_plan")

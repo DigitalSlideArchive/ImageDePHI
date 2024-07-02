@@ -1,8 +1,3 @@
-export interface Path {
-  name: string;
-  path: string;
-}
-
 export type DirectoryData = {
   directory: string;
   ancestors: Path[];
@@ -10,6 +5,16 @@ export type DirectoryData = {
   childrenImages: Path[];
 };
 
+export type imagePlanResponse = {
+  data: Record<string, Record<string, string>>;
+  total: number;
+  tags: string[];
+};
+
+export interface Path {
+  name: string;
+  path: string;
+}
 export interface SelectedDirectories {
   [key: string]: string;
 }
