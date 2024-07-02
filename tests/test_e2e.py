@@ -23,7 +23,7 @@ def test_e2e_run(
         main.imagedephi,
         [
             "--override-rules",
-            str(rules_dir / "example_user_rules.yml"),
+            str(rules_dir / "example_user_rules.yaml"),
             "run",
             str(data_dir / "input" / "tiff"),
             "--output-dir",
@@ -66,7 +66,7 @@ def test_e2e_plan(
         main.imagedephi,
         [
             "--override-rules",
-            str(rules_dir / "example_user_rules.yml"),
+            str(rules_dir / "example_user_rules.yaml"),
             "plan",
             str(data_dir / "input" / "tiff" / "test_image.tif"),
         ],

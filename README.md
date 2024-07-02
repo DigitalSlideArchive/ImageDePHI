@@ -23,7 +23,7 @@ Image redaction is determined by a set of rules. By default, the base set of rul
 ## Rule Application
 All runs of `imagedephi` use the provided base set of rules as a foundation. End users can use the ruleset framework to build custom rulesets that handle additional or custom metadata not covered by the base rules, or override the behavior of the base rule set.
 
-Override rule sets can be specified by using the `-r my_ruleset.yml` or `--override-rules my_ruleset.yml` option. This option is available for both the `imagedephi run` and `imagedephi plan` commands. Override rules sets are not provided by `imagedephi`, and must de defined by the end user.
+Override rule sets can be specified by using the `-r my_ruleset.yaml` or `--override-rules my_ruleset.yaml` option. This option is available for both the `imagedephi run` and `imagedephi plan` commands. Override rules sets are not provided by `imagedephi`, and must de defined by the end user.
 
 When `imagedephi` determines the steps to redact a file, it checks each piece of metadata in the file. For each piece of metadata found this way, it will first consult the override rule set, if present, for an applicable rule. If the override rule set does not contain a rule for that piece of metadata, the program will check the base ruleset.
 
@@ -34,7 +34,7 @@ For whole slide image formats based on the tiff standard, `imagedephi` allows a 
 
 
 ## Ruleset Format Overview
-In order to read the base rules and build your own custom rule sets, it is important to understand the format in which rulesets are specified. Rulesets are defined by `.yml` files (one ruleset per file), and are a dictionary with the following top-level tags: `name`, `description`, `output_file_name`, `tiff`, and `svs`.
+In order to read the base rules and build your own custom rule sets, it is important to understand the format in which rulesets are specified. Rulesets are defined by `.yaml` files (one ruleset per file), and are a dictionary with the following top-level tags: `name`, `description`, `output_file_name`, `tiff`, and `svs`.
 
 ### Generic Properties
 The following three properties belong to the rulesets themselves, and don't influence redaction behavior.
