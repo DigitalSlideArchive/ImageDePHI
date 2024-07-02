@@ -15,7 +15,7 @@ from imagedephi.gui.utils.image import (
     get_image_response_from_ifd,
     get_image_response_from_tiff,
 )
-from imagedephi.redact import get_base_rules, redact_images, show_redaction_plan
+from imagedephi.redact import redact_images, show_redaction_plan
 from imagedephi.rules import FileFormat
 from imagedephi.utils.dicom import file_is_same_series_as
 from imagedephi.utils.image import get_file_format_from_path

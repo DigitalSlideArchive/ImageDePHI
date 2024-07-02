@@ -198,7 +198,6 @@ def _sort_data(data):
         # Remove excluded tags
         for tag in excluded_tags:
             tags.pop(tag, None)
-
         # Sort tags within each image
         sorted_tags = OrderedDict(sorted(tags.items(), key=_custom_sort))
         tags_used.update(sorted_tags)
