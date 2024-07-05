@@ -228,21 +228,20 @@ class SvsRedactionPlan(TiffRedactionPlan):
             rule = self.metadata_redaction_steps[tag.value]
             operation = self.determine_redaction_operation(rule, ifd)
             logger.info(f"Tiff Tag {tag.value} - {rule.key_name}: {operation}")
-            if tag.value in self.tiff_info["ifds"][0]["tags"]:
-                if self.tiff_info["ifds"][0]["tags"][tag.value]["datatype"] == 7:
-                    encoded_value: dict[str, str | int] = {
-                        "value": f"0x{binascii.hexlify(self.tiff_info['ifds'][0]['tags'][tag.value]['data'] ).decode('utf-8')}",  # type: ignore # noqa: E501
-                        "bytes": len(self.tiff_info["ifds"][0]["tags"][tag.value]["data"]),
-                    }
-                    report[self.image_path.name][rule.key_name] = {
-                        "action": operation,
-                        "binary": encoded_value,
-                    }
-                else:
-                    report[self.image_path.name][rule.key_name] = {
-                        "action": operation,
-                        "value": self.tiff_info["ifds"][0]["tags"][tag.value]["data"],
-                    }
+            if ifd["tags"][tag.value]["datatype"] == 7:
+                encoded_value: dict[str, str | int] = {
+                    "value": f"0x{binascii.hexlify(ifd['tags'][tag.value]['data'] ).decode('utf-8')}",  # type: ignore # noqa: E501
+                    "bytes": len(ifd["tags"][tag.value]["data"]),
+                }
+                report[self.image_path.name][rule.key_name] = {
+                    "action": operation,
+                    "binary": encoded_value,
+                }
+            else:
+                report[self.image_path.name][rule.key_name] = {
+                    "action": operation,
+                    "value": ifd["tags"][tag.value]["data"],
+                }
         self.report_missing_rules(report)
         logger.info("Aperio (.svs) Associated Image Redaction Plan\n")
         # Report the number of associated images found in the image that match each associated

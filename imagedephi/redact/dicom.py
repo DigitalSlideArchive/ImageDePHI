@@ -175,14 +175,14 @@ class DicomRedactionPlan(RedactionPlan):
                 )
                 return {}
         report: dict[
-        str,
-        dict[
             str,
-            int
-            | str
-            | dict[str, str | int | float | bytes | list[int | float] | dict[str, str | int]],
-        ],
-    ] = {}
+            dict[
+                str,
+                int
+                | str
+                | dict[str, str | int | float | bytes | list[int | float] | dict[str, str | int]],
+            ],
+        ] = {}
         report[self.image_path.name] = {}
         for element, _ in DicomRedactionPlan._iter_dicom_elements(self.dicom_data):
             rule = self.metadata_redaction_steps.get(element.tag, None)
