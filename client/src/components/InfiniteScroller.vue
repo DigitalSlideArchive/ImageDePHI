@@ -52,7 +52,7 @@ onMounted(() => {
   }
 
   .customScroll::-webkit-scrollbar-track {
-    background-color: #9ca3af;
+    background-color: #6b7280;
     width: 5px;
   }
 }

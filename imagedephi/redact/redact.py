@@ -194,6 +194,7 @@ def _sort_data(data):
         "TileByteCounts",
         "JPEGIFOffset",
         "JPEGIFByteCount",
+        "BigTIFF",
     ]
 
     for image_name, tags in data.items():
