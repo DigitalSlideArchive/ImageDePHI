@@ -16,7 +16,7 @@ tiff:
       action: keep
     Compression:
       action: keep
-    PhotometricInterpretation:
+    Photometric:
       action: keep
     StripOffsets:
       action: keep
@@ -102,7 +102,7 @@ svs:
       action: keep
     Compression:
       action: keep
-    PhotometricInterpretation:
+    Photometric:
       action: keep
     StripOffsets:
       action: keep
