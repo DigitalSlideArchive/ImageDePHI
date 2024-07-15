@@ -74,3 +74,9 @@ testpaths = ["tests"]
 
 [tool.pyright]
 stubPath = "stubs"
+
+[tool.yamlfix]
+exclude = [".tox/", "*/node_modules/"]
+line_length = 200
+preserve_quotes = true
+sequence_style = "block_style"
