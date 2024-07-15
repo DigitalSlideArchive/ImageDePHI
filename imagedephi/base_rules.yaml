@@ -1,8 +1,6 @@
 ---
 name: Base rules
-description: These are the default rules for each potential piece of redactable material
-  (metadata, image) to be used as a fallback if there are no user defined rules for
-  a piece of redactable material.
+description: These are the default rules for each potential piece of redactable material (metadata, image) to be used as a fallback if there are no user defined rules for a piece of redactable material.
 output_file_name: study_slide
 tiff:
   associated_images:

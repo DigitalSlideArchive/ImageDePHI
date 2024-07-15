@@ -12,7 +12,6 @@ tiff:
       action: check_type
       expected_type: number
       expected_count: 2
-
 svs:
   associated_images: {}
   metadata:

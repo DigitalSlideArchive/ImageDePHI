@@ -1,7 +1,6 @@
 ---
 name: Minimum Rules
-description: A set of rules that defines a minimum amount of metadata for images
-  to be read. Metadata not specified by a rule is deleted (controlled by the metadata_fallback_action).
+description: A set of rules that defines a minimum amount of metadata for images to be read. Metadata not specified by a rule is deleted (controlled by the metadata_fallback_action).
 output_file_name: study_slide
 tiff:
   metadata_fallback_action: delete
