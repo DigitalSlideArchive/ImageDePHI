@@ -34,7 +34,7 @@ const getThumbnail = async (
       selectedDirectories.value.inputDirectory + "/" + image,
       "thumbnail",
     );
-    if (response.status == 404) {
+    if (response.status >= 400) {
       imageRedactionPlan.value.data[image].thumbnail =
         "/thumbnailPlaceholder.svg";
       return;
