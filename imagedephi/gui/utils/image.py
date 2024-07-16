@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from io import BytesIO
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -23,7 +25,7 @@ def get_scale_factor(max_dimensions: tuple[int, int], image_dimensions: tuple[in
 
 
 def extract_thumbnail_from_image_bytes(
-    ifd: "IFD",
+    ifd: IFD,
     file_name: str,
     max_width=MAX_ASSOCIATED_IMAGE_SIZE,
     max_height=MAX_ASSOCIATED_IMAGE_SIZE,

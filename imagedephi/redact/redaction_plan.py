@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import abc
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -18,7 +20,7 @@ class RedactionPlan:
     file_format: FileFormat
 
     @abc.abstractmethod
-    def report_plan(self) -> "RedactionPlanReport": ...
+    def report_plan(self) -> RedactionPlanReport: ...
 
     @abc.abstractmethod
     def execute_plan(self) -> None: ...

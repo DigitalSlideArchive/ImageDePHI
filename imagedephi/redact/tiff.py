@@ -229,11 +229,11 @@ class TiffRedactionPlan(RedactionPlan):
 
     def report_plan(
         self,
-    ) -> "RedactionPlanReport":
+    ) -> RedactionPlanReport:
         logger.info("Tiff Metadata Redaction Plan\n")
         offset = -1
         ifd_count = 0
-        report: "RedactionPlanReport" = {}
+        report: RedactionPlanReport = {}
         report[self.image_path.name] = {}
         for tag, ifd in self._iter_tiff_tag_entries(self.tiff_info["ifds"]):
             if ifd["offset"] != offset:
