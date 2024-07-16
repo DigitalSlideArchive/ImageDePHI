@@ -25,10 +25,12 @@ from imagedephi.rules import (
 from imagedephi.utils.logger import logger
 from imagedephi.utils.tiff import get_tiff_tag
 
-from .redaction_plan import RedactionPlan, RedactionPlanReport
+from .redaction_plan import RedactionPlan
 
 if TYPE_CHECKING:
     from tifftools.tifftools import IFD, TiffInfo
+
+    from .redaction_plan import RedactionPlanReport
 
 
 class UnsupportedFileTypeError(Exception):
@@ -227,11 +229,11 @@ class TiffRedactionPlan(RedactionPlan):
 
     def report_plan(
         self,
-    ) -> RedactionPlanReport:
+    ) -> "RedactionPlanReport":
         logger.info("Tiff Metadata Redaction Plan\n")
         offset = -1
         ifd_count = 0
-        report: RedactionPlanReport = {}
+        report: "RedactionPlanReport" = {}
         report[self.image_path.name] = {}
         for tag, ifd in self._iter_tiff_tag_entries(self.tiff_info["ifds"]):
             if ifd["offset"] != offset:

@@ -1,22 +1,24 @@
 import abc
 from pathlib import Path
-
-from tifftools.tifftools import Data
+from typing import TYPE_CHECKING
 
 from imagedephi.rules import FileFormat
 
-ByteInfo = dict[str, str | int]
+if TYPE_CHECKING:
+    from tifftools.tifftools import Data
 
-TagRedactionPlan = dict[str, int | float | Data | ByteInfo]
+    ByteInfo = dict[str, str | int]
 
-RedactionPlanReport = dict[str, dict[str, int | str | TagRedactionPlan]]
+    TagRedactionPlan = dict[str, int | float | Data | ByteInfo]
+
+    RedactionPlanReport = dict[str, dict[str, int | str | TagRedactionPlan]]
 
 
 class RedactionPlan:
     file_format: FileFormat
 
     @abc.abstractmethod
-    def report_plan(self) -> RedactionPlanReport: ...
+    def report_plan(self) -> "RedactionPlanReport": ...
 
     @abc.abstractmethod
     def execute_plan(self) -> None: ...

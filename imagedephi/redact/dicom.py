@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Generator
 from enum import Enum
 from pathlib import Path
+from typing import TYPE_CHECKING
 from uuid import uuid4
 
 import pydicom
@@ -23,7 +24,11 @@ from imagedephi.rules import (
 )
 from imagedephi.utils.logger import logger
 
-from .redaction_plan import RedactionPlan, RedactionPlanReport
+from .redaction_plan import RedactionPlan
+
+if TYPE_CHECKING:
+    from .redaction_plan import RedactionPlanReport
+
 
 VR_TO_DUMMY_VALUE: dict[str, str | float | int | list | bytes] = {}
 for vr in valuerep.STR_VR:
@@ -157,7 +162,7 @@ class DicomRedactionPlan(RedactionPlan):
             return rule.action
         return "delete"
 
-    def report_plan(self) -> RedactionPlanReport:
+    def report_plan(self) -> "RedactionPlanReport":
         logger.info("DICOM Metadata Redaction Plan\n")
         if self.associated_image_rule:
             if self.associated_image_rule.action == "delete":
@@ -166,7 +171,7 @@ class DicomRedactionPlan(RedactionPlan):
                     "This file will not be written to the output directory."
                 )
                 return {}
-        report: RedactionPlanReport = {}
+        report: "RedactionPlanReport" = {}
         report[self.image_path.name] = {}
         for element, _ in DicomRedactionPlan._iter_dicom_elements(self.dicom_data):
             rule = self.metadata_redaction_steps.get(element.tag, None)
