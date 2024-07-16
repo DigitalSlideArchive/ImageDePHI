@@ -24,13 +24,15 @@ class IFD(TypedDict):
     bigtiff: bool
     tagcount: int
 
+Data = str | bytes | list[int | float]
+
 class TagEntry(TypedDict):
     datatype: int
     count: int
     datapos: int
     offset: NotRequired[int]
     ifds: NotRequired[list[list[IFD]]]
-    data: str | bytes | list[int | float]
+    data: Data
 
 def read_tiff(path: _PathOrStream) -> TiffInfo: ...
 def write_tiff(

@@ -16,6 +16,7 @@ from imagedephi.rules import (
 )
 from imagedephi.utils.logger import logger
 
+from .redaction_plan import RedactionPlanReport
 from .tiff import TiffRedactionPlan
 
 if TYPE_CHECKING:
@@ -190,27 +191,11 @@ class SvsRedactionPlan(TiffRedactionPlan):
 
     def report_plan(
         self,
-    ) -> dict[
-        str,
-        dict[
-            str,
-            int
-            | str
-            | dict[str, str | int | float | bytes | list[int | float] | dict[str, str | int]],
-        ],
-    ]:
+    ) -> RedactionPlanReport:
         logger.info("Aperio (.svs) Metadata Redaction Plan\n")
         offset = -1
         ifd_count = 0
-        report: dict[
-            str,
-            dict[
-                str,
-                int
-                | str
-                | dict[str, str | int | float | bytes | list[int | float] | dict[str, str | int]],
-            ],
-        ] = {}
+        report: RedactionPlanReport = {}
         report[self.image_path.name] = {}
         for tag, ifd in self._iter_tiff_tag_entries(self.tiff_info["ifds"]):
             if ifd["offset"] != offset:

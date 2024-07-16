@@ -1,22 +1,22 @@
 import abc
 from pathlib import Path
 
+from tifftools.tifftools import Data
+
 from imagedephi.rules import FileFormat
+
+ByteInfo = dict[str, str | int]
+
+TagRedactionPlan = dict[str, int | float | Data | ByteInfo]
+
+RedactionPlanReport = dict[str, dict[str, int | str | TagRedactionPlan]]
 
 
 class RedactionPlan:
     file_format: FileFormat
 
     @abc.abstractmethod
-    def report_plan(self) -> dict[
-        str,
-        dict[
-            str,
-            int
-            | str
-            | dict[str, str | int | float | bytes | list[int | float] | dict[str, str | int]],
-        ],
-    ]: ...
+    def report_plan(self) -> RedactionPlanReport: ...
 
     @abc.abstractmethod
     def execute_plan(self) -> None: ...
