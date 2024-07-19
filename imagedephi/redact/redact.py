@@ -186,15 +186,20 @@ def _sort_data(data):
     sorted_data = {}
     # List of tags that can't be edited and should be excluded from the redaction plan
     excluded_tags = [
-        "StripOffsets",
-        "StripByteCounts",
-        "FreeOffsets",
-        "FreeByteCounts",
-        "TileOffsets",
-        "TileByteCounts",
-        "JPEGIFOffset",
-        "JPEGIFByteCount",
         "BigTIFF",
+        "FreeByteCounts",
+        "FreeOffsets",
+        "JPEGIFByteCount",
+        "JPEGIFOffset",
+        "JPEGTables",
+        "NewSubfileType",
+        "Photometric",
+        "PlanarConfig",
+        "Predictor",
+        "StripByteCounts",
+        "StripOffsets",
+        "TileByteCounts",
+        "TileOffsets",
     ]
 
     for image_name, tags in data.items():
