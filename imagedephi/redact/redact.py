@@ -23,6 +23,9 @@ from .build_redaction_plan import build_redaction_plan
 from .svs import MalformedAperioFileError
 from .tiff import UnsupportedFileTypeError
 
+tags_used = OrderedDict()
+redaction_plan_report = {}
+
 
 def _get_output_path(
     file_path: Path,
@@ -163,6 +166,56 @@ def redact_images(
             writer.writerow(row)
 
 
+def _custom_sort(item):
+    key, value = item
+    if key == "missing_tags":
+        return (0, key)
+    elif isinstance(value, dict) and value["action"] == "delete":
+        return (1, key)
+    else:
+        return (2, key)
+
+
+def _sort_data(data):
+    """
+    Sort images based on the presence of missing tags and then by image name.
+
+    Sort tags within each image based on the action and tag name.
+    """
+    global tags_used
+    sorted_data = {}
+    # List of tags that can't be edited and should be excluded from the redaction plan
+    excluded_tags = [
+        "BigTIFF",
+        "FreeByteCounts",
+        "FreeOffsets",
+        "JPEGIFByteCount",
+        "JPEGIFOffset",
+        "JPEGTables",
+        "NewSubfileType",
+        "Photometric",
+        "PlanarConfig",
+        "Predictor",
+        "StripByteCounts",
+        "StripOffsets",
+        "TileByteCounts",
+        "TileOffsets",
+    ]
+
+    for image_name, tags in data.items():
+        # Remove excluded tags
+        for tag in excluded_tags:
+            tags.pop(tag, None)
+        # Sort tags within each image
+        sorted_tags = OrderedDict(sorted(tags.items(), key=_custom_sort))
+        tags_used.update(sorted_tags)
+        sorted_data[image_name] = sorted_tags
+    sorted_data = OrderedDict(
+        sorted(sorted_data.items(), key=lambda x: (0 if "missing_tags" in x[1] else 1, x[0]))
+    )
+    return sorted_data
+
+
 def show_redaction_plan(
     input_path: Path,
     override_rules: Ruleset | None = None,
@@ -175,9 +228,11 @@ def show_redaction_plan(
     image_paths = iter_image_files(input_path, recursive) if input_path.is_dir() else [input_path]
     base_rules = get_base_rules()
 
+    global tags_used
+
     if update:
         global redaction_plan_report
-        redaction_plan_report = {}  # type: ignore
+
         for image_path in image_paths:
             try:
                 redaction_plan = build_redaction_plan(
@@ -199,14 +254,8 @@ def show_redaction_plan(
             logger.info(f"Redaction plan for {image_path.name}")
             redaction_plan_report.update(redaction_plan.report_plan())  # type: ignore
     total = len(redaction_plan_report)  # type: ignore
-    sorted_dict = OrderedDict(
-        sorted(
-            redaction_plan_report.items(),  # type: ignore
-            key=lambda item: "missing_tags" not in item[1],
-        )
-    )
+    sorted_dict = _sort_data(redaction_plan_report)  # type: ignore
     if limit is not None and offset is not None:
-        sorted_dict = OrderedDict(list(sorted_dict.items())[offset : limit + offset])
-    images_plan = namedtuple("images_plan", ["data", "total"])
-
-    return images_plan(sorted_dict, total)
+        sorted_dict = OrderedDict(list(sorted_dict.items())[offset * limit : (offset + 1) * limit])
+    images_plan = namedtuple("images_plan", ["data", "total", "tags"])
+    return images_plan(sorted_dict, total, list(tags_used))

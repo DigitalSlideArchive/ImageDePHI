@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 import urllib.parse
 
 from fastapi import APIRouter, HTTPException, WebSocket
+from fastapi.responses import FileResponse
 
 from imagedephi.gui.utils.constants import MAX_ASSOCIATED_IMAGE_SIZE
 from imagedephi.gui.utils.directory import DirectoryData
@@ -48,7 +49,7 @@ def select_directory(
     )
 
 
-@router.get("/image/")
+@router.get("/image/", response_class=FileResponse)
 def get_associated_image(
     file_name: str = "",
     image_key: str = "",
@@ -122,6 +123,10 @@ def get_associated_image(
         raise HTTPException(
             status_code=404, detail=f"Could not retrieve {image_key} image for {file_name}"
         )
+
+    return HTTPException(
+        status_code=404, detail=f"Could not retrieve {image_key} image for {file_name}"
+    )
 
 
 @router.get("/redaction_plan")

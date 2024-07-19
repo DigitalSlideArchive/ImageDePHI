@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import binascii
 from collections.abc import Generator
 from io import BytesIO
 from pathlib import Path
@@ -28,6 +29,8 @@ from .redaction_plan import RedactionPlan
 
 if TYPE_CHECKING:
     from tifftools.tifftools import IFD, TiffInfo
+
+    from .redaction_plan import RedactionPlanReport
 
 
 class UnsupportedFileTypeError(Exception):
@@ -224,13 +227,14 @@ class TiffRedactionPlan(RedactionPlan):
                 if report is not None:
                     report[self.image_path.name]["missing_tags"].append({tag.value: tag.name})
 
-    def report_plan(self) -> dict[str, dict[str | int, str | int]]:
+    def report_plan(
+        self,
+    ) -> RedactionPlanReport:
         logger.info("Tiff Metadata Redaction Plan\n")
         offset = -1
         ifd_count = 0
-        report: dict[str, dict[str | int, str | int]] = {}
+        report: RedactionPlanReport = {}
         report[self.image_path.name] = {}
-
         for tag, ifd in self._iter_tiff_tag_entries(self.tiff_info["ifds"]):
             if ifd["offset"] != offset:
                 offset = ifd["offset"]
@@ -240,7 +244,24 @@ class TiffRedactionPlan(RedactionPlan):
                 rule = self.metadata_redaction_steps[tag.value]
                 operation = self.determine_redaction_operation(rule, ifd)
                 logger.info(f"Tiff Tag {tag.value} - {rule.key_name}: {operation}")
-                report[self.image_path.name][rule.key_name] = operation
+                if (
+                    ifd["tags"][tag.value]["datatype"]
+                    == tifftools.constants.Datatype.UNDEFINED.value
+                ):
+                    encoded_value: dict[str, str | int] = {
+                        "value": f"0x{binascii.hexlify(ifd['tags'][tag.value]['data'] ).decode('utf-8')}",  # type: ignore # noqa: E501
+                        "bytes": len(ifd["tags"][tag.value]["data"]),
+                    }
+                    report[self.image_path.name][rule.key_name] = {
+                        "action": operation,
+                        "binary": encoded_value,
+                    }
+                else:
+                    report[self.image_path.name][rule.key_name] = {
+                        "action": operation,
+                        "value": ifd["tags"][tag.value]["data"],
+                    }
+
         self.report_missing_rules(report)
         logger.info("Tiff Associated Image Redaction Plan\n")
         logger.info(f"Found {len(self.image_redaction_steps)} associated images")

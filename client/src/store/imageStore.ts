@@ -1,8 +1,4 @@
 import { ref } from "vue";
-
-type imagePlanResponse = {
-  data: Record<string, Record<string, string>>;
-  total: number;
-};
+import { imagePlanResponse } from "./types";
 
 export const imageRedactionPlan = ref({} as imagePlanResponse);

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import binascii
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -19,6 +20,8 @@ from .tiff import TiffRedactionPlan
 
 if TYPE_CHECKING:
     from tifftools.tifftools import IFD
+
+    from .redaction_plan import RedactionPlanReport
 
 
 class SvsDescription:
@@ -187,11 +190,13 @@ class SvsRedactionPlan(TiffRedactionPlan):
                     if report is not None:
                         report[self.image_path.name]["missing_keys"].append(key)
 
-    def report_plan(self) -> dict[str, dict[str | int, str | int]]:
+    def report_plan(
+        self,
+    ) -> RedactionPlanReport:
         logger.info("Aperio (.svs) Metadata Redaction Plan\n")
         offset = -1
         ifd_count = 0
-        report: dict[str, dict[str | int, str | int]] = {}
+        report: RedactionPlanReport = {}
         report[self.image_path.name] = {}
         for tag, ifd in self._iter_tiff_tag_entries(self.tiff_info["ifds"]):
             if ifd["offset"] != offset:
@@ -204,12 +209,25 @@ class SvsRedactionPlan(TiffRedactionPlan):
                     rule = self.description_redaction_steps[key_name]
                     operation = self.determine_redaction_operation(rule, image_description)
                     logger.info(f"SVS Image Description - {key_name}: {operation}")
-                    report[self.image_path.name][key_name] = operation
+                    report[self.image_path.name][key_name] = {"action": operation, "value": _data}
                 continue
             rule = self.metadata_redaction_steps[tag.value]
             operation = self.determine_redaction_operation(rule, ifd)
             logger.info(f"Tiff Tag {tag.value} - {rule.key_name}: {operation}")
-            report[self.image_path.name][rule.key_name] = operation
+            if ifd["tags"][tag.value]["datatype"] == tifftools.constants.Datatype.UNDEFINED.value:
+                encoded_value: dict[str, str | int] = {
+                    "value": f"0x{binascii.hexlify(ifd['tags'][tag.value]['data'] ).decode('utf-8')}",  # type: ignore # noqa: E501
+                    "bytes": len(ifd["tags"][tag.value]["data"]),
+                }
+                report[self.image_path.name][rule.key_name] = {
+                    "action": operation,
+                    "binary": encoded_value,
+                }
+            else:
+                report[self.image_path.name][rule.key_name] = {
+                    "action": operation,
+                    "value": ifd["tags"][tag.value]["data"],
+                }
         self.report_missing_rules(report)
         logger.info("Aperio (.svs) Associated Image Redaction Plan\n")
         # Report the number of associated images found in the image that match each associated
@@ -226,9 +244,6 @@ class SvsRedactionPlan(TiffRedactionPlan):
             logger.info(
                 f"{associated_image_count_by_rule[key]} image(s) match rule:"
                 f" {key} - {self.rules.associated_images[key].action}"
-            )
-            report[self.image_path.name][associated_image_count_by_rule[key]] = (
-                self.rules.associated_images[key].action
             )
 
         return report
