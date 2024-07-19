@@ -74,3 +74,8 @@ testpaths = ["tests"]
 
 [tool.pyright]
 stubPath = "stubs"
+
+[tool.yamlfix]
+line_length = 200
+preserve_quotes = true
+sequence_style = "block_style"
