@@ -244,7 +244,10 @@ class TiffRedactionPlan(RedactionPlan):
                 rule = self.metadata_redaction_steps[tag.value]
                 operation = self.determine_redaction_operation(rule, ifd)
                 logger.info(f"Tiff Tag {tag.value} - {rule.key_name}: {operation}")
-                if ifd["tags"][tag.value]["datatype"] == 7:
+                if (
+                    ifd["tags"][tag.value]["datatype"]
+                    == tifftools.constants.Datatype.UNDEFINED.value
+                ):
                     encoded_value: dict[str, str | int] = {
                         "value": f"0x{binascii.hexlify(ifd['tags'][tag.value]['data'] ).decode('utf-8')}",  # type: ignore # noqa: E501
                         "bytes": len(ifd["tags"][tag.value]["data"]),

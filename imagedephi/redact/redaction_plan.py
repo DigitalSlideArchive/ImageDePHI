@@ -7,11 +7,11 @@ from typing import TYPE_CHECKING
 from imagedephi.rules import FileFormat
 
 if TYPE_CHECKING:
-    from tifftools.tifftools import Data
+    from tifftools.tifftools import TagData
 
     ByteInfo = dict[str, str | int]
 
-    TagRedactionPlan = dict[str, int | float | Data | ByteInfo]
+    TagRedactionPlan = dict[str, int | float | TagData | ByteInfo]
 
     RedactionPlanReport = dict[str, dict[str, int | str | TagRedactionPlan]]
 
