@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { imageRedactionPlan } from "../store/imageStore";
+import { useRedactionPlan } from "../store/imageStore";
 import { getImages, getRedactionPlan } from "../api/rest";
 import { selectedDirectories } from "../store/directoryStore";
 import ImageDataTable from "./ImageDataTable.vue";
@@ -9,6 +9,7 @@ import InfiniteScroller from "./InfiniteScroller.vue";
 const limit = ref(50);
 const offset = ref(1);
 
+
 const loadImagePlan = async () => {
   const newPlan = await getRedactionPlan(
     selectedDirectories.value.inputDirectory,
@@ -16,16 +17,14 @@ const loadImagePlan = async () => {
     offset.value,
     false,
   );
-  imageRedactionPlan.value.data = {
-    ...imageRedactionPlan.value.data,
+  useRedactionPlan.imageRedactionPlan.data = {
+    ...useRedactionPlan.imageRedactionPlan.data,
     ...newPlan.data,
   };
   getThumbnail(newPlan.data);
   ++offset.value;
 };
-
-const usedColumns = computed(() => imageRedactionPlan.value.tags);
-
+const usedColumns = computed(() => useRedactionPlan.imageRedactionPlan.tags);
 const getThumbnail = async (
   imagedict: Record<string, Record<string, string>>,
 ) => {
@@ -35,7 +34,7 @@ const getThumbnail = async (
       "thumbnail",
     );
     if (response.status >= 400) {
-      imageRedactionPlan.value.data[image].thumbnail =
+      useRedactionPlan.imageRedactionPlan.data[image].thumbnail =
         "/thumbnailPlaceholder.svg";
       return;
     }
@@ -50,11 +49,11 @@ const getThumbnail = async (
       }
       const blob = new Blob(chunks);
       const url = URL.createObjectURL(blob);
-      imageRedactionPlan.value.data[image].thumbnail = url;
+      useRedactionPlan.imageRedactionPlan.data[image].thumbnail = url;
     }
   });
 };
-getThumbnail(imageRedactionPlan.value.data);
+getThumbnail(useRedactionPlan.imageRedactionPlan.data);
 </script>
 
 <template>
@@ -62,7 +61,7 @@ getThumbnail(imageRedactionPlan.value.data);
     <InfiniteScroller @infinite-scroll="loadImagePlan">
       <ImageDataTable
         :used-columns="usedColumns"
-        :image-redaction-plan="imageRedactionPlan"
+        :image-redaction-plan="useRedactionPlan.imageRedactionPlan"
       />
     </InfiniteScroller>
   </div>

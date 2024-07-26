@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, Ref } from "vue";
-import { getDirectoryInfo, getRedactionPlan } from "../api/rest";
+import { getDirectoryInfo } from "../api/rest";
 import { selectedDirectories } from "../store/directoryStore";
-import { imageRedactionPlan } from "../store/imageStore";
+import { useRedactionPlan } from "../store/imageStore";
 import { DirectoryData } from "../store/types";
 
 const props = defineProps({
@@ -37,9 +37,7 @@ const updateDirectories = async (currentDirectory?: string) => {
 };
 updateDirectories();
 
-const updateImageData = async (directory: string) => {
-  imageRedactionPlan.value = await getRedactionPlan(directory, 50, 0, true);
-};
+
 
 const closeModal = () => {
   modal.value.close();
@@ -66,7 +64,7 @@ const updateSelectedDirectories = (path: string) => {
                 $emit('update-image-list'),
                   closeModal(),
                   title === 'Input Directory'
-                    ? updateImageData(selectedDirectories['inputDirectory'])
+                    ? useRedactionPlan.updateImageData(selectedDirectories['inputDirectory'], 50, 0, false)
                     : ''
               "
             >

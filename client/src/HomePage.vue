@@ -3,7 +3,7 @@ import { ref } from "vue";
 
 import { redactImages } from "./api/rest";
 import { selectedDirectories } from "./store/directoryStore";
-import { imageRedactionPlan } from "./store/imageStore";
+import { useRedactionPlan } from "./store/imageStore";
 
 import MenuSteps from "./components/MenuSteps.vue";
 import FileBrowser from "./components/FileBrowser.vue";
@@ -15,9 +15,11 @@ const redactionModal = ref();
 const redacting = ref(false);
 const redactionComplete = ref(false);
 const showImageTable = ref(false);
+
 const progress = ref({
   count: 0,
-  max: imageRedactionPlan.value.total,
+  max: useRedactionPlan.imageRedactionPlan.total,
+  redact_dir: "",
 });
 
 const wsBase = import.meta.env.VITE_APP_API_URL
@@ -30,7 +32,8 @@ ws.onmessage = (event) => {
   const data = JSON.parse(event.data);
   progress.value = {
     count: data.count || 0,
-    max: imageRedactionPlan.value.total,
+    max: useRedactionPlan.imageRedactionPlan.total,
+    redact_dir: data.redact_dir,
   };
 };
 
@@ -42,12 +45,17 @@ const redact_images = async () => {
     selectedDirectories.value.outputDirectory,
   );
   if (response.status === 200) {
+    useRedactionPlan.clearImageData();
+    console.log(useRedactionPlan.imageRedactionPlan);
+    useRedactionPlan.updateImageData(`${selectedDirectories.value.outputDirectory}/${progress.value.redact_dir}`, 50, 1, false);
     redacting.value = false;
     redactionComplete.value = true;
     redactionModal.value.close();
     showImageTable.value = false;
   }
 };
+
+
 </script>
 
 <template>
@@ -123,11 +131,12 @@ const redact_images = async () => {
         </div>
       </div>
     </dialog>
-    <ImageDataTable v-if="imageRedactionPlan.total && showImageTable" />
+    <ImageDataTable v-if="useRedactionPlan.imageRedactionPlan.total && showImageTable" />
     <div v-if="redactionComplete" class="card">
       <div class="card-body">
         <h2 class="card-title">Redaction Complete</h2>
         <p>Redacted images now in {{ selectedDirectories.outputDirectory }}</p>
+        <ImageDataTable />
       </div>
     </div>
   </div>

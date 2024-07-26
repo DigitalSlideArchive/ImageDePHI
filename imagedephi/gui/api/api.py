@@ -165,7 +165,7 @@ async def websocket_endpoint(websocket: WebSocket):
     while True:
         message = get_next_progress_message()
         if message is not None:
-            message_dict = dict(count=message[0], max=message[1])
+            message_dict = dict(count=message[0], max=message[1], redact_dir=message[2].name)
             await websocket.send_json(message_dict)
         else:
             await asyncio.sleep(0.001)
