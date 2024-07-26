@@ -115,7 +115,7 @@ def redact_images(
 
     with logging_redirect_tqdm(loggers=[logger]):
         for image_file in tqdm(images_to_redact, desc="Redacting images", position=0, leave=True):
-            push_progress(output_file_counter, output_file_max)
+            push_progress(output_file_counter, output_file_max, redact_dir)
             try:
                 redaction_plan = build_redaction_plan(
                     image_file, base_rules, override_rules, dcm_uid_map=dcm_uid_map, strict=strict
@@ -229,10 +229,9 @@ def show_redaction_plan(
     base_rules = get_base_rules()
 
     global tags_used
+    global redaction_plan_report
 
-    if update:
-        global redaction_plan_report
-
+    def _create_redaction_plan_report():
         for image_path in image_paths:
             try:
                 redaction_plan = build_redaction_plan(
@@ -253,6 +252,13 @@ def show_redaction_plan(
                 continue
             logger.info(f"Redaction plan for {image_path.name}")
             redaction_plan_report.update(redaction_plan.report_plan())  # type: ignore
+
+    if not update:
+        redaction_plan_report = {}
+        _create_redaction_plan_report()
+    else:
+        _create_redaction_plan_report()
+
     total = len(redaction_plan_report)  # type: ignore
     sorted_dict = _sort_data(redaction_plan_report)  # type: ignore
     if limit is not None and offset is not None:

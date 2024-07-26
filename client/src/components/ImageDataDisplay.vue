@@ -11,11 +11,14 @@ const offset = ref(1);
 
 
 const loadImagePlan = async () => {
+  if(useRedactionPlan.imageRedactionPlan.total <= offset.value * limit.value){
+    return;
+  }
   const newPlan = await getRedactionPlan(
     selectedDirectories.value.inputDirectory,
     limit.value,
     offset.value,
-    false,
+    true,
   );
   useRedactionPlan.imageRedactionPlan.data = {
     ...useRedactionPlan.imageRedactionPlan.data,

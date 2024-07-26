@@ -47,7 +47,7 @@ const redact_images = async () => {
   if (response.status === 200) {
     useRedactionPlan.clearImageData();
     console.log(useRedactionPlan.imageRedactionPlan);
-    useRedactionPlan.updateImageData(`${selectedDirectories.value.outputDirectory}/${progress.value.redact_dir}`, 50, 1, false);
+    useRedactionPlan.updateImageData(`${selectedDirectories.value.outputDirectory}/${progress.value.redact_dir}`, 50, 0, false);
     redacting.value = false;
     redactionComplete.value = true;
     redactionModal.value.close();
