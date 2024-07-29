@@ -154,7 +154,7 @@ class SvsRedactionPlan(TiffRedactionPlan):
                     value, rule.valid_data_types, rule.expected_count
                 )
                 return "keep" if passes_check else "delete"
-            if rule.action in ["keep", "replace", "delete"]:
+            if rule.action in ["keep", "replace", "delete", "modify_date"]:
                 return rule.action
         else:
             return super().determine_redaction_operation(rule, data)
@@ -168,6 +168,12 @@ class SvsRedactionPlan(TiffRedactionPlan):
             elif redaction_operation == "replace":
                 assert isinstance(rule, MetadataReplaceRule)
                 data.metadata[rule.key_name] = rule.new_value
+            elif redaction_operation == "modify_date":
+                new_value = self._get_modified_date(str(data.metadata[rule.key_name]))
+                if not new_value:
+                    del data.metadata[rule.key_name]
+                else:
+                    data.metadata[rule.key_name] = new_value
             return
         return super().apply(rule, data)
 
