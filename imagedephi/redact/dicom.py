@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Generator
+from datetime import date, datetime
 from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -158,7 +159,15 @@ class DicomRedactionPlan(RedactionPlan):
     ) -> RedactionOperation:
         if rule.action == "check_type":
             return "keep" if self.passes_type_check(element) else "delete"
-        if rule.action in ["keep", "delete", "replace", "replace_uid", "replace_dummy", "empty"]:
+        if rule.action in [
+            "keep",
+            "delete",
+            "replace",
+            "replace_uid",
+            "replace_dummy",
+            "empty",
+            "modify_date",
+        ]:
             return rule.action
         return "delete"
 
@@ -185,6 +194,35 @@ class DicomRedactionPlan(RedactionPlan):
         self.report_missing_rules(report)
         return report
 
+    def _apply_modify_date_rule(self, element: DataElement) -> str | None:
+        """
+        Given a DICOM data element of type DA (date), DT (datetime), TM (time), or SH
+        (specifically representing a UTC offset), return a value for the element to hold
+        that conforms with preserving some degree of information for these fields. For
+        example, dates are set to January first of the same year.
+
+        Tags that are treated specially for this mode of redaction are documented here:
+        https://dicom.nema.org/dicom/2013/output/chtml/part15/chapter_E.html#table_E.1-1
+        """
+        if element.VR == valuerep.VR.DA.value:
+            old_date = valuerep.DA(element.value)
+            return str(valuerep.DA(date(year=old_date.year, month=1, day=1))) if old_date else None
+        elif element.VR == valuerep.VR.DT.value:
+            old_datetime = valuerep.DT(element.value)
+            return (
+                str(valuerep.DT(datetime(year=old_datetime.year, month=1, day=1)))
+                if old_datetime
+                else None
+            )
+        elif element.VR == valuerep.VR.TM.value:
+            # Change time to midnight, drop precision below hour
+            return "00"
+        elif element.VR == valuerep.VR.SH.value:
+            # element.VR == "SH"
+            # For UTC offset, change to +0000 (no offset)
+            return "+0000"
+        return None
+
     def apply(self, rule: ConcreteMetadataRule, element: DataElement, dataset: Dataset):
         operation = self.determine_redaction_operation(rule, element)
         if operation == "delete":
@@ -203,6 +241,8 @@ class DicomRedactionPlan(RedactionPlan):
             element.value = self.uid_map[element.value]
         elif operation == "replace_dummy":
             element.value = VR_TO_DUMMY_VALUE[element.VR]
+        elif operation == "modify_date":
+            element.value = self._apply_modify_date_rule(element)
 
     def execute_plan(self) -> None:
         if self.associated_image_rule:
