@@ -9,9 +9,11 @@ import InfiniteScroller from "./InfiniteScroller.vue";
 const limit = ref(50);
 const offset = ref(1);
 
-
 const loadImagePlan = async () => {
-  if(useRedactionPlan.imageRedactionPlan.total <= offset.value * limit.value){
+  if (
+    useRedactionPlan.imageRedactionPlan.total <
+    (offset.value + 1) * limit.value
+  ) {
     return;
   }
   const newPlan = await getRedactionPlan(

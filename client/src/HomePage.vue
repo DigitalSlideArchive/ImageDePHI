@@ -15,6 +15,7 @@ const redactionModal = ref();
 const redacting = ref(false);
 const redactionComplete = ref(false);
 const showImageTable = ref(false);
+const redactionSnackbar = ref(false);
 
 const progress = ref({
   count: 0,
@@ -40,22 +41,24 @@ ws.onmessage = (event) => {
 const redact_images = async () => {
   redacting.value = true;
   redactionModal.value.showModal();
+  showImageTable.value = false;
   const response = await redactImages(
     selectedDirectories.value.inputDirectory,
     selectedDirectories.value.outputDirectory,
   );
   if (response.status === 200) {
-    useRedactionPlan.clearImageData();
-    console.log(useRedactionPlan.imageRedactionPlan);
-    useRedactionPlan.updateImageData(`${selectedDirectories.value.outputDirectory}/${progress.value.redact_dir}`, 50, 0, false);
+    useRedactionPlan.updateImageData(
+      `${selectedDirectories.value.outputDirectory}/${progress.value.redact_dir}`,
+      50,
+      0,
+      false,
+    );
     redacting.value = false;
     redactionComplete.value = true;
+    redactionSnackbar.value = true;
     redactionModal.value.close();
-    showImageTable.value = false;
   }
 };
-
-
 </script>
 
 <template>
@@ -131,12 +134,26 @@ const redact_images = async () => {
         </div>
       </div>
     </dialog>
-    <ImageDataTable v-if="useRedactionPlan.imageRedactionPlan.total && showImageTable" />
-    <div v-if="redactionComplete" class="card">
-      <div class="card-body">
-        <h2 class="card-title">Redaction Complete</h2>
-        <p>Redacted images now in {{ selectedDirectories.outputDirectory }}</p>
-        <ImageDataTable />
+    <ImageDataTable
+      v-if="useRedactionPlan.imageRedactionPlan.total && showImageTable"
+    />
+    <div v-if="redactionComplete">
+      <ImageDataTable />
+    </div>
+    <div v-if="redactionSnackbar" class="toast">
+      <div class="alert alert-success">
+        <span class="font-semibold">Redaction Complete</span>
+        <div>
+          Redacted images now in {{ selectedDirectories.outputDirectory }}/{{
+            progress.redact_dir
+          }}
+          <button
+            class="btn btn-xs btn-ghost"
+            @click="redactionSnackbar = false"
+          >
+            <i class="ri-close-line"></i>
+          </button>
+        </div>
       </div>
     </div>
   </div>

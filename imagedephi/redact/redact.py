@@ -229,9 +229,9 @@ def show_redaction_plan(
     base_rules = get_base_rules()
 
     global tags_used
-    global redaction_plan_report
 
     def _create_redaction_plan_report():
+        global redaction_plan_report
         for image_path in image_paths:
             try:
                 redaction_plan = build_redaction_plan(
@@ -254,6 +254,7 @@ def show_redaction_plan(
             redaction_plan_report.update(redaction_plan.report_plan())  # type: ignore
 
     if not update:
+        global redaction_plan_report
         redaction_plan_report = {}
         _create_redaction_plan_report()
     else:

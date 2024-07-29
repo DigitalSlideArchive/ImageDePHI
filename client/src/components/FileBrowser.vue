@@ -37,8 +37,6 @@ const updateDirectories = async (currentDirectory?: string) => {
 };
 updateDirectories();
 
-
-
 const closeModal = () => {
   modal.value.close();
 };
@@ -64,7 +62,12 @@ const updateSelectedDirectories = (path: string) => {
                 $emit('update-image-list'),
                   closeModal(),
                   title === 'Input Directory'
-                    ? useRedactionPlan.updateImageData(selectedDirectories['inputDirectory'], 50, 0, false)
+                    ? useRedactionPlan.updateImageData(
+                        selectedDirectories['inputDirectory'],
+                        50,
+                        0,
+                        false,
+                      )
                     : ''
               "
             >
