@@ -44,6 +44,10 @@ const closeModal = () => {
 const updateSelectedDirectories = (path: string) => {
   selectedDirectories.value[props.modalId] = path;
 };
+const updateTableData = () => {
+ useRedactionPlan.updateImageData(selectedDirectories.value.inputDirectory, 50, 0, false);
+};
+
 </script>
 
 <template>
@@ -62,12 +66,7 @@ const updateSelectedDirectories = (path: string) => {
                 $emit('update-image-list'),
                   closeModal(),
                   title === 'Input Directory'
-                    ? useRedactionPlan.updateImageData(
-                        selectedDirectories['inputDirectory'],
-                        50,
-                        0,
-                        false,
-                      )
+                    ? updateTableData()
                     : ''
               "
             >

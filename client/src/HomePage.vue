@@ -7,7 +7,7 @@ import { useRedactionPlan } from "./store/imageStore";
 
 import MenuSteps from "./components/MenuSteps.vue";
 import FileBrowser from "./components/FileBrowser.vue";
-import ImageDataTable from "./components/ImageDataDisplay.vue";
+import ImageDataDisplay from "./components/ImageDataDisplay.vue";
 
 const inputModal = ref(null);
 const outputModal = ref(null);
@@ -34,14 +34,14 @@ ws.onmessage = (event) => {
   progress.value = {
     count: data.count || 0,
     max: useRedactionPlan.imageRedactionPlan.total,
-    redact_dir: data.redact_dir,
+    redact_dir: data.redact_dir || progress.value.redact_dir, // don't update if not present
   };
 };
 
 const redact_images = async () => {
+  showImageTable.value = false;
   redacting.value = true;
   redactionModal.value.showModal();
-  showImageTable.value = false;
   const response = await redactImages(
     selectedDirectories.value.inputDirectory,
     selectedDirectories.value.outputDirectory,
@@ -54,9 +54,9 @@ const redact_images = async () => {
       false,
     );
     redacting.value = false;
-    redactionComplete.value = true;
-    redactionSnackbar.value = true;
     redactionModal.value.close();
+    redactionComplete.value = !!useRedactionPlan.imageRedactionPlan.total;
+    redactionSnackbar.value = true;
   }
 };
 </script>
@@ -93,7 +93,7 @@ const redact_images = async () => {
             ref="inputModal"
             :modal-id="'inputDirectory'"
             :title="'Input Directory'"
-            @update-image-list="showImageTable = true"
+            @update-image-list="showImageTable = true, redactionComplete = false"
           />
           <FileBrowser
             ref="outputModal"
@@ -134,11 +134,11 @@ const redact_images = async () => {
         </div>
       </div>
     </dialog>
-    <ImageDataTable
+    <ImageDataDisplay
       v-if="useRedactionPlan.imageRedactionPlan.total && showImageTable"
     />
     <div v-if="redactionComplete">
-      <ImageDataTable />
+      <ImageDataDisplay />
     </div>
     <div v-if="redactionSnackbar" class="toast">
       <div class="alert alert-success">
