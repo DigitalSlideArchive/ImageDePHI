@@ -145,6 +145,7 @@ class DicomRedactionPlan(RedactionPlan):
                 "empty",
                 "replace_uid",
                 "replace_dummy",
+                "modify_date",
             ]:
                 self.metadata_redaction_steps[element.tag] = rule
             else:

@@ -696,9 +696,9 @@ svs:
     Date:
       action: modify_date
     Time:
-      action: delete
+      action: modify_date
     Time Zone:
-      action: delete
+      action: modify_date
     User:
       action: delete
     Left:

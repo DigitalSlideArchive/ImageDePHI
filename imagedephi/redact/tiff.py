@@ -156,7 +156,7 @@ class TiffRedactionPlan(RedactionPlan):
                 self.image_redaction_steps[ifd["offset"]] = associated_image_rule
 
     def is_match(self, rule: ConcreteMetadataRule, tag: tifftools.TiffTag) -> bool:
-        if rule.action in ["keep", "delete", "replace", "check_type"]:
+        if rule.action in ["keep", "delete", "replace", "check_type", "modify_date"]:
             rule_tag = get_tiff_tag(rule.key_name)
             return rule_tag.value == tag.value
         return False
