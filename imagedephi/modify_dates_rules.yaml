@@ -1,6 +1,7 @@
 ---
 name: Modify dates rules
-description: These are a modification of the Image DePHI base rules with some modifications. For each metadata tag that represents a date, replace it with a modified version of that date. For DICOM datetimes and time elements, the time is set to midnight, and the UTC offset is set to +0000.
+description: These are a modification of the Image DePHI base rules with some modifications. For each metadata tag that represents a date, replace it with a modified version of that date. For DICOM datetimes
+  and time elements, the time is set to midnight, and the UTC offset is set to +0000.
 output_file_name: study_slide
 tiff:
   associated_images:
