@@ -7,7 +7,7 @@ import pytest
 import yaml
 
 from imagedephi import redact
-from imagedephi.redact.redact import create_redact_dir_and_manifest
+from imagedephi.redact.redact import ProfileChoice, create_redact_dir_and_manifest
 from imagedephi.redact.svs import SvsRedactionPlan
 from imagedephi.rules import Ruleset
 from imagedephi.utils.logger import logger
@@ -132,7 +132,7 @@ def test_plan_dcm(caplog, test_image_dcm):
 @freeze_time("2023-05-12 12:12:53")
 @pytest.mark.timeout(5)
 def test_strict(svs_input_path, tmp_path) -> None:
-    redact.redact_images(svs_input_path, tmp_path, strict=True)
+    redact.redact_images(svs_input_path, tmp_path, profile=ProfileChoice.Strict.value)
     output_file = tmp_path / "Redacted_2023-05-12_12-12-53" / "study_slide_1.svs"
     output_file_bytes = output_file.read_bytes()
     assert b"Aperio" not in output_file_bytes
@@ -142,7 +142,7 @@ def test_strict(svs_input_path, tmp_path) -> None:
 @freeze_time("2023-05-12 12:12:53")
 @pytest.mark.timeout(5)
 def test_strict_skip_dcm(dcm_input_path, tmp_path) -> None:
-    redact.redact_images(dcm_input_path, tmp_path, strict=True)
+    redact.redact_images(dcm_input_path, tmp_path, profile=ProfileChoice.Strict.value)
     output_dir = tmp_path / "Redacted_2023-05-12_12-12-53"
     assert output_dir.is_dir()
     assert len(list(output_dir.iterdir())) == 0

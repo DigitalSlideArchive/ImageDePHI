@@ -4,6 +4,7 @@ from collections import OrderedDict, namedtuple
 from collections.abc import Generator
 from csv import DictWriter
 import datetime
+from enum import Enum
 import importlib.resources
 from pathlib import Path
 from typing import NamedTuple
@@ -27,6 +28,11 @@ tags_used = OrderedDict()
 redaction_plan_report = {}
 
 
+class ProfileChoice(Enum):
+    Strict = "strict"
+    Dates = "dates"
+
+
 def _get_output_path(
     file_path: Path,
     output_dir: Path,
@@ -37,12 +43,19 @@ def _get_output_path(
     return output_dir / f"{base_name}_{count:0{len(str(max))}}{file_path.suffix}"
 
 
-def get_base_rules(strict=False) -> Ruleset:
-    base_rules_path = (
-        importlib.resources.files("imagedephi") / "minimum_rules.yaml"
-        if strict
-        else importlib.resources.files("imagedephi") / "base_rules.yaml"
-    )
+def get_base_rules(profile: str = "") -> Ruleset:
+    """
+    Return the rule set associated with the given profile.
+
+    Default to the base rules if no profile is specified.
+    """
+    if profile == ProfileChoice.Strict.value:
+        base_rules_path = importlib.resources.files("imagedephi") / "minimum_rules.yaml"
+    elif profile == ProfileChoice.Dates.value:
+        base_rules_path = importlib.resources.files("imagedephi") / "modify_dates_rules.yaml"
+    else:
+        base_rules_path = importlib.resources.files("imagedephi") / "base_rules.yaml"
+
     with base_rules_path.open() as base_rules_stream:
         base_rule_set = Ruleset.parse_obj(yaml.safe_load(base_rules_stream))
         return base_rule_set
@@ -91,7 +104,7 @@ def redact_images(
     output_dir: Path,
     override_rules: Ruleset | None = None,
     rename: bool = True,
-    strict: bool = False,
+    profile: str = "",
     overwrite: bool = False,
     recursive: bool = False,
 ) -> None:
@@ -99,7 +112,7 @@ def redact_images(
     # (original_name, output_name) as bare minimum
     # error message? rule set (base/override)?
     run_summary = []
-    base_rules = get_base_rules(strict)
+    base_rules = get_base_rules(profile)
     output_file_name_base = (
         override_rules.output_file_name if override_rules else base_rules.output_file_name
     )
@@ -116,6 +129,7 @@ def redact_images(
     with logging_redirect_tqdm(loggers=[logger]):
         for image_file in tqdm(images_to_redact, desc="Redacting images", position=0, leave=True):
             push_progress(output_file_counter, output_file_max)
+            strict = profile == ProfileChoice.Strict.value
             try:
                 redaction_plan = build_redaction_plan(
                     image_file, base_rules, override_rules, dcm_uid_map=dcm_uid_map, strict=strict
@@ -220,13 +234,14 @@ def show_redaction_plan(
     input_path: Path,
     override_rules: Ruleset | None = None,
     recursive=False,
-    strict=False,
+    profile="",
     limit: int | None = None,
     offset: int | None = None,
     update: bool = True,
 ) -> NamedTuple:
     image_paths = iter_image_files(input_path, recursive) if input_path.is_dir() else [input_path]
-    base_rules = get_base_rules()
+    base_rules = get_base_rules(profile)
+    strict = profile == ProfileChoice.Strict.value
 
     global tags_used
 
