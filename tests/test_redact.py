@@ -146,3 +146,24 @@ def test_strict_skip_dcm(dcm_input_path, tmp_path) -> None:
     output_dir = tmp_path / "Redacted_2023-05-12_12-12-53"
     assert output_dir.is_dir()
     assert len(list(output_dir.iterdir())) == 0
+
+
+@freeze_time("2023-05-12 12:12:53")
+@pytest.mark.timeout(5)
+def test_dates_dcm(test_image_dcm, tmp_path) -> None:
+    redact.redact_images(test_image_dcm, tmp_path, profile=ProfileChoice.Dates.value)
+    output_file = tmp_path / "Redacted_2023-05-12_12-12-53" / "study_slide_1.dcm"
+    dcm_output_file_bytes = output_file.read_bytes()
+    assert b"20220101" in dcm_output_file_bytes
+
+
+@freeze_time("2023-05-12 12:12:53")
+@pytest.mark.timeout(5)
+def test_dates_svs(svs_input_path, tmp_path) -> None:
+    redact.redact_images(svs_input_path, tmp_path, profile=ProfileChoice.Dates.value)
+    output_file = tmp_path / "Redacted_2023-05-12_12-12-53" / "study_slide_1.svs"
+    output_file_bytes = output_file.read_bytes()
+    # DAte set to January 1
+    assert b"01/01/08" in output_file_bytes
+    # Time set to midnight
+    assert b"00:00:00" in output_file_bytes
