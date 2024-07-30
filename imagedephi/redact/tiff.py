@@ -204,7 +204,7 @@ class TiffRedactionPlan(RedactionPlan):
 
     def _get_modified_date(self, tiff_date: str) -> str | None:
         """
-        Given a tiff datestring, return a version set to January 1st of that year.
+        Given a tiff datestring, return a version set to midnight, January 1st of that year.
 
         Input should be  a string representing a date (formatted according to the tiff standard,
         i.e. YYYY:MM:DD HH:MM:DD). If the given string does not conform to the given format,
@@ -215,7 +215,7 @@ class TiffRedactionPlan(RedactionPlan):
             # If the date value doesn't match the expected format, delete the tag
             return None
         else:
-            return tiff_date[:5] + "01:01" + tiff_date[10:]
+            return tiff_date[:5] + "01:01 00:00:00"
 
     def apply(self, rule: ConcreteMetadataRule, ifd: IFD) -> None:
         tag = get_tiff_tag(rule.key_name)
