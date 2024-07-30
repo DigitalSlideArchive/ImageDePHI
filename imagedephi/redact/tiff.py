@@ -204,10 +204,11 @@ class TiffRedactionPlan(RedactionPlan):
 
     def _get_modified_date(self, tiff_date: str) -> str | None:
         """
-        Given a string representing a date (formatted according to the tiff standard,
-        i.e. YYYY:MM:DD HH:MM:DD), return a redacted version of that date where the
-        month and day are set to January first. If the given string does not conform
-        to the given format, return None.
+        Given a tiff datestring, return a version set to January 1st of that year.
+
+        Input should be  a string representing a date (formatted according to the tiff standard,
+        i.e. YYYY:MM:DD HH:MM:DD). If the given string does not conform to the given format,
+        return None.
         """
         expected_format = r"\d{4}:\d{2}\d{2} \d{2}:\d{2}:\d{2}"
         if not re.match(expected_format, tiff_date):
@@ -231,7 +232,7 @@ class TiffRedactionPlan(RedactionPlan):
             if not new_value:
                 logger.warn(
                     f"Improper date format for {self.image_path}. Expected a date of format"
-                    f"YYYY:MM:DD HH:MM:SS, got {current_value} for tag {tag.value}."
+                    f"YYYY:MM:DD HH:MM:SS, got {str(current_value)} for tag {tag.value}."
                 )
                 # If the date value doesn't match the expected format, delete the tag
                 del ifd["tags"][tag.value]

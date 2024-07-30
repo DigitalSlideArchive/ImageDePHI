@@ -194,8 +194,10 @@ class DicomRedactionPlan(RedactionPlan):
         self.report_missing_rules(report)
         return report
 
-    def _apply_modify_date_rule(self, element: DataElement) -> str | None:
+    def _get_modified_date(self, element: DataElement) -> str | None:
         """
+        Return a fuzzy date, time, or UTC offset based on the value in the given date element.
+
         Given a DICOM data element of type DA (date), DT (datetime), TM (time), or SH
         (specifically representing a UTC offset), return a value for the element to hold
         that conforms with preserving some degree of information for these fields. For
@@ -242,7 +244,7 @@ class DicomRedactionPlan(RedactionPlan):
         elif operation == "replace_dummy":
             element.value = VR_TO_DUMMY_VALUE[element.VR]
         elif operation == "modify_date":
-            element.value = self._apply_modify_date_rule(element)
+            element.value = self._get_modified_date(element)
 
     def execute_plan(self) -> None:
         if self.associated_image_rule:
