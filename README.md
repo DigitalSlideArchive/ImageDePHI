@@ -34,7 +34,7 @@ For whole slide image formats based on the tiff standard, `imagedephi` allows a 
 
 
 ## Ruleset Format Overview
-In order to read the base rules and build your own custom rule sets, it is important to understand the format in which rulesets are specified. Rulesets are defined by `.yaml` files (one ruleset per file), and are a dictionary with the following top-level tags: `name`, `description`, `output_file_name`, `tiff`, `svs` and `dicom`.
+In order to read the base rules and build your own custom rule sets, it is important to understand the format in which rulesets are specified. Rulesets are defined by `.yaml` files (one ruleset per file), and are a dictionary with the following top-level tags: `name`, `description`, `output_file_name`, `tiff`, `svs`, and `dicom`.
 
 ### Generic Properties
 The following three properties belong to the rulesets themselves, and don't influence redaction behavior.
@@ -129,7 +129,7 @@ Use the additional properties:
 ### Supported Formats
 Currently, `imagedephi` supports redaction of the following types of files:
 * TIFF
-* Aperio (a tiff-like format, typically uses the extension `.svs`
+* Aperio (a tiff-like format, typically uses the extension `.svs`)
 * DICOM
 
 #### Tiff
