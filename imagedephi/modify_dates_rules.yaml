@@ -1,0 +1,1547 @@
+---
+name: Modify dates rules
+description: These are a modification of the Image DePHI base rules with some modifications. For each metadata tag that represents a date, replace it with a modified version of that date. For DICOM datetimes and time elements, the time is set to midnight, and the UTC offset is set to +0000.
+output_file_name: study_slide
+tiff:
+  associated_images:
+    default:
+      action: delete
+  metadata:
+    NewSubfileType:
+      action: keep
+    ImageWidth:
+      action: keep
+    ImageLength:
+      action: keep
+    BitsPerSample:
+      action: keep
+    Compression:
+      action: keep
+    Photometric:
+      action: keep
+    ImageDescription:
+      action: delete
+    Orientation:
+      action: keep
+    SamplesPerPixel:
+      action: keep
+    XResolution:
+      action: keep
+    YResolution:
+      action: keep
+    PlanarConfig:
+      action: keep
+    ResolutionUnit:
+      action: keep
+    TileWidth:
+      action: keep
+    TileHeight:
+      action: keep
+    TileOffsets:
+      action: keep
+    TileByteCounts:
+      action: keep
+    SampleFormat:
+      action: keep
+    JPEGTables:
+      action: keep
+    YCbCrSubsampling:
+      action: keep
+    ImageDepth:
+      action: keep
+    ICCProfile:
+      action: keep
+    StripOffsets:
+      action: keep
+    RowsPerStrip:
+      action: keep
+    StripByteCounts:
+      action: keep
+    Predictor:
+      action: keep
+    Software:
+      action: delete
+    ReferenceBlackWhite:
+      action: keep
+    GPSVersionID:
+      action: delete
+    '11':
+      action: delete
+    GPSMapDatum:
+      action: delete
+    GPSLatitudeRef:
+      action: delete
+    OldSubfileType:
+      action: keep
+    Threshholding:
+      action: delete
+    FillOrder:
+      action: keep
+    DocumentName:
+      action: delete
+    Make:
+      action: delete
+    Model:
+      action: delete
+    MinSampleValue:
+      action: delete
+    MaxSampleValue:
+      action: delete
+    PageName:
+      action: delete
+    Xposition:
+      action: keep
+    Yposition:
+      action: keep
+    T4Options:
+      action: keep
+    T6Options:
+      action: keep
+    PageNumber:
+      action: keep
+    GPSDateStamp:
+      action: modify_date
+    GPSLatitude:
+      action: delete
+    DateTime:
+      action: modify_date
+    Artist:
+      action: delete
+    HostComputer:
+      action: delete
+    ColorMap:
+      action: keep
+    HalftoneHints:
+      action: keep
+    BadFaxLines:
+      action: keep
+    CleanFaxData:
+      action: keep
+    ConsecutiveBadFaxLines:
+      action: keep
+    Matteing:
+      action: delete
+    Datatype:
+      action: delete
+    TileDepth:
+      action: keep
+    InkSet:
+      action: delete
+    InkNames:
+      action: delete
+    Copyright:
+      action: delete
+    ExposureTime:
+      action: keep
+    FNumber:
+      action: keep
+    NumberOfInks:
+      action: delete
+    ModelPixelScaleTag:
+      action: delete
+    '33628':
+      action: delete
+    RichTiffIPTC:
+      action: delete
+    ExtraSamples:
+      action: delete
+    ModelTiepointTag:
+      action: delete
+    SMinSampleValue:
+      action: delete
+    '34118':
+      action: delete
+    '34119':
+      action: delete
+    SMaxSampleValue:
+      action: delete
+    Photoshop:
+      action: delete
+    GeoKeyDirectoryTag:
+      action: delete
+    GeoDoubleParamsTag:
+      action: delete
+    GeoAsciiParamsTag:
+      action: delete
+    ExposureProgram:
+      action: delete
+    ISOSpeedRatings:
+      action: keep
+    '34864':
+      action: delete
+    ExifVersion:
+      action: delete
+    DateTimeOriginal:
+      action: modify_date
+    CreateDate:
+      action: modify_date
+    ShutterSpeedValue:
+      action: keep
+    ApertureValue:
+      action: keep
+    BrightnessValue:
+      action: keep
+    ExposureBiasValue:
+      action: keep
+    MaxApertureValue:
+      action: keep
+    MeteringMode:
+      action: keep
+    LightSource:
+      action: keep
+    Flash:
+      action: keep
+    FocalLength:
+      action: keep
+    StoNits:
+      action: delete
+    MakerNote:
+      action: delete
+    UserComment:
+      action: delete
+    SubSecTime:
+      action: delete
+    SubSecTimeOriginal:
+      action: delete
+    SubSecTimeDigitized:
+      action: delete
+    ImageSourceData:
+      action: delete
+    GPSLongitudeRef:
+      action: delete
+    FlashpixVersion:
+      action: delete
+    '40961':
+      action: delete
+    ColorSpace:
+      action: keep
+    PixelXDimension:
+      action: keep
+    PixelYDimension:
+      action: keep
+    FocalPlaneXResolution:
+      action: keep
+    FocalPlaneYResolution:
+      action: keep
+    FocalPlaneResolutionUnit:
+      action: keep
+    SensingMethod:
+      action: keep
+    FileSource:
+      action: delete
+    SceneType:
+      action: keep
+    CFAPattern:
+      action: keep
+    CustomRendered:
+      action: keep
+    ExposureMode:
+      action: keep
+    WhiteBalance:
+      action: keep
+    FocalLengthIn35mmFilm:
+      action: keep
+    SceneCaptureType:
+      action: keep
+    GainControl:
+      action: keep
+    Contrast:
+      action: keep
+    Saturation:
+      action: keep
+    Sharpness:
+      action: keep
+    SubjectDistanceRange:
+      action: keep
+    GDAL_Metadata:
+      action: delete
+    GDAL_NoData:
+      action: delete
+    GPSLongitude:
+      action: delete
+    '50838':
+      action: delete
+    '50839':
+      action: delete
+    '51123':
+      action: delete
+    '51168':
+      action: delete
+    JPEGProc:
+      action: keep
+    JPEGIFOffset:
+      action: keep
+    JPEGIFByteCount:
+      action: keep
+    JPEGRestartInterval:
+      action: keep
+    JPEGQTables:
+      action: keep
+    JPEGDCTables:
+      action: keep
+    JPEGACTables:
+      action: keep
+    YCbCrCoefficients:
+      action: keep
+    YCbCrPositioning:
+      action: keep
+    '55000':
+      action: delete
+    '55001':
+      action: delete
+    '55002':
+      action: delete
+    '55003':
+      action: delete
+    '55004':
+      action: delete
+    '59932':
+      action: delete
+    Padding:
+      action: delete
+    OffsetSchema:
+      action: delete
+    GPSAltitudeRef:
+      action: delete
+    '60010':
+      action: delete
+    '60011':
+      action: delete
+    '60020':
+      action: delete
+    '65200':
+      action: delete
+    '65326':
+      action: delete
+    '65327':
+      action: delete
+    '65328':
+      action: delete
+    '65329':
+      action: delete
+    '65330':
+      action: delete
+    '65331':
+      action: delete
+    '65332':
+      action: delete
+    '65333':
+      action: delete
+    '65400':
+      action: delete
+    GPSAltitude:
+      action: delete
+    XMLPacket:
+      action: delete
+    GPSTimeStamp:
+      action: delete
+    GPSSatellites:
+      action: delete
+svs:
+  associated_images:
+    macro:
+      action: delete
+    label:
+      action: replace
+      replace_with: blank_image
+    thumbnail:
+      action: keep
+    default:
+      action: keep
+  metadata:
+    NewSubfileType:
+      action: keep
+    ImageWidth:
+      action: keep
+    ImageLength:
+      action: keep
+    BitsPerSample:
+      action: keep
+    Compression:
+      action: keep
+    Photometric:
+      action: keep
+    ImageDescription:
+      action: delete
+    Orientation:
+      action: keep
+    SamplesPerPixel:
+      action: keep
+    XResolution:
+      action: keep
+    YResolution:
+      action: keep
+    PlanarConfig:
+      action: keep
+    ResolutionUnit:
+      action: keep
+    TileWidth:
+      action: keep
+    TileHeight:
+      action: keep
+    TileOffsets:
+      action: keep
+    TileByteCounts:
+      action: keep
+    SampleFormat:
+      action: keep
+    JPEGTables:
+      action: keep
+    YCbCrSubsampling:
+      action: keep
+    ImageDepth:
+      action: keep
+    ICCProfile:
+      action: keep
+    StripOffsets:
+      action: keep
+    RowsPerStrip:
+      action: keep
+    StripByteCounts:
+      action: keep
+    Predictor:
+      action: keep
+    Software:
+      action: delete
+    ReferenceBlackWhite:
+      action: keep
+    GPSVersionID:
+      action: delete
+    '11':
+      action: delete
+    GPSMapDatum:
+      action: delete
+    GPSLatitudeRef:
+      action: delete
+    OldSubfileType:
+      action: keep
+    Threshholding:
+      action: delete
+    FillOrder:
+      action: keep
+    DocumentName:
+      action: delete
+    Make:
+      action: delete
+    Model:
+      action: delete
+    MinSampleValue:
+      action: delete
+    MaxSampleValue:
+      action: delete
+    PageName:
+      action: delete
+    Xposition:
+      action: keep
+    Yposition:
+      action: keep
+    T4Options:
+      action: keep
+    T6Options:
+      action: keep
+    PageNumber:
+      action: keep
+    GPSDateStamp:
+      action: modify_date
+    GPSLatitude:
+      action: delete
+    DateTime:
+      action: modify_date
+    Artist:
+      action: delete
+    HostComputer:
+      action: delete
+    ColorMap:
+      action: keep
+    HalftoneHints:
+      action: keep
+    BadFaxLines:
+      action: keep
+    CleanFaxData:
+      action: keep
+    ConsecutiveBadFaxLines:
+      action: keep
+    Matteing:
+      action: delete
+    Datatype:
+      action: delete
+    TileDepth:
+      action: keep
+    InkSet:
+      action: delete
+    InkNames:
+      action: delete
+    Copyright:
+      action: delete
+    ExposureTime:
+      action: keep
+    FNumber:
+      action: keep
+    NumberOfInks:
+      action: delete
+    ModelPixelScaleTag:
+      action: delete
+    '33628':
+      action: delete
+    RichTiffIPTC:
+      action: delete
+    ExtraSamples:
+      action: delete
+    ModelTiepointTag:
+      action: delete
+    SMinSampleValue:
+      action: delete
+    '34118':
+      action: delete
+    '34119':
+      action: delete
+    SMaxSampleValue:
+      action: delete
+    Photoshop:
+      action: delete
+    GeoKeyDirectoryTag:
+      action: delete
+    GeoDoubleParamsTag:
+      action: delete
+    GeoAsciiParamsTag:
+      action: delete
+    ExposureProgram:
+      action: delete
+    ISOSpeedRatings:
+      action: keep
+    '34864':
+      action: delete
+    ExifVersion:
+      action: delete
+    DateTimeOriginal:
+      action: modify_date
+    CreateDate:
+      action: modify_date
+    ShutterSpeedValue:
+      action: keep
+    ApertureValue:
+      action: keep
+    BrightnessValue:
+      action: keep
+    ExposureBiasValue:
+      action: keep
+    MaxApertureValue:
+      action: keep
+    MeteringMode:
+      action: keep
+    LightSource:
+      action: keep
+    Flash:
+      action: keep
+    FocalLength:
+      action: keep
+    StoNits:
+      action: delete
+    MakerNote:
+      action: delete
+    UserComment:
+      action: delete
+    SubSecTime:
+      action: delete
+    SubSecTimeOriginal:
+      action: delete
+    SubSecTimeDigitized:
+      action: delete
+    ImageSourceData:
+      action: delete
+    GPSLongitudeRef:
+      action: delete
+    FlashpixVersion:
+      action: delete
+    '40961':
+      action: delete
+    ColorSpace:
+      action: keep
+    PixelXDimension:
+      action: keep
+    PixelYDimension:
+      action: keep
+    FocalPlaneXResolution:
+      action: keep
+    FocalPlaneYResolution:
+      action: keep
+    FocalPlaneResolutionUnit:
+      action: keep
+    SensingMethod:
+      action: keep
+    FileSource:
+      action: delete
+    SceneType:
+      action: keep
+    CFAPattern:
+      action: keep
+    CustomRendered:
+      action: keep
+    ExposureMode:
+      action: keep
+    WhiteBalance:
+      action: keep
+    FocalLengthIn35mmFilm:
+      action: keep
+    SceneCaptureType:
+      action: keep
+    GainControl:
+      action: keep
+    Contrast:
+      action: keep
+    Saturation:
+      action: keep
+    Sharpness:
+      action: keep
+    SubjectDistanceRange:
+      action: keep
+    GDAL_Metadata:
+      action: delete
+    GDAL_NoData:
+      action: delete
+    GPSLongitude:
+      action: delete
+    '50838':
+      action: delete
+    '50839':
+      action: delete
+    '51123':
+      action: delete
+    '51168':
+      action: delete
+    JPEGProc:
+      action: keep
+    JPEGIFOffset:
+      action: keep
+    JPEGIFByteCount:
+      action: keep
+    JPEGRestartInterval:
+      action: keep
+    JPEGQTables:
+      action: keep
+    JPEGDCTables:
+      action: keep
+    JPEGACTables:
+      action: keep
+    YCbCrCoefficients:
+      action: keep
+    YCbCrPositioning:
+      action: keep
+    '55000':
+      action: delete
+    '55001':
+      action: delete
+    '55002':
+      action: delete
+    '55003':
+      action: delete
+    '55004':
+      action: delete
+    '59932':
+      action: delete
+    Padding:
+      action: delete
+    OffsetSchema:
+      action: delete
+    GPSAltitudeRef:
+      action: delete
+    '60010':
+      action: delete
+    '60011':
+      action: delete
+    '60020':
+      action: delete
+    '65200':
+      action: delete
+    '65326':
+      action: delete
+    '65327':
+      action: delete
+    '65328':
+      action: delete
+    '65329':
+      action: delete
+    '65330':
+      action: delete
+    '65331':
+      action: delete
+    '65332':
+      action: delete
+    '65333':
+      action: delete
+    '65400':
+      action: delete
+    GPSAltitude:
+      action: delete
+    XMLPacket:
+      action: delete
+    GPSTimeStamp:
+      action: delete
+    GPSSatellites:
+      action: delete
+  image_description:
+    AppMag:
+      action: keep
+    MPP:
+      action: keep
+    mpp:
+      action: keep
+    StripeWidth:
+      action: keep
+    ScanScope ID:
+      action: delete
+    Filename:
+      action: delete
+    Date:
+      action: modify_date
+    Time:
+      action: delete
+    Time Zone:
+      action: delete
+    User:
+      action: delete
+    Left:
+      action: keep
+    Top:
+      action: keep
+    LineCameraSkew:
+      action: keep
+    LineAreaXOffset:
+      action: keep
+    LineAreaYOffset:
+      action: keep
+    Focus Offset:
+      action: keep
+    DSR ID:
+      action: delete
+    ImageID:
+      action: delete
+    Exposure Time:
+      action: keep
+    Exposure Scale:
+      action: keep
+    DisplayColor:
+      action: keep
+    SessonMode:
+      action: delete
+    OriginalWidth:
+      action: keep
+    OriginalHeight:
+      action: keep
+    ICC Profile:
+      action: keep
+    Title:
+      action: delete
+    Originalheight:
+      action: keep
+    Filtered:
+      action: delete
+    Parmset:
+      action: delete
+    BigTIFF:
+      action: delete
+    Converter:
+      action: delete
+    ConverterEpoch:
+      action: delete
+    ConverterVersion:
+      action: delete
+    CompressedFile:
+      action: delete
+    Gamma:
+      action: keep
+    Rack:
+      action: delete
+    Slide:
+      action: delete
+    BestFocusLayer:
+      action: keep
+    Accession:
+      action: delete
+    Copyright:
+      action: delete
+    CustomField.Behavior_Code:
+      action: delete
+    CustomField.Date_of_Birth_mmddyyyy:
+      # This is a custom field, so it will be deleted. We can't guarantee that we can fix dates in arbitrary formats.
+      action: delete
+    CustomField.First_Name:
+      action: delete
+    CustomField.Histology_Code:
+      action: delete
+    CustomField.ImageID:
+      action: delete
+    CustomField.InputFileName:
+      action: delete
+    CustomField.LabelText:
+      action: delete
+    CustomField.Last_Name:
+      action: delete
+    CustomField.PatientID:
+      action: delete
+    CustomField.Proc_Seq:
+      action: delete
+    CustomField.Proc_Type:
+      action: delete
+    CustomField.Registry:
+      action: delete
+    CustomField.SampleID:
+      action: delete
+    CustomField.Slide_ID:
+      action: delete
+    CustomField.Spec_Site:
+      action: delete
+    CustomField.SurgPathNum:
+      action: delete
+    CustomField.TokenID:
+      action: delete
+    CustomField.Tumor_Rec_Number:
+      action: delete
+    Patient:
+      action: delete
+    Scanner ID:
+      action: delete
+    Webslide Files:
+      action: delete
+    CalibrationAverageBlue:
+      action: keep
+    CalibrationAverageGreen:
+      action: keep
+    CalibrationAverageRed:
+      action: keep
+    ScannerType:
+      action: delete
+    SessionMode:
+      action: delete
+    Scan Warning:
+      action: delete
+dicom:
+  associated_images:
+    overview:
+      action: delete
+    label:
+      action: delete
+    default:
+      action: keep
+  delete_custom_metadata: true
+  metadata:
+    AccessionNumber:
+      action: empty
+    AcquisitionComments:
+      action: delete
+    AcquisitionContextSequence:
+      action: delete
+    AcquisitionDate:
+      action: modify_date
+    AcquisitionDateTime:
+      action: modify_date
+    AcquisitionDeviceProcessingDescription:
+      action: replace_dummy
+    AcquisitionProtocolDescription:
+      action: delete
+    AcquisitionTime:
+      action: modify_date
+    ActualHumanPerformersSequence:
+      action: delete
+    AdditionalPatientHistory:
+      action: delete
+    AdmissionID:
+      action: delete
+    AdmittingDate:
+      action: modify_date
+    AdmittingDiagnosesCodeSequence:
+      action: delete
+    AdmittingDiagnosesDescription:
+      action: delete
+    AdmittingTime:
+      action: modify_date
+    AffectedSOPInstanceUID:
+      action: delete
+    Allergies:
+      action: delete
+    Arbitrary:
+      action: delete
+    AuthorObserverSequence:
+      action: delete
+    BranchOfService:
+      action: delete
+    CassetteID:
+      action: delete
+    CommentsOnThePerformedProcedureStep:
+      action: delete
+    ConcatenationUID:
+      action: replace_uid
+    ConfidentialityConstraintOnPatientDataDescription:
+      action: delete
+    ContentCreatorName:
+      action: empty
+    ContentCreatorIdentificationCodeSequence:
+      action: delete
+    ContentDate:
+      action: modify_date
+    ContentSequence:
+      action: delete
+    ContentTime:
+      action: modify_date
+    ContextGroupExtensionCreatorUID:
+      action: replace_uid
+    ContrastBolusAgent:
+      action: replace_dummy
+    ContributionDescription:
+      action: delete
+    CountryOfResidence:
+      action: delete
+    CreatorVersionUID:
+      action: replace_uid
+    CurrentPatientLocation:
+      action: delete
+    CurveDate:
+      action: modify_date
+    CurveTime:
+      action: modify_date
+    CustodialOrganizationSequence:
+      action: delete
+    DataSetTrailingPadding:
+      action: delete
+    DerivationDescription:
+      action: delete
+    DetectorID:
+      action: replace_dummy
+    DeviceSerialNumber:
+      action: replace_dummy
+    DeviceUID:
+      action: replace_uid
+    DigitalSignatureUID:
+      action: delete
+    DigitalSignaturesSequence:
+      action: delete
+    DimensionOrganizationUID:
+      action: replace_uid
+    DischargeDiagnosisDescription:
+      action: delete
+    DistributionAddress:
+      action: delete
+    DistributionName:
+      action: delete
+    DoseReferenceUID:
+      action: replace_uid
+    EthnicGroup:
+      action: delete
+    FailedSOPInstanceUIDList:
+      action: replace_uid
+    FiducialUID:
+      action: replace_uid
+    FillerOrderNumberImagingServiceRequestRetired:
+      action: empty
+    FrameComments:
+      action: delete
+    FrameOfReferenceUID:
+      action: replace_uid
+    GantryID:
+      action: delete
+    GeneratorID:
+      action: delete
+    GraphicAnnotationSequence:
+      action: replace_dummy
+    HumanPerformerName:
+      action: delete
+    HumanPerformerOrganization:
+      action: delete
+    IconImageSequence:
+      action: delete
+    IdentifyingComments:
+      action: delete
+    ImageComments:
+      action: delete
+    ImagePresentationComments:
+      action: delete
+    ImagingServiceRequestComments:
+      action: delete
+    Impressions:
+      action: delete
+    InstanceCreatorUID:
+      action: replace_uid
+    InstitutionAddress:
+      action: delete
+    InstitutionCodeSequence:
+      action: replace_dummy
+    InstitutionName:
+      action: replace_dummy
+    InstitutionalDepartmentName:
+      action: delete
+    InsurancePlanIdentification:
+      action: delete
+    IntendedRecipientsOfResultsIdentificationSequence:
+      action: delete
+    InterpretationApproverSequence:
+      action: delete
+    InterpretationAuthor:
+      action: delete
+    InterpretationDiagnosisDescription:
+      action: delete
+    InterpretationIDIssuer:
+      action: delete
+    InterpretationRecorder:
+      action: delete
+    InterpretationText:
+      action: delete
+    InterpretationTranscriber:
+      action: delete
+    IrradiationEventUID:
+      action: replace_uid
+    IssuerOfAdmissionID:
+      action: delete
+    IssuerOfPatientID:
+      action: delete
+    IssuerOfServiceEpisodeID:
+      action: delete
+    LargePaletteColorLookupTableUID:
+      action: replace_uid
+    LastMenstrualDate:
+      action: modify_date
+    MAC:
+      action: delete
+    MediaStorageSOPInstanceUID:
+      action: replace_uid
+    MedicalAlerts:
+      action: delete
+    MedicalRecordLocator:
+      action: delete
+    MilitaryRank:
+      action: delete
+    ModifiedAttributesSequence:
+      action: delete
+    ModifiedImageDescription:
+      action: delete
+    ModifyingDeviceID:
+      action: delete
+    ModifyingDeviceManufacturer:
+      action: delete
+    NameOfPhysiciansReadingStudy:
+      action: delete
+    NamesOfIntendedRecipientsOfResults:
+      action: delete
+    Occupation:
+      action: delete
+    OperatorIdentificationSequence:
+      action: replace_dummy
+    OperatorsName:
+      action: replace_dummy
+    OriginalAttributesSequence:
+      action: delete
+    OrderCallbackPhoneNumber:
+      action: delete
+    OrderEnteredBy:
+      action: delete
+    OrderEntererLocation:
+      action: delete
+    OtherPatientIDs:
+      action: delete
+    OtherPatientIDsSequence:
+      action: delete
+    OtherPatientNames:
+      action: delete
+    OverlayDate:
+      action: modify_date
+    OverlayTime:
+      action: modify_date
+    PaletteColorLookupTableUID:
+      action: replace_uid
+    ParticipantSequence:
+      action: delete
+    PatientAddress:
+      action: delete
+    PatientComments:
+      action: delete
+    PatientID:
+      action: empty
+    PatientSexNeutered:
+      action: empty
+    PatientState:
+      action: delete
+    PatientTransportArrangements:
+      action: delete
+    PatientAge:
+      action: delete
+    PatientBirthDate:
+      action: empty
+    PatientBirthName:
+      action: delete
+    PatientBirthTime:
+      action: delete
+    PatientInstitutionResidence:
+      action: delete
+    PatientInsurancePlanCodeSequence:
+      action: delete
+    PatientMotherBirthName:
+      action: delete
+    PatientName:
+      action: empty
+    PatientPrimaryLanguageCodeSequence:
+      action: delete
+    PatientPrimaryLanguageModifierCodeSequence:
+      action: delete
+    PatientReligiousPreference:
+      action: delete
+    PatientSex:
+      action: empty
+    PatientSize:
+      action: delete
+    PatientTelephoneNumbers:
+      action: delete
+    PatientWeight:
+      action: delete
+    PerformedLocation:
+      action: delete
+    PerformedProcedureStepDescription:
+      action: delete
+    PerformedProcedureStepEndDate:
+      action: modify_date
+    PerformedProcedureStepEndTime:
+      action: modify_date
+    PerformedProcedureStepID:
+      action: delete
+    PerformedProcedureStepStartDate:
+      action: modify_date
+    PerformedProcedureStepStartTime:
+      action: modify_date
+    PerformedStationAETitle:
+      action: delete
+    PerformedStationGeographicLocationCodeSequence:
+      action: delete
+    PerformedStationName:
+      action: delete
+    PerformedStationNameCodeSequence:
+      action: delete
+    PerformingPhysicianIdentificationSequence:
+      action: delete
+    PerformingPhysicianName:
+      action: delete
+    PersonAddress:
+      action: delete
+    PersonIdentificationCodeSequence:
+      action: replace_dummy
+    PersonName:
+      action: replace_dummy
+    PersonTelephoneNumbers:
+      action: delete
+    PhysicianApprovingInterpretation:
+      action: delete
+    PhysiciansReadingStudyIdentificationSequence:
+      action: delete
+    PhysiciansOfRecord:
+      action: delete
+    PhysiciansOfRecordIdentificationSequence:
+      action: delete
+    PlacerOrderNumberImagingServiceRequestRetired:
+      action: empty
+    PlateID:
+      action: delete
+    PreMedication:
+      action: delete
+    PregnancyStatus:
+      action: delete
+    ProtocolName:
+      action: replace_dummy
+    ReasonForTheImagingServiceRequest:
+      action: delete
+    ReasonForStudy:
+      action: delete
+    ReferencedDigitalSignatureSequence:
+      action: delete
+    ReferencedFrameOfReferenceUID:
+      action: replace_uid
+    ReferencedGeneralPurposeScheduledProcedureStepTransactionUID:
+      action: replace_uid
+    ReferencedImageSequence:
+      action: keep
+    ReferencedPatientAliasSequence:
+      action: delete
+    ReferencedPatientSequence:
+      action: delete
+    ReferencedPerformedProcedureStepSequence:
+      action: replace_dummy
+    ReferencedSOPInstanceMACSequence:
+      action: delete
+    ReferencedSOPInstanceUID:
+      action: replace_uid
+    ReferencedSOPInstanceUIDInFile:
+      action: replace_uid
+    ReferencedStudySequence:
+      action: empty
+    ReferringPhysicianAddress:
+      action: delete
+    ReferringPhysicianIdentificationSequence:
+      action: delete
+    ReferringPhysicianName:
+      action: empty
+    ReferringPhysicianTelephoneNumbers:
+      action: delete
+    RegionOfResidence:
+      action: delete
+    RelatedFrameOfReferenceUID:
+      action: replace_uid
+    RequestAttributesSequence:
+      action: delete
+    RequestedContrastAgent:
+      action: delete
+    RequestedProcedureComments:
+      action: delete
+    RequestedProcedureDescription:
+      action: empty
+    RequestedProcedureID:
+      action: delete
+    RequestedProcedureLocation:
+      action: delete
+    RequestedSOPInstanceUID:
+      action: replace_uid
+    RequestingPhysician:
+      action: delete
+    RequestingService:
+      action: delete
+    ResponsibleOrganization:
+      action: delete
+    ResponsiblePerson:
+      action: delete
+    ResultsComments:
+      action: delete
+    ResultsDistributionListSequence:
+      action: delete
+    ResultsIDIssuer:
+      action: delete
+    ReviewerName:
+      action: empty
+    ScheduledHumanPerformersSequence:
+      action: delete
+    ScheduledPatientInstitutionResidence:
+      action: delete
+    ScheduledPerformingPhysicianIdentificationSequence:
+      action: delete
+    ScheduledPerformingPhysicianName:
+      action: delete
+    ScheduledProcedureStepEndDate:
+      action: modify_date
+    ScheduledProcedureStepEndTime:
+      action: modify_date
+    ScheduledProcedureStepDescription:
+      action: delete
+    ScheduledProcedureStepLocation:
+      action: delete
+    ScheduledProcedureStepStartDate:
+      action: modify_date
+    ScheduledProcedureStepStartTime:
+      action: modify_date
+    ScheduledStationAETitle:
+      action: delete
+    ScheduledStationGeographicLocationCodeSequence:
+      action: delete
+    ScheduledStationName:
+      action: delete
+    ScheduledStationNameCodeSequence:
+      action: delete
+    ScheduledStudyLocation:
+      action: delete
+    ScheduledStudyLocationAETitle:
+      action: delete
+    SeriesDate:
+      action: modify_date
+    SeriesDescription:
+      action: delete
+    SeriesInstanceUID:
+      action: replace_uid
+    SeriesTime:
+      action: modify_date
+    ServiceEpisodeDescription:
+      action: delete
+    ServiceEpisodeID:
+      action: delete
+    SmokingStatus:
+      action: delete
+    SOPInstanceUID:
+      action: replace_uid
+    SourceImageSequence:
+      action: keep
+    SpecialNeeds:
+      action: delete
+    StationName:
+      action: replace_dummy
+    StorageMediaFileSetUID:
+      action: replace_uid
+    StudyComments:
+      action: delete
+    StudyDate:
+      action: modify_date
+    StudyDescription:
+      action: delete
+    StudyID:
+      action: empty
+    StudyIDIssuer:
+      action: delete
+    StudyInstanceUID:
+      action: replace_uid
+    StudyTime:
+      action: modify_date
+    SynchronizationFrameOfReferenceUID:
+      action: replace_uid
+    TemplateExtensionCreatorUID:
+      action: replace_uid
+    TemplateExtensionOrganizationUID:
+      action: replace_uid
+    TextComments:
+      action: delete
+    TextString:
+      action: delete
+    TimezoneOffsetFromUTC:
+      action: modify_date
+    TopicAuthor:
+      action: delete
+    TopicKeywords:
+      action: delete
+    TopicSubject:
+      action: delete
+    TopicTitle:
+      action: delete
+    TransactionUID:
+      action: replace_uid
+    UID:
+      action: replace_uid
+    VerifyingObserverIdentificationCodeSequence:
+      action: empty
+    VerifyingObserverName:
+      action: replace_dummy
+    VerifyingObserverSequence:
+      action: replace_dummy
+    VerifyingOrganization:
+      action: delete
+    VisitComments:
+      action: delete
+    InstanceNumber:
+      action: keep
+    DimensionOrganizationSequence:
+      action: keep
+    DimensionIndexSequence:
+      action: keep
+    DimensionOrganizationType:
+      action: keep
+    SamplesPerPixel:
+      action: keep
+    PhotometricInterpretation:
+      action: keep
+    PlanarConfiguration:
+      action: keep
+    NumberOfFrames:
+      action: keep
+    FrameIncrementPointer:
+      action: keep
+    Rows:
+      action: keep
+    Columns:
+      action: keep
+    BitsAllocated:
+      action: keep
+    BitsStored:
+      action: keep
+    HighBit:
+      action: keep
+    PixelRepresentation:
+      action: keep
+    LossyImageCompression:
+      action: keep
+    RepresentativeFrameNumber:
+      action: keep
+    ImagedVolumeWidth:
+      action: keep
+    ImagedVolumeHeight:
+      action: keep
+    TotalPixelMatrixColumns:
+      action: keep
+    TotalPixelMatrixRows:
+      action: keep
+    ImageOrientationSlide:
+      action: keep
+    SharedFunctionalGroupsSequence:
+      action: keep
+    PixelData:
+      action: keep
+    ImageType:
+      action: keep
+    SOPClassUID:
+      action: replace_uid
+    Modality:
+      action: keep
+    DimensionIndexPointer:
+      action: keep
+    FunctionalGroupPointer:
+      action: keep
+    PixelSpacing:
+      action: keep
+    PixelMeasuresSequence:
+      action: keep
+    AcquisitionDuration:
+      action: keep
+    BarcodeValue:
+      action: delete
+    BurnedInAnnotation:
+      action: keep
+    CodeMeaning:
+      action: keep
+    CodeValue:
+      action: keep
+    CodingSchemeDesignator:
+      action: keep
+    ColorSpace:
+      action: keep
+    ColumnPositionInTotalImagePixelMatrix:
+      action: keep
+    ConceptCodeSequence:
+      action: keep
+    ConceptNameCodeSequence:
+      action: keep
+    ContainerIdentifier:
+      action: delete
+    ContainerTypeCodeSequence:
+      action: delete
+    ConvolutionKernel:
+      action: keep
+    DateTime:
+      action: delete
+    DerivationImageSequence:
+      action: keep
+    DimensionDescriptionLabel:
+      action: delete
+    DimensionIndexValues:
+      action: keep
+    ExtendedDepthOfField:
+      action: keep
+    FocusMethod:
+      action: keep
+    FrameAcquisitionDateTime:
+      action: delete
+    FrameAcquisitionDuration:
+      action: keep
+    FrameContentSequence:
+      action: keep
+    FrameReferenceDateTime:
+      action: delete
+    FrameType:
+      action: keep
+    ICCProfile:
+      action: keep
+    IlluminationColorCodeSequence:
+      action: keep
+    IlluminationTypeCodeSequence:
+      action: keep
+    IlluminatorTypeCodeSequence:
+      action: keep
+    ImagePathFilterTypeStackCodeSequence:
+      action: keep
+    ImagedVolumeDepth:
+      action: keep
+    InstanceCreationDate:
+      action: delete
+    InstanceCreationTime:
+      action: delete
+    IssuerOfAccessionNumberSequence:
+      action: delete
+    IssuerOfTheContainerIdentifierSequence:
+      action: replace_dummy
+    IssuerOfTheSpecimenIdentifierSequence:
+      action: delete
+    LabelText:
+      action: delete
+    LensesCodeSequence:
+      action: keep
+    LocalNamespaceEntityID:
+      action: replace_dummy
+    LongCodeValue:
+      action: keep
+    LossyImageCompressionMethod:
+      action: keep
+    LossyImageCompressionRatio:
+      action: keep
+    Manufacturer:
+      action: keep
+    ManufacturerDeviceClassUID:
+      action: replace_uid
+    ManufacturerModelName:
+      action: keep
+    MeasurementUnitsCodeSequence:
+      action: keep
+    NumberOfOpticalPaths:
+      action: keep
+    NumericValue:
+      action: keep
+    ObjectiveLensPower:
+      action: keep
+    OpticalPathDescription:
+      action: delete
+    OpticalPathIdentificationSequence:
+      action: keep
+    OpticalPathIdentifier:
+      action: keep
+    OpticalPathSequence:
+      action: keep
+    PatientOrientation:
+      action: delete
+    PerFrameFunctionalGroupsSequence:
+      action: keep
+    PlanePositionSlideSequence:
+      action: keep
+    PositionReferenceIndicator:
+      action: keep
+    PyramidDescription:
+      action: delete
+    PyramidLabel:
+      action: keep
+    PyramidUID:
+      action: replace_uid
+    ReferencedSOPClassUID:
+      action: replace_uid
+    RowPositionInTotalImagePixelMatrix:
+      action: keep
+    SeriesNumber:
+      action: keep
+    SliceThickness:
+      action: keep
+    SoftwareVersions:
+      action: keep
+    SpacingBetweenSlices:
+      action: keep
+    SpecificCharacterSet:
+      action: keep
+    SpecimenDescriptionSequence:
+      action: keep
+    SpecimenIdentifier:
+      action: delete
+    SpecimenLabelInImage:
+      action: delete
+    SpecimenPreparationSequence:
+      action: keep
+    SpecimenPreparationStepContentItemSequence:
+      action: keep
+    SpecimenShortDescription:
+      action: delete
+    SpecimenTypeCodeSequence:
+      action: keep
+    SpecimenUID:
+      action: replace_uid
+    TextValue:
+      action: keep
+    TotalPixelMatrixFocalPlanes:
+      action: keep
+    TotalPixelMatrixOriginSequence:
+      action: keep
+    TypeOfPatientID:
+      action: delete
+    ValueType:
+      action: keep
+    VolumetricProperties:
+      action: keep
+    WholeSlideMicroscopyImageFrameTypeSequence:
+      action: keep
+    XOffsetInSlideCoordinateSystem:
+      action: keep
+    YOffsetInSlideCoordinateSystem:
+      action: keep
+    ZOffsetInSlideCoordinateSystem:
+      action: keep
