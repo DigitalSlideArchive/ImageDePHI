@@ -210,7 +210,7 @@ class TiffRedactionPlan(RedactionPlan):
         i.e. YYYY:MM:DD HH:MM:DD). If the given string does not conform to the given format,
         return None.
         """
-        expected_format = r"\d{4}:\d{2}\d{2} \d{2}:\d{2}:\d{2}"
+        expected_format = r"\d{4}:\d{2}:\d{2} \d{2}:\d{2}:\d{2}"
         if not re.match(expected_format, tiff_date):
             # If the date value doesn't match the expected format, delete the tag
             return None
@@ -232,7 +232,7 @@ class TiffRedactionPlan(RedactionPlan):
             if not new_value:
                 logger.warn(
                     f"Improper date format for {self.image_path}. Expected a date of format"
-                    f"YYYY:MM:DD HH:MM:SS, got {str(current_value)} for tag {tag.value}."
+                    f" YYYY:MM:DD HH:MM:SS, got {str(current_value)} for tag {tag.value}."
                 )
                 # If the date value doesn't match the expected format, delete the tag
                 del ifd["tags"][tag.value]
