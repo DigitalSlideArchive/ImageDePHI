@@ -135,7 +135,7 @@ class SvsRules(TiffRules):
 class DicomRules(BaseModel):
     metadata: dict[str, ConcreteMetadataRule] = {}
     associated_images: dict[str, ConcreteImageRule] = {}
-    delete_custom_metadata: bool = True
+    custom_metadata_action: Literal["keep"] | Literal["delete"] | None = None
 
     @validator("metadata", "associated_images", pre=True)
     @classmethod

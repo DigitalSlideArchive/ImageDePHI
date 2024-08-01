@@ -121,13 +121,14 @@ class DicomRedactionPlan(RedactionPlan):
             # Check keyword and (gggg,eeee) representation
             tag_in_rules = keyword in rules.metadata or str(element.tag) in rules.metadata
             if not tag_in_rules:
-                if element.tag.group % 2 == 1:
-                    if rules.delete_custom_metadata:
-                        # If the group is odd, it is custom metadata. Use the custom metadata action
+                # For custom metadata, attempt to fall back to the custom_metadata_action (this can
+                # be overriden by rules for individual tags).
+                if element.tag.group % 2 == 1 and rules.custom_metadata_action:
+                    if rules.custom_metadata_action == "delete":
                         self.metadata_redaction_steps[element.tag] = DeleteRule(
                             key_name=custom_metadata_key, action="delete"
                         )
-                    else:
+                    elif rules.custom_metadata_action == "keep":
                         self.metadata_redaction_steps[element.tag] = KeepRule(
                             key_name=custom_metadata_key, action="keep"
                         )
