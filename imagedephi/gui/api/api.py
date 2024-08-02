@@ -7,6 +7,7 @@ import urllib.parse
 
 from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse
+import yaml
 
 from imagedephi.gui.utils.constants import MAX_ASSOCIATED_IMAGE_SIZE
 from imagedephi.gui.utils.directory import DirectoryData
@@ -16,7 +17,7 @@ from imagedephi.gui.utils.image import (
     get_image_response_from_tiff,
 )
 from imagedephi.redact import redact_images, show_redaction_plan
-from imagedephi.rules import FileFormat
+from imagedephi.rules import FileFormat, Ruleset
 from imagedephi.utils.dicom import file_is_same_series_as
 from imagedephi.utils.image import get_file_format_from_path
 from imagedephi.utils.progress_log import get_next_progress_message
@@ -131,6 +132,7 @@ def get_associated_image(
 
 @router.get("/redaction_plan")
 def get_redaction_plan(
+    rules_path: str,
     input_directory: str = ("/"),  # noqa: B008
     limit: int = 10,
     offset: int = 0,
@@ -139,6 +141,12 @@ def get_redaction_plan(
     input_path = Path(input_directory)
     if not input_path.is_dir():
         raise HTTPException(status_code=404, detail="Input directory not found")
+
+    if rules_path:
+        override_rules = Ruleset.model_validate(yaml.safe_load(rules_path))
+        return show_redaction_plan(
+            input_path, override_rules=override_rules, limit=limit, offset=offset, update=update
+        )._asdict()
 
     return show_redaction_plan(input_path, limit=limit, offset=offset, update=update)._asdict()
 

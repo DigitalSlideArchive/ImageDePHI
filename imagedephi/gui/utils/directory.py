@@ -9,6 +9,7 @@ class DirectoryData:
     ancestors: list[dict[str, str | Path]]
     child_directories: list[dict[str, str | Path]]
     child_images: list[dict[str, str | Path]]
+    child_yaml_files: list[dict[str, str | Path]]
 
     def __init__(self, directory: Path):
         self.directory = directory
@@ -27,3 +28,12 @@ class DirectoryData:
         self.child_images = [
             {"name": image.name, "path": image} for image in list(iter_image_files(directory))
         ]
+        self.child_yaml_files = [
+            {"name": yaml_file.name, "path": yaml_file} for yaml_file in _iter_yaml_files(directory)
+        ]
+
+
+def _iter_yaml_files(directory: Path):
+    for child in directory.iterdir():
+        if child.is_file() and child.suffix == ".yaml":
+            yield child
