@@ -21,12 +21,18 @@ const props = defineProps({
     type: Object,
     default: null,
   },
+  rulesetModal: {
+    type: Object,
+    default: null,
+  },
 });
 
 const openModal = () => {
-  props.stepTitle == "Input Directory"
+  props.stepTitle.includes("Input")
     ? props.inputModal.modal.showModal()
-    : props.outputModal.modal.showModal();
+    : props.stepTitle.includes("Output")
+    ? props.outputModal.modal.showModal()
+    : props.rulesetModal.modal.showModal();
 };
 </script>
 
@@ -82,10 +88,18 @@ const openModal = () => {
         {{ selectedDirectories.outputDirectory }}
       </div>
       <div
+        v-else-if="
+          stepTitle?.includes('Ruleset') && selectedDirectories.rulesetDirectory
+        "
+        class="text-left text-gray-500 text-[14px] font-bold break-all pl-8"
+      >
+        {{ selectedDirectories.rulesetDirectory }}
+      </div>
+      <div
         v-else
         class="text-left text-gray-500 text-[14px] font-bold break-all pl-8"
       >
-        No directory selected
+        {{ rulesetModal ?  'No file selected' : 'No directory selected' }}
       </div>
     </div>
   </div>

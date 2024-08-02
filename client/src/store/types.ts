@@ -3,6 +3,7 @@ export type DirectoryData = {
   ancestors: Path[];
   children: Path[];
   childrenImages: Path[];
+  childrenYaml: Path[];
 };
 
 export type imagePlanResponse = {
