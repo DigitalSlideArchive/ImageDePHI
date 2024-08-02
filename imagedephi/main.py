@@ -49,9 +49,11 @@ _global_options = [
         "--profile",
         type=click.Choice([choice.value for choice in ProfileChoice], case_sensitive=False),
         help="Select a redaction profile. This determines the base rule set used for a run of the"
-        " program. The 'strict' profile currently only supports tiff and svs files, and will keep"
-        " only metadata necessary to conform to the tiff standard. The 'dates' profile will fuzz"
-        " dates and times by setting to January 1st or midnight.",
+        " program.\n\nThe 'strict' profile currently only supports tiff and svs files, and will "
+        " keep only metadata necessary to conform to the tiff standard.\n\nThe 'dates' profile will"
+        " fuzz dates and times by setting to January 1st or midnight.\n\nThe 'default' profile uses"
+        " our standard base rules, and is the default profile used.",
+        default=ProfileChoice.Default.value,
     ),
 ]
 

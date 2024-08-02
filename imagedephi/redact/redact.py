@@ -31,6 +31,7 @@ redaction_plan_report = {}
 class ProfileChoice(Enum):
     Strict = "strict"
     Dates = "dates"
+    Default = "default"
 
 
 def _get_output_path(
