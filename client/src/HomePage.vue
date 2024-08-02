@@ -32,7 +32,7 @@ const ws = new WebSocket("ws:" + wsBase.host + "/ws");
 ws.onmessage = (event) => {
   const data = JSON.parse(event.data);
   progress.value = {
-    count: data.count || 0,
+    count: data.count || progress.value.count, // don't update if not present
     max: useRedactionPlan.imageRedactionPlan.total,
     redact_dir: data.redact_dir || progress.value.redact_dir, // don't update if not present
   };
