@@ -48,7 +48,8 @@ def test_e2e_strict(
         [
             "run",
             str(data_dir / "input" / "tiff"),
-            "--strict",
+            "--profile",
+            "strict",
             "--output-dir",
             str(tmp_path),
         ],

@@ -4,6 +4,7 @@ import binascii
 from collections.abc import Generator
 from io import BytesIO
 from pathlib import Path
+import re
 from typing import TYPE_CHECKING, Any
 
 from PIL import Image, TiffTags
@@ -155,7 +156,7 @@ class TiffRedactionPlan(RedactionPlan):
                 self.image_redaction_steps[ifd["offset"]] = associated_image_rule
 
     def is_match(self, rule: ConcreteMetadataRule, tag: tifftools.TiffTag) -> bool:
-        if rule.action in ["keep", "delete", "replace", "check_type"]:
+        if rule.action in ["keep", "delete", "replace", "check_type", "modify_date"]:
             rule_tag = get_tiff_tag(rule.key_name)
             return rule_tag.value == tag.value
         return False
@@ -197,9 +198,24 @@ class TiffRedactionPlan(RedactionPlan):
             )
             passes_check = self.passes_type_check(value, rule.valid_data_types, expected_count)
             return "keep" if passes_check else "delete"
-        if rule.action in ["keep", "replace", "delete"]:
+        if rule.action in ["keep", "replace", "delete", "modify_date"]:
             return rule.action
         return "delete"
+
+    def _get_modified_date(self, tiff_date: str) -> str | None:
+        """
+        Given a tiff datestring, return a version set to midnight, January 1st of that year.
+
+        Input should be  a string representing a date (formatted according to the tiff standard,
+        i.e. YYYY:MM:DD HH:MM:DD). If the given string does not conform to the given format,
+        return None.
+        """
+        expected_format = r"^\d{4}:\d{2}:\d{2} \d{2}:\d{2}:\d{2}$"
+        if not re.match(expected_format, tiff_date):
+            # If the date value doesn't match the expected format, delete the tag
+            return None
+        else:
+            return tiff_date[:5] + "01:01 00:00:00"
 
     def apply(self, rule: ConcreteMetadataRule, ifd: IFD) -> None:
         tag = get_tiff_tag(rule.key_name)
@@ -209,6 +225,19 @@ class TiffRedactionPlan(RedactionPlan):
         elif operation == "replace":
             assert isinstance(rule, MetadataReplaceRule)
             ifd["tags"][tag.value]["data"] = rule.new_value
+        elif operation == "modify_date":
+            # Expected format: YYYY:MM:DD HH:MM:SS
+            current_value = ifd["tags"][tag.value]["data"]
+            new_value = self._get_modified_date(str(current_value))
+            if not new_value:
+                logger.warn(
+                    f"Improper date format for {self.image_path}. Expected a date of format"
+                    f" YYYY:MM:DD HH:MM:SS, got {str(current_value)} for tag {tag.value}."
+                )
+                # If the date value doesn't match the expected format, delete the tag
+                del ifd["tags"][tag.value]
+            else:
+                ifd["tags"][tag.value]["data"] = new_value
 
     def is_comprehensive(self) -> bool:
         return not self.no_match_tags

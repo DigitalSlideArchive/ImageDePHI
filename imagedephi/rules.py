@@ -18,7 +18,13 @@ expected_type_map: dict[str, list[Type[Any]]] = {
 }
 
 RedactionOperation: TypeAlias = Literal[
-    "keep", "delete", "replace", "empty", "replace_uid", "replace_dummy"
+    "keep",
+    "delete",
+    "replace",
+    "empty",
+    "replace_uid",
+    "replace_dummy",
+    "modify_date",
 ]
 
 
@@ -26,7 +32,14 @@ class _Rule(BaseModel):
     # key_name is not set by users, but is availible internally
     key_name: str = Field(exclude=True)
     action: Literal[
-        "keep", "delete", "replace", "replace_uid", "replace_dummy", "empty", "check_type"
+        "keep",
+        "delete",
+        "replace",
+        "replace_uid",
+        "replace_dummy",
+        "empty",
+        "check_type",
+        "modify_date",
     ]
 
 
@@ -50,6 +63,10 @@ class ReplaceRule(_Rule):
 
 class MetadataReplaceRule(ReplaceRule):
     new_value: str
+
+
+class ModifyDateRule(_Rule):
+    action: Literal["modify_date"]
 
 
 class ImageReplaceRule(ReplaceRule):
@@ -88,7 +105,8 @@ ConcreteMetadataRule = Annotated[
     | CheckTypeMetadataRule
     | UidReplaceRule
     | EmptyRule
-    | DummyReplaceRule,
+    | DummyReplaceRule
+    | ModifyDateRule,
     Field(discriminator="action"),
 ]
 

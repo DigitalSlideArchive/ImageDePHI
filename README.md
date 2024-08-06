@@ -29,8 +29,13 @@ When `imagedephi` determines the steps to redact a file, it checks each piece of
 
 If neither the override rule set or base rule set cover a piece of metadata, redaction will fail, and the program will list the metadata that it could not redact. There is no default behavior for unknown metadata.
 
-### Stict Redaction
-For whole slide image formats based on the tiff standard, `imagedephi` allows a strict type of redaction. Using the `--strict` flag when calling `imagedephi` from the CLI will use this mode. In this mode, only tags strictly required by the tiff standard will remain, and all other metadata will be stripped from the images. For a full list of metadata tags that will remain after strict redaction, see the [minimum rules file](https://github.com/DigitalSlideArchive/ImageDePHI/blob/main/imagedephi/minimum_rules.yaml).
+### Redaction Profiles
+
+#### Strict Redaction
+For whole slide image formats based on the tiff standard, `imagedephi` allows a strict type of redaction. Using the `--profile strict` option when calling `imagedephi` from the CLI will use this mode. In this mode, only tags strictly required by the tiff standard will remain, and all other metadata will be stripped from the images. For a full list of metadata tags that will remain after strict redaction, see the [minimum rules file](https://github.com/DigitalSlideArchive/ImageDePHI/blob/main/imagedephi/minimum_rules.yaml).
+
+#### Fuzzing Dates and Times
+Using the `--profile dates` option will replace dates, times, datetimes, and UTC offsets with values that semantically represent those things but with less precison than the original value. Dates will preserve the year, but the month and day will be set to January 1st. Times will be set to midnight and UTC offsets to +0000. Rules for this profile can be found in [modify_dates_rules.yaml](https://github.com/DigitalSlideArchive/ImageDePHI/blob/main/imagedephi/modify_dates_rules.yaml). For DICOM images, the [Attribute Confidentiality Profiles](https://dicom.nema.org/dicom/2013/output/chtml/part15/chapter_E.html) were used to determine which tags should be modified according to this profile.
 
 
 ## Ruleset Format Overview
@@ -117,6 +122,7 @@ Available actions for metadata rules are:
 * `keep`: the metadata will appear unchanged in the output file
 * `replace`: replace the metadata with a specified value. If this is the `action`, additional fields are required.
 * `check_type`: This will either keep the metadata if the type matches or delete the metadata if the type does not match. Requires additional fields
+* `modify_date`: This will fuzz dates, times, datetimes, and time zone offsets. See the "Profiles" section for more details.
 
 ##### `replace` rules
 Require the additional property `replace_with`. The value specified by the `replace_with` key will be used to override the metadata in the output image.
