@@ -88,6 +88,8 @@ tiff:
       action: keep
     YCbCrPositioning:
       action: keep
+    PlanarConfig:
+      action: keep
 svs:
   metadata_fallback_action: delete
   associated_images:
@@ -173,4 +175,6 @@ svs:
     YCbCrSubsampling:
       action: keep
     YCbCrPositioning:
+      action: keep
+    PlanarConfig:
       action: keep
