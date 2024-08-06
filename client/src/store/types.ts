@@ -6,6 +6,15 @@ export type DirectoryData = {
   childrenYaml: Path[];
 };
 
+
+export interface ImagePlanParams {
+  directory: string;
+  rules?: string;
+  limit?: number;
+  offset?: number;
+  update?: boolean;
+}
+
 export type imagePlanResponse = {
   data: Record<string, Record<string, string>>;
   total: number;

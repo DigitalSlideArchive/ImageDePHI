@@ -1,3 +1,5 @@
+import { ImagePlanParams } from "../store/types";
+
 const basePath = import.meta.env.VITE_APP_API_URL
   ? import.meta.env.VITE_APP_API_URL
   : "";
@@ -16,14 +18,12 @@ export async function getDirectoryInfo(path?: string) {
   });
 }
 
+
 export async function getRedactionPlan(
-  path: string,
-  limit?: number,
-  offset?: number,
-  update?: boolean,
+  params: ImagePlanParams,
 ) {
   const response = await fetch(
-    `${basePath}/redaction_plan?input_directory=${path}&limit=${limit}&offset=${offset}&update=${update}`,
+    `${basePath}/redaction_plan?input_directory=${params.directory}&rules_path=${params.rules}&limit=${params.limit}&offset=${params.offset}&update=${params.update}`,
     {
       method: "GET",
       mode: "cors",
@@ -37,9 +37,10 @@ export async function getRedactionPlan(
 export async function redactImages(
   inputDirectory: string,
   outputDirectory: string,
+  rules?: string,
 ) {
   const response = await fetch(
-    `${basePath}/redact/?input_directory=${inputDirectory}&output_directory=${outputDirectory}`,
+    `${basePath}/redact/?input_directory=${inputDirectory}&output_directory=${outputDirectory}&rules_path=${rules}`,
     {
       method: "POST",
       mode: "cors",

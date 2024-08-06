@@ -47,13 +47,17 @@ const updateSelectedDirectories = (path: string) => {
   selectedDirectories.value[props.modalId] = path;
 };
 const updateTableData = () => {
- useRedactionPlan.updateImageData(selectedDirectories.value.inputDirectory, 50, 0, false);
+ useRedactionPlan.updateImageData({
+  directory: selectedDirectories.value.inputDirectory,
+  rules: selectedDirectories.value.rulesetDirectory,
+  limit: 50,
+  offset: 0,
+  update: false});
 };
 
 // TODO:
-// - When input directory is selected, check for ruleset
-// - When ruleset directory is selected, check for input directory
 // - Run redaction plan accordingly for both scenarios
+// - Re-run redaction plan for selected directory when rules are added or removed
 
 </script>
 

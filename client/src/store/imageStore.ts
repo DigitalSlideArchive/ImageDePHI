@@ -1,5 +1,5 @@
 import { reactive } from "vue";
-import { imagePlanResponse } from "./types";
+import { imagePlanResponse, ImagePlanParams } from "./types";
 import { getRedactionPlan, getImages } from "../api/rest";
 import { selectedDirectories } from "./directoryStore";
 
@@ -7,17 +7,11 @@ export const useRedactionPlan = reactive({
   imageRedactionPlan: {} as imagePlanResponse,
   currentDirectory: selectedDirectories.value.inputDirectory,
   async updateImageData(
-    directory: string,
-    limit: number,
-    offset: number,
-    update: boolean,
+   params: ImagePlanParams,
   ) {
-    this.currentDirectory = directory;
+    this.currentDirectory = params.directory;
     this.imageRedactionPlan = await getRedactionPlan(
-      directory,
-      limit,
-      offset,
-      update,
+      params
     );
     this.getThumbnail(this.imageRedactionPlan.data);
   },

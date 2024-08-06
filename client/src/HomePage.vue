@@ -49,13 +49,15 @@ const redact_images = async () => {
   const response = await redactImages(
     selectedDirectories.value.inputDirectory,
     selectedDirectories.value.outputDirectory,
+    selectedDirectories.value.rulesetDirectory
   );
   if (response.status === 200) {
-    useRedactionPlan.updateImageData(
-      `${selectedDirectories.value.outputDirectory}/${progress.value.redact_dir}`,
-      50,
-      0,
-      false,
+    useRedactionPlan.updateImageData({
+      directory:`${selectedDirectories.value.outputDirectory}/${progress.value.redact_dir}`,
+      rules:selectedDirectories.value.rulesetDirectory,
+      limit: 50,
+      offset: 0,
+      update: false,}
     );
     redacting.value = false;
     redactionModal.value.close();
