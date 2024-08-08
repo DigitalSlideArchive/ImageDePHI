@@ -58,7 +58,7 @@ def build_redaction_plan(
         dicom_rules = base_rules.dicom.copy()
         if override_rules:
             dicom_rules.metadata.update(override_rules.dicom.metadata)
-            dicom_rules.delete_custom_metadata = override_rules.dicom.delete_custom_metadata
+            dicom_rules.custom_metadata_action = override_rules.dicom.custom_metadata_action
         return DicomRedactionPlan(image_path, dicom_rules, dcm_uid_map)
     else:
         raise UnsupportedFileTypeError(f"File format for {image_path} not supported.")

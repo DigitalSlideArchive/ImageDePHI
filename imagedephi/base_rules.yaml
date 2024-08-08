@@ -822,7 +822,7 @@ dicom:
       action: delete
     default:
       action: keep
-  delete_custom_metadata: true
+  custom_metadata_action: delete
   metadata:
     AccessionNumber:
       action: empty
