@@ -55,10 +55,6 @@ const updateTableData = () => {
   update: false});
 };
 
-// TODO:
-// - Run redaction plan accordingly for both scenarios
-// - Re-run redaction plan for selected directory when rules are added or removed
-
 </script>
 
 <template>
@@ -76,7 +72,7 @@ const updateTableData = () => {
               @click="
                 $emit('update-image-list'),
                   closeModal(),
-                  title === 'Input Directory'
+                  title !== 'Output Directory'
                     ? updateTableData()
                     : ''
               "
