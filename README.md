@@ -39,7 +39,7 @@ Using the `--profile dates` option will replace dates, times, datetimes, and UTC
 
 
 ## Ruleset Format Overview
-In order to read the base rules and build your own custom rule sets, it is important to understand the format in which rulesets are specified. Rulesets are defined by `.yaml` files (one ruleset per file), and are a dictionary with the following top-level tags: `name`, `description`, `output_file_name`, `tiff`, and `svs`.
+In order to read the base rules and build your own custom rule sets, it is important to understand the format in which rulesets are specified. Rulesets are defined by `.yaml` files (one ruleset per file), and are a dictionary with the following top-level tags: `name`, `description`, `output_file_name`, `tiff`, `svs`, and `dicom`.
 
 ### Generic Properties
 The following three properties belong to the rulesets themselves, and don't influence redaction behavior.
@@ -54,7 +54,7 @@ You can add a description to your custom rulesets. This is not used by the progr
 Specify how the output files should be named here. The base ruleset contains the value `study_slide`. In this case, if the input slides are named: `john_smith_lung.svs` and `john_smith_pancreas.svs`, the redacted output images will be named `study_slide_1.svs` and `study_slide_2.svs`.
 
 ### File Format Rules
-Redaction behavior is specified per file type. Currently pure `tiff` files and Aperio (`.svs`) files are supported. Each image type has its own groups of data that can be redacted. For example, Aperio images have `tiff` metadata, certain associated images, and additional metadata specified in the `ImageDescription` tag. `svs` rulesets take the following shape:
+Redaction behavior is specified per file type. Currently pure `tiff` files, Aperio (`.svs`), and DICOM files are supported. Each image type has its own groups of data that can be redacted. For example, Aperio images have `tiff` metadata, certain associated images, and additional metadata specified in the `ImageDescription` tag. `svs` rulesets take the following shape:
 
 ```yaml
 svs:
@@ -133,8 +133,12 @@ Use the additional properties:
 * `expected_count` (optional): if the piece of metadata can contain multiple values, specify how many are expected using this property. Defaults to `1`. If the `expected_type` is `rational`, this should be the expected number of rationals. That is, an `expected_count` of 1 would match with 2 integer values in the metadata.
 
 ### Supported Formats
-Currently, `imagedephi` supports redaction of pure `tiff` files as well as Aperio (.svs) files.
+Currently, `imagedephi` supports redaction of the following types of files:
+* TIFF
+* Aperio (a tiff-like format, typically uses the extension `.svs`)
+* DICOM
 
+#### Tiff
 Tiff rules have the following shape:
 
 ```yaml
@@ -147,7 +151,7 @@ tiff:
 
 The keys for the `metadata` rules are the names of tiff tags defined by the tiff standard.
 
-
+#### Aperio
 Aperio format rules have the following shape:
 
 ```yaml
@@ -163,3 +167,23 @@ svs:
 The keys for the `metadata` rules are the names of tiff tags defined by the tiff standard. Names are case insensitive and common variations are accepted, e.g. `GrayResponseUnit` and `GreyResponseUnit` are both accepted
 
 For Aperio files, additional metadata is stored as key-value pairs in the `ImageDescription` tag. See more information about this [here](https://openslide.org/formats/aperio/). Each key in the `image_description` section is a key found in this `ImageDescription` string.
+
+#### DICOM
+DICOM format rules are much the same:
+
+```yaml
+dicom:
+    associated_images:
+        ...
+    delete_custom_metadata: ...
+    metadata:
+        ...
+```
+
+Note that here there is an eplicit format-level setting for dealing with custom metadata. Any tag with an odd group number is custom metadata. If not specified, this value default to `True`. Tag-level rules will override this behavior.
+
+Additionally, DICOM redaction supports additional redaction operations.
+
+* `empty`: Replace the tag's value with `None`
+* `replace_dummy`: Replace the tag's value with a dummy value, which is dependant on the original value type. For example, if the tag's value is a string, the dummy value is the empty string. If the tag's value is an integer, the dummy value is 0.
+* `replace_uid`: If the tag's value is a UID, it will be replaced with a randomly generated UID of the form `"2.25.<uuid>"` where `<uuid>` is a UUID generated a run time. The new custom UID is stored by Image DePHI and used to replace other UIDs that share the same initial value. This way, if a UID is used in different tags within an image, they all get the same replacement value.

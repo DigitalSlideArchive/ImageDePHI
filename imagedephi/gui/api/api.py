@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 import urllib.parse
 
-from fastapi import APIRouter, HTTPException, WebSocket
+from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse
 
 from imagedephi.gui.utils.constants import MAX_ASSOCIATED_IMAGE_SIZE
@@ -158,14 +158,38 @@ def redact(
     redact_images(input_path, output_path)
 
 
+async def ws_heartbeat(websocket: WebSocket):
+    while True:
+        try:
+            await websocket.send_json("heartbeat")
+            await asyncio.sleep(10)
+        except WebSocketDisconnect:
+            print("Client disconnected")
+            break
+
+
 @router.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
-    await websocket.send_json("Connected")
+    backoff = 1
+
     while True:
-        message = get_next_progress_message()
-        if message is not None:
-            message_dict = dict(count=message[0], max=message[1])
-            await websocket.send_json(message_dict)
-        else:
-            await asyncio.sleep(0.001)
+        try:
+            print("Client connected")
+            backoff = 1
+
+            asyncio.create_task(ws_heartbeat(websocket))
+            while True:
+                message = get_next_progress_message()
+                if message is not None:
+                    message_dict = dict(
+                        count=message[0], max=message[1], redact_dir=message[2].name
+                    )
+                    await websocket.send_json(message_dict)
+                else:
+                    await asyncio.sleep(1)  # Add a small delay to avoid busy waiting
+        except WebSocketDisconnect:
+            print("Attempting to reconnect to client")
+            await asyncio.sleep(backoff)
+            backoff = min(backoff * 2, 60)
+            await websocket.accept()
