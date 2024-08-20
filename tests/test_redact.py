@@ -178,6 +178,8 @@ def test_dcm_private_redaction(dcm_input_path, tmp_path, action, custom_tag_exis
     assert custom_tag_exists == (tag_bytes in dcm_output_file_bytes)
 
 
+@freeze_time("2023-05-12 12:12:53")
+@pytest.mark.timeout(5)
 def test_dates_dcm(dcm_input_path, tmp_path) -> None:
     redact.redact_images(dcm_input_path, tmp_path, profile=ProfileChoice.Dates.value)
     output_file = tmp_path / "Redacted_2023-05-12_12-12-53" / "study_slide_1.dcm"
