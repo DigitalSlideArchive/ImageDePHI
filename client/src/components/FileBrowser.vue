@@ -25,6 +25,7 @@ const directoryData: Ref<DirectoryData> = ref({
   ancestors: [],
   children: [],
   childrenImages: [],
+  childrenYaml: [],
 });
 
 const updateDirectories = async (currentDirectory?: string) => {
@@ -33,6 +34,7 @@ const updateDirectories = async (currentDirectory?: string) => {
     ...data,
     children: data.child_directories,
     childrenImages: data.child_images,
+    childrenYaml: data.child_yaml_files,
   };
 };
 updateDirectories();
@@ -45,7 +47,12 @@ const updateSelectedDirectories = (path: string) => {
   selectedDirectories.value[props.modalId] = path;
 };
 const updateTableData = () => {
- useRedactionPlan.updateImageData(selectedDirectories.value.inputDirectory, 50, 0, false);
+ useRedactionPlan.updateImageData({
+  directory: selectedDirectories.value.inputDirectory,
+  rules: selectedDirectories.value.rulesetDirectory,
+  limit: 50,
+  offset: 0,
+  update: false});
 };
 
 </script>
@@ -65,7 +72,7 @@ const updateTableData = () => {
               @click="
                 $emit('update-image-list'),
                   closeModal(),
-                  title === 'Input Directory'
+                  title !== 'Output Directory'
                     ? updateTableData()
                     : ''
               "
@@ -124,6 +131,9 @@ const updateTableData = () => {
           </li>
         </ul>
         <ul class="pl-2">
+          <template
+            v-if="modalId !== 'rulesetDirectory'"
+          >
           <li
             v-for="child_image in directoryData.childrenImages.slice(0, 10)"
             :key="child_image.path"
@@ -135,6 +145,20 @@ const updateTableData = () => {
           <li v-if="directoryData.childrenImages.length > 10" class="italic">
             {{ directoryData.childrenImages.length - 10 }} More Images
           </li>
+        </template>
+          <template
+            v-if="modalId === 'rulesetDirectory'"
+          >
+          <li
+            v-for="ruleset in directoryData.childrenYaml"
+            :key="ruleset.path"
+            class="hover:bg-base-300 cursor-default py-0.5"
+            @click="updateSelectedDirectories(ruleset.path)"
+          >
+            <i class="ri-file-text-line text-neutral"></i>
+            {{ ruleset.name }}
+          </li>
+        </template>
         </ul>
       </div>
     </div>

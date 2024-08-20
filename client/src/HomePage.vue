@@ -11,6 +11,7 @@ import ImageDataDisplay from "./components/ImageDataDisplay.vue";
 
 const inputModal = ref(null);
 const outputModal = ref(null);
+const rulesetModal = ref(null);
 const redactionModal = ref();
 const redacting = ref(false);
 const redactionComplete = ref(false);
@@ -39,19 +40,24 @@ ws.onmessage = (event) => {
 };
 
 const redact_images = async () => {
+  if (!selectedDirectories.value.inputDirectory || !selectedDirectories.value.outputDirectory) {
+    return;
+  }
   showImageTable.value = false;
   redacting.value = true;
   redactionModal.value.showModal();
   const response = await redactImages(
     selectedDirectories.value.inputDirectory,
     selectedDirectories.value.outputDirectory,
+    selectedDirectories.value.rulesetDirectory
   );
   if (response.status === 200) {
-    useRedactionPlan.updateImageData(
-      `${selectedDirectories.value.outputDirectory}/${progress.value.redact_dir}`,
-      50,
-      0,
-      false,
+    useRedactionPlan.updateImageData({
+      directory:`${selectedDirectories.value.outputDirectory}/${progress.value.redact_dir}`,
+      rules:selectedDirectories.value.rulesetDirectory,
+      limit: 50,
+      offset: 0,
+      update: false,}
     );
     redacting.value = false;
     redactionModal.value.close();
@@ -89,6 +95,12 @@ const redact_images = async () => {
             help-text="Location of the images after they are processed."
             :output-modal="outputModal || undefined"
           />
+          <MenuSteps
+            :step-number="3"
+            step-title="Rulesets"
+            help-text="Custom ruleset to be used for redaction in addition to the baserules."
+            :ruleset-modal="rulesetModal || undefined"
+          />
           <FileBrowser
             ref="inputModal"
             :modal-id="'inputDirectory'"
@@ -100,11 +112,16 @@ const redact_images = async () => {
             :modal-id="'outputDirectory'"
             :title="'Output Directory'"
           />
+          <FileBrowser
+            ref="rulesetModal"
+            :modal-id="'rulesetDirectory'"
+            :title="'Ruleset Directory'"
+            />
           <div class="p-4 w-full">
             <button
               type="submit"
-              class="btn btn-block bg-accent text-white uppercase rounded-lg"
-              :disabled="redacting"
+              :class="`${!selectedDirectories.inputDirectory || !selectedDirectories.outputDirectory ? 'btn btn-block bg-accent text-white uppercase rounded-lg tooltip' : 'btn btn-block bg-accent text-white uppercase rounded-lg'}`"
+              data-tip="Please select input and output directories"
               @click="redact_images()"
             >
               De-phi Images

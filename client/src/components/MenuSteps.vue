@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { selectedDirectories } from "../store/directoryStore";
+import { useRedactionPlan } from "../store/imageStore";
+
 const props = defineProps({
   stepNumber: {
     type: Number,
@@ -21,13 +23,31 @@ const props = defineProps({
     type: Object,
     default: null,
   },
+  rulesetModal: {
+    type: Object,
+    default: null,
+  },
 });
 
 const openModal = () => {
-  props.stepTitle == "Input Directory"
+  props.stepTitle.includes("Input")
     ? props.inputModal.modal.showModal()
-    : props.outputModal.modal.showModal();
+    : props.stepTitle.includes("Output")
+    ? props.outputModal.modal.showModal()
+    : props.rulesetModal.modal.showModal();
 };
+
+const clearRuleset = () => {
+  selectedDirectories.value.rulesetDirectory = "";
+  useRedactionPlan.updateImageData({
+    directory: selectedDirectories.value.inputDirectory,
+    rules: selectedDirectories.value.rulesetDirectory,
+    limit: 50,
+    offset: 0,
+    update: false,
+  });
+};
+
 </script>
 
 <template>
@@ -82,11 +102,26 @@ const openModal = () => {
         {{ selectedDirectories.outputDirectory }}
       </div>
       <div
+        v-else-if="
+          stepTitle?.includes('Ruleset') && selectedDirectories.rulesetDirectory
+        "
+        class="text-left text-gray-500 text-[14px] font-bold break-all pl-8"
+      >
+        {{ selectedDirectories.rulesetDirectory }}
+        <button
+          class="btn btn-ghost btn-square btn-sm tooltip tooltip-right"
+          data-tip="Clear selected rules"
+          @click="clearRuleset"
+        >
+          <i class="ri-close-circle-fill text-secondary text-lg"></i>
+        </button>
+      </div>
+      <div
         v-else
         class="text-left text-gray-500 text-[14px] font-bold break-all pl-8"
       >
-        No directory selected
-      </div>
+        {{ rulesetModal ?  'No file selected' : 'No directory selected' }}
+             </div>
     </div>
   </div>
 </template>
