@@ -6,7 +6,7 @@ import pytest
 
 registry = {
     "secret_metadata.tiff": "sha512:28be4880984bbb5f8e2a2e2314e594686427aa3da54e6a804ed5682e2da2585d21d3e3f751e995ad5b133a8b183cc7eb3cdee55cfcf5e4589d69c543db10fa9e",  # noqa: E501
-    "test_dcm_image.dcm": "sha512:c3c39e133988f29a99d87107f3b8fbef1c6f530350a9192671f237862731d6f44d18965773a499867d853cbf22aaed9ea1670ce0defda125efe6a8c0cc63c316",  # noqa: E501
+    "test_dcm_image.dcm": "sha512:4cb4c76799ce5d6f3f66c6d3bc055c5527b9fbef3d684450f48c870a5fbd882c87f3d59349ace778e80e78085276fecd278844af98a2324b754345aab6d6eac5",  # noqa: E501
     "test_image.tif": "sha512:a32af94c89e09b038650b030d19ab98c44664fbd8444cd919def42c2a8f8cd27e3ddfc09d60a43f8ba80e498399ab3894eecdb532d74e73f6c762271a59d66fd",  # noqa: E501
     "test_svs_image_blank.svs": "sha512:76350f39bafd86ced9d94b9a095200d3894034c36a3bc9a45a57a8f5ea820b8fd877ae483e9d9d4aef018cd8ca96c54ea815467ec94f6d692fca0ecc69afab23",  # noqa: E501
 }

@@ -137,7 +137,8 @@ class DicomRedactionPlan(RedactionPlan):
                     self.no_match_tags.append(element.tag)
                 continue
 
-            rule = rules.metadata[keyword]
+            rule_key = keyword if keyword in rules.metadata else str(element.tag)
+            rule = rules.metadata[rule_key]
             if rule.action in [
                 "keep",
                 "delete",
