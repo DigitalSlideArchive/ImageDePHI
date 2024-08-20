@@ -8,7 +8,7 @@ import pytest
 import yaml
 
 from imagedephi import redact
-from imagedephi.redact.redact import create_redact_dir_and_manifest
+from imagedephi.redact.redact import ProfileChoice, create_redact_dir_and_manifest
 from imagedephi.redact.svs import SvsRedactionPlan
 from imagedephi.rules import KeepRule, Ruleset
 from imagedephi.utils.logger import logger
@@ -41,6 +41,14 @@ def svs_input_path(test_image_svs, data_dir, request) -> Path:
     ids=["input_dir", "input_file"],
 )
 def dcm_input_path(data_dir, test_image_dcm, request) -> Path:
+    return data_dir / "input" / request.param
+
+
+@pytest.fixture(
+    params=[PurePath("tiff"), PurePath("tiff") / "test_image.tif"],
+    ids=["input_dir", "input_file"],
+)
+def tiff_input_path(data_dir, test_image_tiff, request) -> Path:
     return data_dir / "input" / request.param
 
 
@@ -133,7 +141,7 @@ def test_plan_dcm(caplog, test_image_dcm):
 @freeze_time("2023-05-12 12:12:53")
 @pytest.mark.timeout(5)
 def test_strict(svs_input_path, tmp_path) -> None:
-    redact.redact_images(svs_input_path, tmp_path, strict=True)
+    redact.redact_images(svs_input_path, tmp_path, profile=ProfileChoice.Strict.value)
     output_file = tmp_path / "Redacted_2023-05-12_12-12-53" / "study_slide_1.svs"
     output_file_bytes = output_file.read_bytes()
     assert b"Aperio" not in output_file_bytes
@@ -143,7 +151,7 @@ def test_strict(svs_input_path, tmp_path) -> None:
 @freeze_time("2023-05-12 12:12:53")
 @pytest.mark.timeout(5)
 def test_strict_skip_dcm(dcm_input_path, tmp_path) -> None:
-    redact.redact_images(dcm_input_path, tmp_path, strict=True)
+    redact.redact_images(dcm_input_path, tmp_path, profile=ProfileChoice.Strict.value)
     output_dir = tmp_path / "Redacted_2023-05-12_12-12-53"
     assert output_dir.is_dir()
     assert len(list(output_dir.iterdir())) == 0
@@ -168,3 +176,31 @@ def test_dcm_private_redaction(dcm_input_path, tmp_path, action, custom_tag_exis
     dcm_output_file_bytes = output_file.read_bytes()
     tag_bytes = struct.pack("<i", 0x10011001)
     assert custom_tag_exists == (tag_bytes in dcm_output_file_bytes)
+
+
+def test_dates_dcm(dcm_input_path, tmp_path) -> None:
+    redact.redact_images(dcm_input_path, tmp_path, profile=ProfileChoice.Dates.value)
+    output_file = tmp_path / "Redacted_2023-05-12_12-12-53" / "study_slide_1.dcm"
+    dcm_output_file_bytes = output_file.read_bytes()
+    assert b"20220101" in dcm_output_file_bytes
+
+
+@freeze_time("2023-05-12 12:12:53")
+@pytest.mark.timeout(5)
+def test_dates_svs(svs_input_path, tmp_path) -> None:
+    redact.redact_images(svs_input_path, tmp_path, profile=ProfileChoice.Dates.value)
+    output_file = tmp_path / "Redacted_2023-05-12_12-12-53" / "study_slide_1.svs"
+    output_file_bytes = output_file.read_bytes()
+    # DAte set to January 1
+    assert b"01/01/08" in output_file_bytes
+    # Time set to midnight
+    assert b"00:00:00" in output_file_bytes
+
+
+@freeze_time("2023-05-12 12:12:53")
+@pytest.mark.timeout(5)
+def test_dates_tiff(tiff_input_path, tmp_path) -> None:
+    redact.redact_images(tiff_input_path, tmp_path, profile=ProfileChoice.Dates.value)
+    output_file = tmp_path / "Redacted_2023-05-12_12-12-53" / "study_slide_1.tif"
+    output_file_bytes = output_file.read_bytes()
+    assert b"2024:01:01 00:00:00" in output_file_bytes

@@ -14,7 +14,7 @@ from hypercorn.asyncio import serve
 import yaml
 
 from imagedephi.gui.app import app
-from imagedephi.redact import redact_images, show_redaction_plan
+from imagedephi.redact import ProfileChoice, redact_images, show_redaction_plan
 from imagedephi.rules import Ruleset
 from imagedephi.utils.cli import FallthroughGroup, run_coroutine
 from imagedephi.utils.logger import logger
@@ -22,6 +22,7 @@ from imagedephi.utils.network import unused_tcp_port, wait_for_port
 from imagedephi.utils.os import launched_from_windows_explorer
 
 shutdown_event = asyncio.Event()
+
 
 _global_options = [
     click.option(
@@ -44,11 +45,15 @@ _global_options = [
         "-r", "--recursive", is_flag=True, help="Apply the command to images in subdirectories"
     ),
     click.option(
-        "-s",
-        "--strict",
-        is_flag=True,
-        default=False,
-        help="Delete all metadata not required by format standards",
+        "-p",
+        "--profile",
+        type=click.Choice([choice.value for choice in ProfileChoice], case_sensitive=False),
+        help="Select a redaction profile. This determines the base rule set used for a run of the"
+        " program.\n\nThe 'strict' profile currently only supports tiff and svs files, and will "
+        " keep only metadata necessary to conform to the tiff standard.\n\nThe 'dates' profile will"
+        " fuzz dates and times by setting to January 1st or midnight.\n\nThe 'default' profile uses"
+        " our standard base rules, and is the default profile used.",
+        default=ProfileChoice.Default.value,
     ),
 ]
 
@@ -101,7 +106,7 @@ def imagedephi(
     quiet: int,
     log_file: Path,
     recursive: bool,
-    strict: bool,
+    profile: str,
 ) -> None:
     """Redact microscopy whole slide images."""
     obj = ImagedephiContext()
@@ -133,7 +138,7 @@ def run(
     output_dir: Path,
     rename: bool,
     recursive,
-    strict: bool,
+    profile: str,
     verbose,
     quiet,
     log_file,
@@ -142,7 +147,12 @@ def run(
     if verbose or quiet or log_file:
         set_logging_config(verbose, quiet, log_file)
     redact_images(
-        input_path, output_dir, obj.override_rule_set, rename, recursive=recursive, strict=strict
+        input_path,
+        output_dir,
+        obj.override_rule_set,
+        rename,
+        recursive=recursive,
+        profile=profile,
     )
 
 
@@ -151,14 +161,14 @@ def run(
 @click.argument("input-path", type=click.Path(exists=True, readable=True, path_type=Path))
 @click.pass_obj
 def plan(
-    obj: ImagedephiContext, input_path: Path, recursive, strict, quiet, verbose, log_file
+    obj: ImagedephiContext, input_path: Path, recursive, profile, quiet, verbose, log_file
 ) -> None:
     """Print the redaction plan for images."""
     # Even if the user doesn't use the verbose flag, ensure logging level is set to
     # show info output of this command.
     v = verbose if verbose else 1
     set_logging_config(v, quiet, log_file)
-    show_redaction_plan(input_path, obj.override_rule_set, recursive, strict)
+    show_redaction_plan(input_path, obj.override_rule_set, recursive, profile)
 
 
 @imagedephi.command

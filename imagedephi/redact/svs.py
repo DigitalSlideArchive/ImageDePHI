@@ -138,7 +138,7 @@ class SvsRedactionPlan(TiffRedactionPlan):
         return "default"
 
     def is_match(self, rule: ConcreteMetadataRule, data: tifftools.TiffTag | str) -> bool:
-        if rule.action in ["keep", "delete", "replace", "check_type"]:
+        if rule.action in ["keep", "delete", "replace", "check_type", "modify_date"]:
             if isinstance(data, tifftools.TiffTag):
                 return super().is_match(rule, data)
             return rule.key_name == data
@@ -154,7 +154,7 @@ class SvsRedactionPlan(TiffRedactionPlan):
                     value, rule.valid_data_types, rule.expected_count
                 )
                 return "keep" if passes_check else "delete"
-            if rule.action in ["keep", "replace", "delete"]:
+            if rule.action in ["keep", "replace", "delete", "modify_date"]:
                 return rule.action
         else:
             return super().determine_redaction_operation(rule, data)
@@ -168,6 +168,24 @@ class SvsRedactionPlan(TiffRedactionPlan):
             elif redaction_operation == "replace":
                 assert isinstance(rule, MetadataReplaceRule)
                 data.metadata[rule.key_name] = rule.new_value
+            elif redaction_operation == "modify_date":
+                # The "Date" field in the SVS desription appears to follow the format
+                # MM/DD/YY
+                if rule.key_name == "Date":
+                    try:
+                        current_value = str(data.metadata[rule.key_name])
+                        _, _, year = current_value.split("/")
+                        new_value = f"01/01/{year}"
+                    except Exception:
+                        new_value = None
+                elif rule.key_name == "Time":
+                    new_value = "00:00:00"
+                elif rule.key_name == "Time Zone":
+                    new_value = "GMT+0000"
+                if not new_value:
+                    del data.metadata[rule.key_name]
+                else:
+                    data.metadata[rule.key_name] = new_value
             return
         return super().apply(rule, data)
 
