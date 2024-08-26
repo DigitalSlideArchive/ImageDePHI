@@ -169,6 +169,7 @@ class Ruleset(BaseModel):
     name: str = "My Rules"
     description: str = "My rules"
     output_file_name: str = "study_slide"
+    strict: bool = False
     tiff: TiffRules = TiffRules()
     svs: SvsRules = SvsRules()
     dicom: DicomRules = DicomRules()

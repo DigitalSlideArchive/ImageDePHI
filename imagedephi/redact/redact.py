@@ -130,7 +130,9 @@ def redact_images(
     with logging_redirect_tqdm(loggers=[logger]):
         for image_file in tqdm(images_to_redact, desc="Redacting images", position=0, leave=True):
             push_progress(output_file_counter, output_file_max, redact_dir)
-            strict = profile == ProfileChoice.Strict.value
+            strict = (
+                override_rules.strict if override_rules else (profile == ProfileChoice.Strict.value)
+            )
             try:
                 redaction_plan = build_redaction_plan(
                     image_file, base_rules, override_rules, dcm_uid_map=dcm_uid_map, strict=strict
