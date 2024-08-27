@@ -182,8 +182,8 @@ dicom:
 
 Note that here there is an eplicit format-level setting for dealing with custom metadata. Any tag with an odd group number is considered custom metadata. This can be set to `keep`, `delete` or `use_rule`.
 
-* `keep`: Retain the custom metadata value after redaction.
-* `delete`: Delete the custom metadata tag from the image.
+* `keep`: Retain the custom metadata value after redaction. Rules for custom tags specified in the `metadata` section take precedence over this setting.
+* `delete`: Delete the custom metadata tag from the image. Rules fro custom tags specified in the `metadata` section take precedence over this setting.
 * `use_rule`: This mode will fall back to rules specified for each piece of custom metadata in the `metadata` section of the rule set. If a custom metadata tag with no corresponding rule is encountered, the image will not be redacted, as the redaction plan would be considered incomplete.
 
 Additionally, DICOM redaction supports additional redaction operations.
