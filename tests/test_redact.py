@@ -27,6 +27,13 @@ def override_rule_set(rules_dir: Path):
         return Ruleset.parse_obj(yaml.safe_load(rule_stream))
 
 
+@pytest.fixture
+def strict_rule_set():
+    strict_rules_path = importlib.resources.files("imagedephi") / "minimum_rules.yaml"
+    with strict_rules_path.open() as rules_stream:
+        return Ruleset.parse_obj(yaml.safe_load(rules_stream))
+
+
 @pytest.fixture(
     params=[PurePath("svs"), PurePath("svs") / "test_svs_image_blank.svs"],
     ids=["input_dir", "input_file"],
@@ -141,6 +148,16 @@ def test_plan_dcm(caplog, test_image_dcm):
 @pytest.mark.timeout(5)
 def test_strict(svs_input_path, tmp_path) -> None:
     redact.redact_images(svs_input_path, tmp_path, profile=ProfileChoice.Strict.value)
+    output_file = tmp_path / "Redacted_2023-05-12_12-12-53" / "study_slide_1.svs"
+    output_file_bytes = output_file.read_bytes()
+    assert b"Aperio" not in output_file_bytes
+    assert b"macro" not in output_file_bytes
+
+
+@freeze_time("2023-05-12 12:12:53")
+@pytest.mark.timeout(5)
+def test_override_with_strict_flag(svs_input_path, tmp_path, strict_rule_set) -> None:
+    redact.redact_images(svs_input_path, tmp_path, override_rules=strict_rule_set)
     output_file = tmp_path / "Redacted_2023-05-12_12-12-53" / "study_slide_1.svs"
     output_file_bytes = output_file.read_bytes()
     assert b"Aperio" not in output_file_bytes

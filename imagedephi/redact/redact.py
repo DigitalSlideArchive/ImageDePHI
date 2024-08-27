@@ -130,12 +130,9 @@ def redact_images(
     with logging_redirect_tqdm(loggers=[logger]):
         for image_file in tqdm(images_to_redact, desc="Redacting images", position=0, leave=True):
             push_progress(output_file_counter, output_file_max, redact_dir)
-            strict = (
-                override_rules.strict if override_rules else (profile == ProfileChoice.Strict.value)
-            )
             try:
                 redaction_plan = build_redaction_plan(
-                    image_file, base_rules, override_rules, dcm_uid_map=dcm_uid_map, strict=strict
+                    image_file, base_rules, override_rules, dcm_uid_map=dcm_uid_map
                 )
             # Handle and report other errors without stopping the process
             except Exception as e:
@@ -244,7 +241,6 @@ def show_redaction_plan(
 ) -> NamedTuple:
     image_paths = iter_image_files(input_path, recursive) if input_path.is_dir() else [input_path]
     base_rules = get_base_rules(profile)
-    strict = profile == ProfileChoice.Strict.value
 
     global tags_used
 
@@ -252,9 +248,7 @@ def show_redaction_plan(
         global redaction_plan_report
         for image_path in image_paths:
             try:
-                redaction_plan = build_redaction_plan(
-                    image_path, base_rules, override_rules, strict=strict
-                )
+                redaction_plan = build_redaction_plan(image_path, base_rules, override_rules)
             except tifftools.TifftoolsError:
                 logger.error(f"Could not open {image_path.name} as a tiff.")
                 continue
