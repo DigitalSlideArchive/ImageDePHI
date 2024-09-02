@@ -85,7 +85,7 @@ def iter_image_files(directory: Path, recursive: bool = False) -> Generator[Path
             yield from iter_image_files(child, recursive)
 
 
-def create_redact_dir_and_manifest(base_output_dir: Path) -> tuple[Path, Path]:
+def create_redact_dir_and_manifest(base_output_dir: Path) -> tuple[Path, Path, Path, Path]:
     """
     Given a directory, create and return a sub-directory within it.
 
@@ -95,6 +95,10 @@ def create_redact_dir_and_manifest(base_output_dir: Path) -> tuple[Path, Path]:
     time_stamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     redact_dir = base_output_dir / f"Redacted_{time_stamp}"
     manifest_file = base_output_dir / f"Redacted_{time_stamp}_manifest.csv"
+    failed_dir = base_output_dir / f"Failed_{time_stamp}"
+    failed_manifest_file = (
+        base_output_dir / f"Failed_{time_stamp}" / f"Failed_{time_stamp}_manifest.csv"
+    )
     try:
         redact_dir.mkdir(parents=True)
         manifest_file.touch()
@@ -103,7 +107,9 @@ def create_redact_dir_and_manifest(base_output_dir: Path) -> tuple[Path, Path]:
         raise
     else:
         logger.info(f"Created redaction folder: {redact_dir}")
-        return redact_dir, manifest_file
+        failed_dir.mkdir(parents=True)
+        failed_manifest_file.touch()
+        return redact_dir, manifest_file, failed_dir, failed_manifest_file
 
 
 def redact_images(
@@ -132,7 +138,9 @@ def redact_images(
     )
     output_file_counter = 1
     output_file_max = len(images_to_redact)
-    redact_dir, manifest_file = create_redact_dir_and_manifest(output_dir)
+    redact_dir, manifest_file, failed_dir, failed_manifest_file = create_redact_dir_and_manifest(
+        output_dir
+    )
 
     dcm_uid_map: dict[str, str] = {}
 
@@ -152,7 +160,20 @@ def redact_images(
                 continue
             if not redaction_plan.is_comprehensive():
                 logger.info(f"Redaction could not be performed for {image_file.name}.")
+                failed_file = failed_dir / image_file.name
+                failed_file.hardlink_to(image_file)
+                with open(failed_manifest_file, "a") as manifest:
+                    manifest.write(
+                        f"{image_file} failed to redact because of the following missing rules:\n"
+                    )
+                    missing_tags = redaction_plan.report_plan()[image_file.name].get(
+                        "missing_tags", []
+                    )
+                    if isinstance(missing_tags, list):
+                        for rule in missing_tags:
+                            manifest.write(f"{rule}\n")
                 redaction_plan.report_missing_rules()
+
             else:
                 redaction_plan.report_plan()
                 redaction_plan.execute_plan()

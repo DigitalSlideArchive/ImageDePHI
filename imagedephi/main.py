@@ -122,7 +122,7 @@ def imagedephi(
         set_logging_config(verbose, quiet, log_file)
 
 
-@imagedephi.command
+@imagedephi.command(no_args_is_help=True)
 @global_options
 @click.argument("input-path", type=click.Path(exists=True, readable=True, path_type=Path))
 @click.option(
@@ -161,7 +161,7 @@ def run(
     )
 
 
-@imagedephi.command
+@imagedephi.command(no_args_is_help=True)
 @global_options
 @click.argument("input-path", type=click.Path(exists=True, readable=True, path_type=Path))
 @click.pass_context
