@@ -30,6 +30,7 @@ redaction_plan_report = {}
 unprocessable_image_messages: list[str] = []
 
 T = TypeVar("T")
+missing_rules = False
 
 
 class ProfileChoice(Enum):
@@ -324,6 +325,8 @@ def show_redaction_plan(
 
     def _create_redaction_plan_report():
         global redaction_plan_report
+        global missing_rules
+        missing_rules = False
         global unprocessable_image_messages
         unprocessable_image_messages = []
         with logging_redirect_tqdm(loggers=[logger]):
@@ -351,6 +354,8 @@ def show_redaction_plan(
                     continue
                 logger.info(f"Redaction plan for {image_path.name}:")
                 redaction_plan_report.update(redaction_plan.report_plan())  # type: ignore
+            if not redaction_plan.is_comprehensive():
+                missing_rules = True
 
     if not update:
         global redaction_plan_report
@@ -359,13 +364,14 @@ def show_redaction_plan(
         tags_used = OrderedDict()
         _create_redaction_plan_report()
     else:
+
         _create_redaction_plan_report()
 
     total = len(redaction_plan_report)  # type: ignore
     sorted_dict = _sort_data(redaction_plan_report)  # type: ignore
     if limit is not None and offset is not None:
         sorted_dict = OrderedDict(list(sorted_dict.items())[offset * limit : (offset + 1) * limit])
-    images_plan = namedtuple("images_plan", ["data", "total", "tags"])
+    images_plan = namedtuple("images_plan", ["data", "total", "tags", "missing_rules"])
 
     if input_path.is_dir():
         # Provide a summary if the input path is a directory of images
@@ -399,4 +405,4 @@ def show_redaction_plan(
 
     # Reset logging level if it was changed
     logger.setLevel(starting_logging_level)
-    return images_plan(sorted_dict, total, list(tags_used))
+    return images_plan(sorted_dict, total, list(tags_used), missing_rules)
