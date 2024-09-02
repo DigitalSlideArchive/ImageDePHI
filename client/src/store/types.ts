@@ -18,6 +18,7 @@ export type imagePlanResponse = {
   data: Record<string, Record<string, string>>;
   total: number;
   tags: string[];
+  missing_rules: boolean;
 };
 
 export interface Path {

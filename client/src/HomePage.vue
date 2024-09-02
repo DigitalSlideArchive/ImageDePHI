@@ -14,6 +14,7 @@ const inputModal = ref(null);
 const outputModal = ref(null);
 const rulesetModal = ref(null);
 const redactionModal = ref();
+const missingRulesModal = ref();
 
 const progress = ref({
   count: 0,
@@ -73,6 +74,15 @@ const redact_images = async () => {
     redactionStateFlags.value.redactionComplete =
       !!useRedactionPlan.imageRedactionPlan.total;
     redactionStateFlags.value.redactionSnackbar = true;
+  }
+};
+
+const checkMissingRules = () => {
+  if (useRedactionPlan.imageRedactionPlan.missing_rules) {
+    missingRulesModal.value.showModal();
+  }
+  else {
+    redact_images();
   }
 };
 </script>
@@ -137,7 +147,7 @@ const redact_images = async () => {
               type="submit"
               :class="`${!selectedDirectories.inputDirectory || !selectedDirectories.outputDirectory ? 'btn btn-block bg-accent text-white uppercase rounded-lg tooltip' : 'btn btn-block btn-accent text-white uppercase rounded-lg'}`"
               data-tip="Please select input and output directories"
-              @click="redact_images()"
+              @click="checkMissingRules()"
             >
               De-phi Images
             </button>
@@ -145,6 +155,37 @@ const redact_images = async () => {
         </div>
       </div>
     </div>
+    <dialog id="missingRulesModal" ref="missingRulesModal" class="modal">
+      <div class="modal-box max-w-96">
+        <div class="card max-w-96">
+          <div class="card-body">
+            <h2 class="font-bold text-xl text-center">Missing Redaction Rules</h2>
+            <div class="divider my-1"></div>
+            <p class="indent-8 font-medium">
+              One or more images are missing redaction rules. If you continue these images will not be redacted.
+            </p>
+            <p class="indent-8 text-base font-medium">
+              To add rules, please select a ruleset with the missing redaction rules.
+            </p>
+          </div>
+          <div class="card-actions flex-nowrap justify-between">
+          <button
+            class="btn btn-primary w-1/2 uppercase"
+            @click="missingRulesModal.close();"
+          >
+            Continue
+          </button>
+          <button
+            class="btn btn-neutral w-1/2 uppercase"
+            @click="missingRulesModal.close();"
+          >
+            Cancel
+          </button>
+        </div>
+        </div>
+      </div>
+    </dialog>
+
     <dialog id="redactionModal" ref="redactionModal" class="modal">
       <div class="modal-box w-96">
         <div class="card">
