@@ -26,6 +26,7 @@ from .tiff import UnsupportedFileTypeError
 
 tags_used = OrderedDict()
 redaction_plan_report = {}
+missing_rules = False
 
 
 class ProfileChoice(Enum):
@@ -282,6 +283,8 @@ def show_redaction_plan(
 
     def _create_redaction_plan_report():
         global redaction_plan_report
+        global missing_rules
+        missing_rules = False
         for image_path in image_paths:
             try:
                 redaction_plan = build_redaction_plan(image_path, base_rules, override_ruleset)
@@ -298,6 +301,8 @@ def show_redaction_plan(
             except Exception as e:
                 logger.error(f"{image_path.name} could not be processed. {e.args[0]}")
                 continue
+            if not redaction_plan.is_comprehensive():
+                missing_rules = True
             logger.info(f"Redaction plan for {image_path.name}")
             redaction_plan_report.update(redaction_plan.report_plan())  # type: ignore
 
@@ -308,11 +313,12 @@ def show_redaction_plan(
         tags_used = OrderedDict()
         _create_redaction_plan_report()
     else:
+
         _create_redaction_plan_report()
 
     total = len(redaction_plan_report)  # type: ignore
     sorted_dict = _sort_data(redaction_plan_report)  # type: ignore
     if limit is not None and offset is not None:
         sorted_dict = OrderedDict(list(sorted_dict.items())[offset * limit : (offset + 1) * limit])
-    images_plan = namedtuple("images_plan", ["data", "total", "tags"])
-    return images_plan(sorted_dict, total, list(tags_used))
+    images_plan = namedtuple("images_plan", ["data", "total", "tags", "missing_rules"])
+    return images_plan(sorted_dict, total, list(tags_used), missing_rules)
