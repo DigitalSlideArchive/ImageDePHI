@@ -53,8 +53,14 @@ You can add a description to your custom rulesets. This is not used by the progr
 #### `output_file_name`
 Specify how the output files should be named here. The base ruleset contains the value `study_slide`. In this case, if the input slides are named: `john_smith_lung.svs` and `john_smith_pancreas.svs`, the redacted output images will be named `study_slide_1.svs` and `study_slide_2.svs`.
 
+### Other Top-level Properties
+
+#### `strict`
+The `strict` property of rulesets is used to denote that ALL unspecified tags should be deleted. This is supported for `tiff` and `svs` files. An example of using the strict flag can be seen in the `minimum_rules.yaml` rule set.
+
 ### File Format Rules
 Redaction behavior is specified per file type. Currently pure `tiff` files, Aperio (`.svs`), and DICOM files are supported. Each image type has its own groups of data that can be redacted. For example, Aperio images have `tiff` metadata, certain associated images, and additional metadata specified in the `ImageDescription` tag. `svs` rulesets take the following shape:
+
 
 ```yaml
 svs:
