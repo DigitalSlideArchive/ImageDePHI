@@ -7,7 +7,7 @@ import datetime
 from enum import Enum
 import importlib.resources
 from pathlib import Path
-from typing import NamedTuple
+from typing import NamedTuple, TypeVar
 
 import tifftools
 import tifftools.constants
@@ -26,6 +26,8 @@ from .tiff import UnsupportedFileTypeError
 
 tags_used = OrderedDict()
 redaction_plan_report = {}
+
+T = TypeVar("T")
 
 
 class ProfileChoice(Enum):
@@ -85,6 +87,15 @@ def iter_image_files(directory: Path, recursive: bool = False) -> Generator[Path
             yield from iter_image_files(child, recursive)
 
 
+def generator_to_list_with_progress(
+    generator: Generator[T, None, None], progress_bar_desc="Working..."
+) -> list[T]:
+    result = []
+    for item in tqdm(generator, desc=progress_bar_desc, dynamic_ncols=True):
+        result.append(item)
+    return result
+
+
 def create_redact_dir_and_manifest(base_output_dir: Path) -> tuple[Path, Path]:
     """
     Given a directory, create and return a sub-directory within it.
@@ -127,9 +138,15 @@ def redact_images(
         override_ruleset.output_file_name if override_ruleset else base_rules.output_file_name
     )
     # Convert to a list in order to get the length
-    images_to_redact = list(
-        iter_image_files(input_path, recursive) if input_path.is_dir() else [input_path]
-    )
+    if input_path.is_dir():
+        with logging_redirect_tqdm(loggers=[logger]):
+            images_to_redact = generator_to_list_with_progress(
+                iter_image_files(input_path, recursive),
+                progress_bar_desc="Collecting files to redact...",
+            )
+    else:
+        images_to_redact = [input_path]
+
     output_file_counter = 1
     output_file_max = len(images_to_redact)
     redact_dir, manifest_file = create_redact_dir_and_manifest(output_dir)
@@ -251,11 +268,19 @@ def show_redaction_plan(
     offset: int | None = None,
     update: bool = True,
 ) -> NamedTuple:
-    image_paths = iter_image_files(input_path, recursive) if input_path.is_dir() else [input_path]
     base_rules = get_base_rules(profile)
     override_ruleset = None
     if override_rules:
         override_ruleset = _get_user_rules(override_rules)
+    strict = profile == ProfileChoice.Strict.value
+    if input_path.is_dir():
+        with logging_redirect_tqdm(loggers=[logger]):
+            image_paths = generator_to_list_with_progress(
+                iter_image_files(input_path, recursive),
+                progress_bar_desc="Collecting files to redact...",
+            )
+    else:
+        image_paths = [input_path]
 
     global tags_used
 
