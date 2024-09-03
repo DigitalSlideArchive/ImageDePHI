@@ -137,7 +137,10 @@ def redact_images(
                 )
             # Handle and report other errors without stopping the process
             except Exception as e:
-                logger.error(f"{image_file.name} could not be processed. {e.args[0]}")
+                logger.error(
+                    f"{image_file.name} could not be processed. "
+                    f"{e.args[0] if len(e.args) else e}"
+                )
                 continue
             if not redaction_plan.is_comprehensive():
                 logger.info(f"Redaction could not be performed for {image_file.name}.")
