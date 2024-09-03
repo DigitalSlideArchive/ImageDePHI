@@ -77,13 +77,23 @@ const redact_images = async () => {
   }
 };
 
-const checkMissingRules = () => {
+const canRedact = () => {
+  if (
+    !selectedDirectories.value.inputDirectory ||
+    !selectedDirectories.value.outputDirectory
+  ) {
+    return;
+  }
   if (useRedactionPlan.imageRedactionPlan.missing_rules) {
     missingRulesModal.value.showModal();
-  }
-  else {
+  } else {
     redact_images();
   }
+};
+// If the user chooses to redact with missing rules, force redaction
+const forceRedact = () => {
+  missingRulesModal.value.close();
+  redact_images();
 };
 </script>
 
@@ -147,7 +157,7 @@ const checkMissingRules = () => {
               type="submit"
               :class="`${!selectedDirectories.inputDirectory || !selectedDirectories.outputDirectory ? 'btn btn-block bg-accent text-white uppercase rounded-lg tooltip' : 'btn btn-block btn-accent text-white uppercase rounded-lg'}`"
               data-tip="Please select input and output directories"
-              @click="checkMissingRules()"
+              @click="canRedact()"
             >
               De-phi Images
             </button>
@@ -159,29 +169,33 @@ const checkMissingRules = () => {
       <div class="modal-box max-w-96">
         <div class="card max-w-96">
           <div class="card-body">
-            <h2 class="font-bold text-xl text-center">Missing Redaction Rules</h2>
+            <h2 class="font-bold text-xl text-center">
+              Missing Redaction Rules
+            </h2>
             <div class="divider my-1"></div>
             <p class="indent-8 font-medium">
-              One or more images are missing redaction rules. If you continue these images will not be redacted.
+              One or more images are missing redaction rules. If you continue
+              these images will not be redacted.
             </p>
             <p class="indent-8 text-base font-medium">
-              To add rules, please select a ruleset with the missing redaction rules.
+              To add rules, please select a ruleset with the missing redaction
+              rules.
             </p>
           </div>
           <div class="card-actions flex-nowrap justify-between">
-          <button
-            class="btn btn-primary w-1/2 uppercase"
-            @click="missingRulesModal.close();"
-          >
-            Continue
-          </button>
-          <button
-            class="btn btn-neutral w-1/2 uppercase"
-            @click="missingRulesModal.close();"
-          >
-            Cancel
-          </button>
-        </div>
+            <button
+              class="btn btn-primary w-1/2 uppercase"
+              @click="forceRedact()"
+            >
+              Continue
+            </button>
+            <button
+              class="btn btn-neutral w-1/2 uppercase"
+              @click="missingRulesModal.close()"
+            >
+              Cancel
+            </button>
+          </div>
         </div>
       </div>
     </dialog>
