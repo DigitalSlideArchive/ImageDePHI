@@ -1,6 +1,7 @@
 import importlib.resources
 import logging
 from pathlib import Path, PurePath
+import struct
 
 from freezegun import freeze_time
 import pytest
@@ -9,7 +10,7 @@ import yaml
 from imagedephi import redact
 from imagedephi.redact.redact import ProfileChoice, create_redact_dir_and_manifest
 from imagedephi.redact.svs import SvsRedactionPlan
-from imagedephi.rules import Ruleset
+from imagedephi.rules import KeepRule, Ruleset
 from imagedephi.utils.logger import logger
 
 
@@ -154,6 +155,27 @@ def test_strict_skip_dcm(dcm_input_path, tmp_path) -> None:
     output_dir = tmp_path / "Redacted_2023-05-12_12-12-53"
     assert output_dir.is_dir()
     assert len(list(output_dir.iterdir())) == 0
+
+
+@freeze_time("2023-05-12 12:12:53")
+@pytest.mark.timeout(5)
+@pytest.mark.parametrize(
+    "action,custom_tag_exists", [("keep", True), ("delete", False), ("use_rule", True)]
+)
+def test_dcm_private_redaction(dcm_input_path, tmp_path, action, custom_tag_exists) -> None:
+    override_rules = Ruleset()
+    override_rules.dicom.custom_metadata_action = action
+    if action == "use_rule":
+        override_rules.dicom.metadata["(1001, 1001)"] = KeepRule(key_name="TestItem", action="keep")
+    redact.redact_images(
+        dcm_input_path,
+        tmp_path,
+        override_rules=override_rules,
+    )
+    output_file = tmp_path / "Redacted_2023-05-12_12-12-53" / "study_slide_1.dcm"
+    dcm_output_file_bytes = output_file.read_bytes()
+    tag_bytes = struct.pack("<i", 0x10011001)
+    assert custom_tag_exists == (tag_bytes in dcm_output_file_bytes)
 
 
 @freeze_time("2023-05-12 12:12:53")

@@ -175,15 +175,19 @@ DICOM format rules are much the same:
 dicom:
     associated_images:
         ...
-    delete_custom_metadata: ...
+    custom_metadata_action: ...
     metadata:
         ...
 ```
 
-Note that here there is an eplicit format-level setting for dealing with custom metadata. Any tag with an odd group number is custom metadata. If not specified, this value default to `True`. Tag-level rules will override this behavior.
+Note that here there is an eplicit format-level setting for dealing with custom metadata. Any tag with an odd group number is considered custom metadata. This can be set to `keep`, `delete` or `use_rule`.
+
+* `keep`: Retain the custom metadata value after redaction. Rules for custom tags specified in the `metadata` section take precedence over this setting.
+* `delete`: Delete the custom metadata tag from the image. Rules fro custom tags specified in the `metadata` section take precedence over this setting.
+* `use_rule`: This mode will fall back to rules specified for each piece of custom metadata in the `metadata` section of the rule set. If a custom metadata tag with no corresponding rule is encountered, the image will not be redacted, as the redaction plan would be considered incomplete.
 
 Additionally, DICOM redaction supports additional redaction operations.
 
-* `empty`: Replace the tag's value with `None`
+* `empty`: Replace the tag's value with `None`.
 * `replace_dummy`: Replace the tag's value with a dummy value, which is dependant on the original value type. For example, if the tag's value is a string, the dummy value is the empty string. If the tag's value is an integer, the dummy value is 0.
 * `replace_uid`: If the tag's value is a UID, it will be replaced with a randomly generated UID of the form `"2.25.<uuid>"` where `<uuid>` is a UUID generated a run time. The new custom UID is stored by Image DePHI and used to replace other UIDs that share the same initial value. This way, if a UID is used in different tags within an image, they all get the same replacement value.
