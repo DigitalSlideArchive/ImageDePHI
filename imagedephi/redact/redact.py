@@ -91,7 +91,7 @@ def generator_to_list_with_progress(
     generator: Generator[T, None, None], progress_bar_desc="Working..."
 ) -> list[T]:
     result = []
-    for item in tqdm(generator, desc=progress_bar_desc, dynamic_ncols=True):
+    for item in tqdm(generator, desc=progress_bar_desc, dynamic_ncols=True, unit=" image(s) found"):
         result.append(item)
     return result
 
