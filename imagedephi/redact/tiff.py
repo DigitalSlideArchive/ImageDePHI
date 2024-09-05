@@ -259,7 +259,7 @@ class TiffRedactionPlan(RedactionPlan):
     def report_plan(
         self,
     ) -> RedactionPlanReport:
-        logger.info("Tiff Metadata Redaction Plan\n")
+        logger.debug("Tiff Metadata Redaction Plan\n")
         offset = -1
         ifd_count = 0
         report: RedactionPlanReport = {}
@@ -268,11 +268,11 @@ class TiffRedactionPlan(RedactionPlan):
             if ifd["offset"] != offset:
                 offset = ifd["offset"]
                 ifd_count += 1
-                logger.info(f"IFD {ifd_count}:")
+                logger.debug(f"IFD {ifd_count}:")
             if tag.value not in self.no_match_tags:
                 rule = self.metadata_redaction_steps[tag.value]
                 operation = self.determine_redaction_operation(rule, ifd)
-                logger.info(f"Tiff Tag {tag.value} - {rule.key_name}: {operation}")
+                logger.debug(f"Tiff Tag {tag.value} - {rule.key_name}: {operation}")
                 if (
                     ifd["tags"][tag.value]["datatype"]
                     == tifftools.constants.Datatype.UNDEFINED.value
@@ -292,12 +292,12 @@ class TiffRedactionPlan(RedactionPlan):
                     }
 
         self.report_missing_rules(report)
-        logger.info("Tiff Associated Image Redaction Plan\n")
-        logger.info(f"Found {len(self.image_redaction_steps)} associated images")
+        logger.debug("Tiff Associated Image Redaction Plan\n")
+        logger.debug(f"Found {len(self.image_redaction_steps)} associated images")
         report[self.image_path.name]["associated_images"] = len(self.image_redaction_steps)
         if self.image_redaction_steps:
             default_rule = list(self.image_redaction_steps.values())[0]
-            logger.info(f"Redaction action: {default_rule.action}")
+            logger.debug(f"Redaction action: {default_rule.action}")
             report[self.image_path.name]["associated_image_redaction_action"] = default_rule.action
         return report
 
