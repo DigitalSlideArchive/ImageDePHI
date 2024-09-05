@@ -171,7 +171,6 @@ def redact_images(
                 logger.info(f"Redaction could not be performed for {image_file.name}.")
                 redaction_plan.report_missing_rules()
             else:
-                redaction_plan.report_plan()
                 redaction_plan.execute_plan()
                 output_parent_dir = redact_dir
                 if recursive:
