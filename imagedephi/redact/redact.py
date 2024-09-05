@@ -302,7 +302,7 @@ def show_redaction_plan(
             except Exception as e:
                 logger.error(f"{image_path.name} could not be processed. {e.args[0]}")
                 continue
-            logger.info(f"Redaction plan for {image_path.name}")
+            logger.info(f"Redaction plan for {image_path.name}:")
             redaction_plan_report.update(redaction_plan.report_plan())  # type: ignore
 
     if not update:

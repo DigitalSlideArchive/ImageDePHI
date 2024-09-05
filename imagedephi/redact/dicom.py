@@ -176,7 +176,7 @@ class DicomRedactionPlan(RedactionPlan):
         return "delete"
 
     def report_plan(self) -> RedactionPlanReport:
-        logger.info("DICOM Metadata Redaction Plan\n")
+        logger.debug("DICOM Metadata Redaction Plan\n")
         if self.associated_image_rule:
             if self.associated_image_rule.action == "delete":
                 logger.info(
@@ -190,7 +190,7 @@ class DicomRedactionPlan(RedactionPlan):
             rule = self.metadata_redaction_steps.get(element.tag, None)
             if rule:
                 operation = self.determine_redaction_operation(rule, element)
-                logger.info(f"DICOM Tag {element.tag} - {rule.key_name}: {operation}")
+                logger.debug(f"DICOM Tag {element.tag} - {rule.key_name}: {operation}")
                 report[self.image_path.name][f"{element.tag}_{rule.key_name}"] = {
                     "action": operation,
                     "value": element.value,
