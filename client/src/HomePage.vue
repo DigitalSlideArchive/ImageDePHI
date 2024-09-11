@@ -38,6 +38,13 @@ ws.onmessage = (event) => {
     redact_dir: data.redact_dir || progress.value.redact_dir, // don't update if not present
   };
 };
+// Periodically ping the websocket
+
+setInterval(() => {
+  if (ws.readyState === ws.OPEN) {
+  ws.send("ping");
+}
+}, 5000);
 
 const redact_images = async () => {
   if (!selectedDirectories.value.inputDirectory || !selectedDirectories.value.outputDirectory) {

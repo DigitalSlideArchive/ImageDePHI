@@ -172,16 +172,6 @@ def redact(
         redact_images(input_path, output_path)
 
 
-async def ws_heartbeat(websocket: WebSocket):
-    while True:
-        try:
-            await websocket.send_json("heartbeat")
-            await asyncio.sleep(10)
-        except WebSocketDisconnect:
-            print("Client disconnected")
-            break
-
-
 @router.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
@@ -192,7 +182,6 @@ async def websocket_endpoint(websocket: WebSocket):
             print("Client connected")
             backoff = 1
 
-            asyncio.create_task(ws_heartbeat(websocket))
             while True:
                 message = get_next_progress_message()
                 if message is not None:
@@ -201,7 +190,8 @@ async def websocket_endpoint(websocket: WebSocket):
                     )
                     await websocket.send_json(message_dict)
                 else:
-                    await asyncio.sleep(1)  # Add a small delay to avoid busy waiting
+                    await asyncio.sleep(0.001)  # Add a small delay to avoid busy waiting
+
         except WebSocketDisconnect:
             print("Attempting to reconnect to client")
             await asyncio.sleep(backoff)
