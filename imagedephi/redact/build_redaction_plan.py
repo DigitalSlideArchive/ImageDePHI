@@ -26,9 +26,9 @@ def build_redaction_plan(
     base_rules: Ruleset,
     override_rules: Ruleset | None = None,
     dcm_uid_map: dict[str, str] | None = None,
-    strict=False,
 ) -> RedactionPlan:
     file_format = get_file_format_from_path(image_path)
+    strict = override_rules.strict if override_rules else base_rules.strict
     if file_format == FileFormat.TIFF:
         # Since SVS is a subset of tiff, fall back on file extension
         file_extension = (
@@ -39,14 +39,20 @@ def build_redaction_plan(
         if file_extension == FileFormat.TIFF:
             merged_rules = base_rules.tiff.copy()
             if override_rules:
-                merged_rules.metadata.update(override_rules.tiff.metadata)
+                if override_rules.strict:
+                    merged_rules = override_rules.tiff.copy()
+                else:
+                    merged_rules.metadata.update(override_rules.tiff.metadata)
 
             return TiffRedactionPlan(image_path, merged_rules, strict)
         elif file_extension == FileFormat.SVS:
             merged_rules = base_rules.svs.copy()
             if override_rules:
-                merged_rules.metadata.update(override_rules.svs.metadata)
-                merged_rules.image_description.update(override_rules.svs.image_description)
+                if override_rules.strict:
+                    merged_rules = override_rules.svs.copy()
+                else:
+                    merged_rules.metadata.update(override_rules.svs.metadata)
+                    merged_rules.image_description.update(override_rules.svs.image_description)
             return SvsRedactionPlan(image_path, merged_rules, strict)
         else:
             raise UnsupportedFileTypeError(f"File format for {image_path} not supported.")

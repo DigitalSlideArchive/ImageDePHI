@@ -23,7 +23,7 @@ Image redaction is determined by a set of rules. By default, the base set of rul
 ## Rule Application
 All runs of `imagedephi` use the provided base set of rules as a foundation. End users can use the ruleset framework to build custom rulesets that handle additional or custom metadata not covered by the base rules, or override the behavior of the base rule set.
 
-Override rule sets can be specified by using the `-r my_ruleset.yaml` or `--override-rules my_ruleset.yaml` option. This option is available for both the `imagedephi run` and `imagedephi plan` commands. Override rules sets are not provided by `imagedephi`, and must de defined by the end user.
+Override rule sets can be specified by using the `-R my_ruleset.yaml` or `--override-rules my_ruleset.yaml` option. This option is available for both the `imagedephi run` and `imagedephi plan` commands. Override rules sets are not provided by `imagedephi`, and must de defined by the end user.
 
 When `imagedephi` determines the steps to redact a file, it checks each piece of metadata in the file. For each piece of metadata found this way, it will first consult the override rule set, if present, for an applicable rule. If the override rule set does not contain a rule for that piece of metadata, the program will check the base ruleset.
 
@@ -53,8 +53,14 @@ You can add a description to your custom rulesets. This is not used by the progr
 #### `output_file_name`
 Specify how the output files should be named here. The base ruleset contains the value `study_slide`. In this case, if the input slides are named: `john_smith_lung.svs` and `john_smith_pancreas.svs`, the redacted output images will be named `study_slide_1.svs` and `study_slide_2.svs`.
 
+### Other Top-level Properties
+
+#### `strict`
+The `strict` property of rulesets is used to denote that ALL unspecified tags should be deleted. This is supported for `tiff` and `svs` files. An example of using the strict flag can be seen in the `minimum_rules.yaml` rule set.
+
 ### File Format Rules
 Redaction behavior is specified per file type. Currently pure `tiff` files, Aperio (`.svs`), and DICOM files are supported. Each image type has its own groups of data that can be redacted. For example, Aperio images have `tiff` metadata, certain associated images, and additional metadata specified in the `ImageDescription` tag. `svs` rulesets take the following shape:
+
 
 ```yaml
 svs:
