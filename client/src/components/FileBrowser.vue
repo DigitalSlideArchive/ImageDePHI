@@ -3,6 +3,7 @@ import { ref, Ref } from "vue";
 import { getDirectoryInfo } from "../api/rest";
 import { selectedDirectories } from "../store/directoryStore";
 import { useRedactionPlan } from "../store/imageStore";
+import { redactionStateFlags } from "../store/redactionStore";
 import { DirectoryData } from "../store/types";
 
 const props = defineProps({
@@ -47,6 +48,7 @@ const updateSelectedDirectories = (path: string) => {
   selectedDirectories.value[props.modalId] = path;
 };
 const updateTableData = () => {
+  redactionStateFlags.value.redactionSnackbar = false;
  useRedactionPlan.updateImageData({
   directory: selectedDirectories.value.inputDirectory,
   rules: selectedDirectories.value.rulesetDirectory,

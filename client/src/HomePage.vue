@@ -4,6 +4,7 @@ import { ref } from "vue";
 import { redactImages } from "./api/rest";
 import { selectedDirectories } from "./store/directoryStore";
 import { useRedactionPlan } from "./store/imageStore";
+import { redactionStateFlags } from "./store/redactionStore";
 
 import MenuSteps from "./components/MenuSteps.vue";
 import FileBrowser from "./components/FileBrowser.vue";
@@ -13,10 +14,6 @@ const inputModal = ref(null);
 const outputModal = ref(null);
 const rulesetModal = ref(null);
 const redactionModal = ref();
-const redacting = ref(false);
-const redactionComplete = ref(false);
-const showImageTable = ref(false);
-const redactionSnackbar = ref(false);
 
 const progress = ref({
   count: 0,
@@ -50,7 +47,8 @@ const redact_images = async () => {
   if (!selectedDirectories.value.inputDirectory || !selectedDirectories.value.outputDirectory) {
     return;
   }
-  redacting.value = true;
+  redactionStateFlags.value.redactionSnackbar = false;
+  redactionStateFlags.value.redacting = true;
   // Reset progress count
   progress.value.count = 0;
   redactionModal.value.showModal();
@@ -67,10 +65,10 @@ const redact_images = async () => {
       offset: 0,
       update: false,}
     );
-    redacting.value = false;
+    redactionStateFlags.value.redacting = false;
     redactionModal.value.close();
-    redactionComplete.value = !!useRedactionPlan.imageRedactionPlan.total;
-    redactionSnackbar.value = true;
+    redactionStateFlags.value.redactionComplete = !!useRedactionPlan.imageRedactionPlan.total;
+    redactionStateFlags.value.redactionSnackbar = true;
   }
 };
 </script>
@@ -79,7 +77,7 @@ const redact_images = async () => {
   <div class="flex">
     <input id="side-drawer" type="checkbox" class="drawer-toggle" />
     <div class="flex max-w-md">
-      <div :class="`pl-4 py-4 ${redacting ? 'opacity-50' : ''}`">
+      <div :class="`pl-4 py-4 ${redactionStateFlags.redacting ? 'opacity-50' : ''}`">
         <div class="bg-base-100 drop-shadow-xl rounded flex flex-col">
           <div class="flex justify-between content-center p-4 border-b">
             <div class="max-h6 w-auto self-center">
@@ -113,7 +111,7 @@ const redact_images = async () => {
             ref="inputModal"
             :modal-id="'inputDirectory'"
             :title="'Input Directory'"
-            @update-image-list="showImageTable = true, redactionComplete = false"
+            @update-image-list="redactionStateFlags.showImageTable = true, redactionStateFlags.redactionComplete = false"
           />
           <FileBrowser
             ref="outputModal"
@@ -150,7 +148,7 @@ const redact_images = async () => {
               >
             </p>
             <progress
-              v-if="redacting"
+              v-if="redactionStateFlags.redacting"
               class="progress progress-primary"
               :value="progress.count"
               :max="progress.max"
@@ -160,12 +158,12 @@ const redact_images = async () => {
       </div>
     </dialog>
     <ImageDataDisplay
-      v-if="useRedactionPlan.imageRedactionPlan.total && showImageTable"
+      v-if="useRedactionPlan.imageRedactionPlan.total && redactionStateFlags.showImageTable"
     />
-    <div v-if="redactionComplete">
+    <div v-if="redactionStateFlags.redactionComplete">
       <ImageDataDisplay />
     </div>
-    <div v-if="redactionSnackbar" class="toast">
+    <div v-if="redactionStateFlags.redactionSnackbar" class="toast">
       <div class="alert alert-success">
         <span class="font-semibold">Redaction Complete</span>
         <div>
@@ -174,7 +172,7 @@ const redact_images = async () => {
           }}
           <button
             class="btn btn-xs btn-ghost"
-            @click="redactionSnackbar = false"
+            @click="redactionStateFlags.redactionSnackbar = false"
           >
             <i class="ri-close-line"></i>
           </button>
