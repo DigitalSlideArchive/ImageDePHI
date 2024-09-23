@@ -16,13 +16,13 @@ defineProps({
   </div>
   <table v-if="usedColumns" class="table table-auto text-center bg-base-100">
     <thead>
-      <tr class="text-base">
+      <tr class="text-base bg-gray-600">
         <th class="bg-neutral text-white py-5 px-6">Image File Name</th>
         <th class="bg-gray-600 text-white py-5 px-10">Image</th>
         <th class="bg-gray-600 text-white">Redaction Status</th>
         <th
           v-if="Object.keys(imageRedactionPlan.data).includes('missing_tags')"
-          class="bg-gray-600 text-white p-4"
+          class="text-white p-4"
         >
           Missing Tags
         </th>
