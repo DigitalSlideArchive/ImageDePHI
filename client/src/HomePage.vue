@@ -50,7 +50,6 @@ const redact_images = async () => {
   if (!selectedDirectories.value.inputDirectory || !selectedDirectories.value.outputDirectory) {
     return;
   }
-  showImageTable.value = false;
   redacting.value = true;
   redactionModal.value.showModal();
   const response = await redactImages(
