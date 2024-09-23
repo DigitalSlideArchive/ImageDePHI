@@ -39,12 +39,15 @@ ws.onmessage = (event) => {
 
 setInterval(() => {
   if (ws.readyState === ws.OPEN) {
-  ws.send("ping");
-}
+    ws.send("ping");
+  }
 }, 5000);
 
 const redact_images = async () => {
-  if (!selectedDirectories.value.inputDirectory || !selectedDirectories.value.outputDirectory) {
+  if (
+    !selectedDirectories.value.inputDirectory ||
+    !selectedDirectories.value.outputDirectory
+  ) {
     return;
   }
   redactionStateFlags.value.redactionSnackbar = false;
@@ -55,19 +58,20 @@ const redact_images = async () => {
   const response = await redactImages(
     selectedDirectories.value.inputDirectory,
     selectedDirectories.value.outputDirectory,
-    selectedDirectories.value.rulesetDirectory
+    selectedDirectories.value.rulesetDirectory,
   );
   if (response.status === 200) {
     useRedactionPlan.updateImageData({
-      directory:`${selectedDirectories.value.outputDirectory}/${progress.value.redact_dir}`,
-      rules:selectedDirectories.value.rulesetDirectory,
+      directory: `${selectedDirectories.value.outputDirectory}/${progress.value.redact_dir}`,
+      rules: selectedDirectories.value.rulesetDirectory,
       limit: 50,
       offset: 0,
-      update: false,}
-    );
+      update: false,
+    });
     redactionStateFlags.value.redacting = false;
     redactionModal.value.close();
-    redactionStateFlags.value.redactionComplete = !!useRedactionPlan.imageRedactionPlan.total;
+    redactionStateFlags.value.redactionComplete =
+      !!useRedactionPlan.imageRedactionPlan.total;
     redactionStateFlags.value.redactionSnackbar = true;
   }
 };
@@ -77,7 +81,9 @@ const redact_images = async () => {
   <div class="flex">
     <input id="side-drawer" type="checkbox" class="drawer-toggle" />
     <div class="flex max-w-md">
-      <div :class="`pl-4 py-4 ${redactionStateFlags.redacting ? 'opacity-50' : ''}`">
+      <div
+        :class="`pl-4 py-4 ${redactionStateFlags.redacting ? 'opacity-50' : ''}`"
+      >
         <div class="bg-base-100 drop-shadow-xl rounded flex flex-col">
           <div class="flex justify-between content-center p-4 border-b">
             <div class="max-h6 w-auto self-center">
@@ -111,7 +117,10 @@ const redact_images = async () => {
             ref="inputModal"
             :modal-id="'inputDirectory'"
             :title="'Input Directory'"
-            @update-image-list="redactionStateFlags.showImageTable = true, redactionStateFlags.redactionComplete = false"
+            @update-image-list="
+              (redactionStateFlags.showImageTable = true),
+                (redactionStateFlags.redactionComplete = false)
+            "
           />
           <FileBrowser
             ref="outputModal"
@@ -122,7 +131,7 @@ const redact_images = async () => {
             ref="rulesetModal"
             :modal-id="'rulesetDirectory'"
             :title="'Ruleset Directory'"
-            />
+          />
           <div class="p-4 w-full">
             <button
               type="submit"
@@ -158,7 +167,10 @@ const redact_images = async () => {
       </div>
     </dialog>
     <ImageDataDisplay
-      v-if="useRedactionPlan.imageRedactionPlan.total && redactionStateFlags.showImageTable"
+      v-if="
+        useRedactionPlan.imageRedactionPlan.total &&
+        redactionStateFlags.showImageTable
+      "
     />
     <div v-if="redactionStateFlags.redactionComplete">
       <ImageDataDisplay />

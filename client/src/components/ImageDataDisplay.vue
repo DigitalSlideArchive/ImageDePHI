@@ -6,7 +6,6 @@ import ImageDataTable from "./ImageDataTable.vue";
 import InfiniteScroller from "./InfiniteScroller.vue";
 import { selectedDirectories } from "../store/directoryStore";
 
-
 const limit = ref(50);
 const offset = ref(1);
 
@@ -22,8 +21,8 @@ const loadImagePlan = async () => {
     rules: selectedDirectories.value.rulesetDirectory,
     limit: limit.value,
     offset: offset.value,
-    update: true,}
-  );
+    update: true,
+  });
   useRedactionPlan.imageRedactionPlan.data = {
     ...useRedactionPlan.imageRedactionPlan.data,
     ...newPlan.data,
@@ -32,7 +31,6 @@ const loadImagePlan = async () => {
   ++offset.value;
 };
 const usedColumns = computed(() => useRedactionPlan.imageRedactionPlan.tags);
-
 </script>
 
 <template>

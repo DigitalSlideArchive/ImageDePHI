@@ -6,7 +6,6 @@ export type DirectoryData = {
   childrenYaml: Path[];
 };
 
-
 export interface ImagePlanParams {
   directory: string;
   rules?: string;
