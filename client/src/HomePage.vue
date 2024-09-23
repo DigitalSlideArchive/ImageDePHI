@@ -51,6 +51,8 @@ const redact_images = async () => {
     return;
   }
   redacting.value = true;
+  // Reset progress count
+  progress.value.count = 0;
   redactionModal.value.showModal();
   const response = await redactImages(
     selectedDirectories.value.inputDirectory,
