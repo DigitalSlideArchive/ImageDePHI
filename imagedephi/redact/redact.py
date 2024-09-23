@@ -271,6 +271,8 @@ def show_redaction_plan(
     if not update:
         global redaction_plan_report
         redaction_plan_report = {}
+        global tags_used
+        tags_used = OrderedDict()
         _create_redaction_plan_report()
     else:
         _create_redaction_plan_report()
