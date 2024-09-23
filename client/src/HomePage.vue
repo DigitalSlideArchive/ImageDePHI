@@ -126,7 +126,7 @@ const redact_images = async () => {
           <div class="p-4 w-full">
             <button
               type="submit"
-              :class="`${!selectedDirectories.inputDirectory || !selectedDirectories.outputDirectory ? 'btn btn-block bg-accent text-white uppercase rounded-lg tooltip' : 'btn btn-block bg-accent text-white uppercase rounded-lg'}`"
+              :class="`${!selectedDirectories.inputDirectory || !selectedDirectories.outputDirectory ? 'btn btn-block bg-accent text-white uppercase rounded-lg tooltip' : 'btn btn-block btn-accent text-white uppercase rounded-lg'}`"
               data-tip="Please select input and output directories"
               @click="redact_images()"
             >
