@@ -18,10 +18,7 @@ export async function getDirectoryInfo(path?: string) {
   });
 }
 
-
-export async function getRedactionPlan(
-  params: ImagePlanParams,
-) {
+export async function getRedactionPlan(params: ImagePlanParams) {
   const response = await fetch(
     `${basePath}/redaction_plan?input_directory=${params.directory}&rules_path=${params.rules}&limit=${params.limit}&offset=${params.offset}&update=${params.update}`,
     {

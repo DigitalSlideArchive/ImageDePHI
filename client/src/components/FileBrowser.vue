@@ -3,6 +3,7 @@ import { ref, Ref } from "vue";
 import { getDirectoryInfo } from "../api/rest";
 import { selectedDirectories } from "../store/directoryStore";
 import { useRedactionPlan } from "../store/imageStore";
+import { redactionStateFlags } from "../store/redactionStore";
 import { DirectoryData } from "../store/types";
 
 const props = defineProps({
@@ -46,15 +47,17 @@ const closeModal = () => {
 const updateSelectedDirectories = (path: string) => {
   selectedDirectories.value[props.modalId] = path;
 };
-const updateTableData = () => {
- useRedactionPlan.updateImageData({
-  directory: selectedDirectories.value.inputDirectory,
-  rules: selectedDirectories.value.rulesetDirectory,
-  limit: 50,
-  offset: 0,
-  update: false});
-};
 
+const updateTableData = () => {
+  redactionStateFlags.value.redactionSnackbar = false;
+  useRedactionPlan.updateImageData({
+    directory: selectedDirectories.value.inputDirectory,
+    rules: selectedDirectories.value.rulesetDirectory,
+    limit: 50,
+    offset: 0,
+    update: false,
+  });
+};
 </script>
 
 <template>
@@ -72,9 +75,7 @@ const updateTableData = () => {
               @click="
                 $emit('update-image-list'),
                   closeModal(),
-                  title !== 'Output Directory'
-                    ? updateTableData()
-                    : ''
+                  title !== 'Output Directory' ? updateTableData() : ''
               "
             >
               Select
@@ -131,34 +132,30 @@ const updateTableData = () => {
           </li>
         </ul>
         <ul class="pl-2">
-          <template
-            v-if="modalId !== 'rulesetDirectory'"
-          >
-          <li
-            v-for="child_image in directoryData.childrenImages.slice(0, 10)"
-            :key="child_image.path"
-            class="py-0.5"
-          >
-            <i class="ri-image-fill text-sky-800"></i>
-            {{ child_image.name }}
-          </li>
-          <li v-if="directoryData.childrenImages.length > 10" class="italic">
-            {{ directoryData.childrenImages.length - 10 }} More Images
-          </li>
-        </template>
-          <template
-            v-if="modalId === 'rulesetDirectory'"
-          >
-          <li
-            v-for="ruleset in directoryData.childrenYaml"
-            :key="ruleset.path"
-            class="hover:bg-base-300 cursor-default py-0.5"
-            @click="updateSelectedDirectories(ruleset.path)"
-          >
-            <i class="ri-file-text-line text-neutral"></i>
-            {{ ruleset.name }}
-          </li>
-        </template>
+          <template v-if="modalId !== 'rulesetDirectory'">
+            <li
+              v-for="child_image in directoryData.childrenImages.slice(0, 10)"
+              :key="child_image.path"
+              class="py-0.5"
+            >
+              <i class="ri-image-fill text-sky-800"></i>
+              {{ child_image.name }}
+            </li>
+            <li v-if="directoryData.childrenImages.length > 10" class="italic">
+              {{ directoryData.childrenImages.length - 10 }} More Images
+            </li>
+          </template>
+          <template v-if="modalId === 'rulesetDirectory'">
+            <li
+              v-for="ruleset in directoryData.childrenYaml"
+              :key="ruleset.path"
+              class="hover:bg-base-300 cursor-default py-0.5"
+              @click="updateSelectedDirectories(ruleset.path)"
+            >
+              <i class="ri-file-text-line text-neutral"></i>
+              {{ ruleset.name }}
+            </li>
+          </template>
         </ul>
       </div>
     </div>

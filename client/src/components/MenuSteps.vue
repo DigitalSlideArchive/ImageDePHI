@@ -33,8 +33,8 @@ const openModal = () => {
   props.stepTitle.includes("Input")
     ? props.inputModal.modal.showModal()
     : props.stepTitle.includes("Output")
-    ? props.outputModal.modal.showModal()
-    : props.rulesetModal.modal.showModal();
+      ? props.outputModal.modal.showModal()
+      : props.rulesetModal.modal.showModal();
 };
 
 const clearRuleset = () => {
@@ -47,7 +47,6 @@ const clearRuleset = () => {
     update: false,
   });
 };
-
 </script>
 
 <template>
@@ -120,8 +119,8 @@ const clearRuleset = () => {
         v-else
         class="text-left text-gray-500 text-[14px] font-bold break-all pl-8"
       >
-        {{ rulesetModal ?  'No file selected' : 'No directory selected' }}
-             </div>
+        {{ rulesetModal ? "No file selected" : "No directory selected" }}
+      </div>
     </div>
   </div>
 </template>

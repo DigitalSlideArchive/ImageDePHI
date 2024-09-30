@@ -6,16 +6,12 @@ import { selectedDirectories } from "./directoryStore";
 export const useRedactionPlan = reactive({
   imageRedactionPlan: {} as imagePlanResponse,
   currentDirectory: selectedDirectories.value.inputDirectory,
-  async updateImageData(
-   params: ImagePlanParams,
-  ) {
+  async updateImageData(params: ImagePlanParams) {
     this.currentDirectory = params.directory;
-    this.imageRedactionPlan = await getRedactionPlan(
-      params
-    );
+    this.imageRedactionPlan = await getRedactionPlan(params);
     this.getThumbnail(this.imageRedactionPlan.data);
   },
-  async getThumbnail(imagedict: Record<string, Record<string, string>>){
+  async getThumbnail(imagedict: Record<string, Record<string, string>>) {
     Object.keys(imagedict).forEach(async (image) => {
       const response = await getImages(
         this.currentDirectory + "/" + image,
@@ -39,7 +35,6 @@ export const useRedactionPlan = reactive({
         const url = URL.createObjectURL(blob);
         this.imageRedactionPlan.data[image].thumbnail = url;
       }
-
     });
   },
 
