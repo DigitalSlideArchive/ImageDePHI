@@ -14,6 +14,6 @@ def get_file_format_from_path(image_path: Path) -> FileFormat | None:
     data = open(image_path, "rb").read(132)
     if data[128:] == b"DICM":
         return FileFormat.DICOM
-    elif data[:4] in (b"II\x2a\x00", b"MM\x00\x2a", b"II\x2b\x2a", b"MM\x00\x2b"):
+    elif data[:4] in (b"II\x2a\x00", b"MM\x00\x2a", b"II\x2b\x00", b"MM\x00\x2b"):
         return FileFormat.TIFF
     return None
