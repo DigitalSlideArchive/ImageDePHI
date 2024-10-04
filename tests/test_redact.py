@@ -69,7 +69,7 @@ def test_create_redact_dir_and_manifest(tmp_path):
     assert failed_dir.exists()
     assert failed_dir.name == "Failed_2023-05-12_12-12-53"
     assert failed_manifest.exists()
-    assert failed_manifest.name == "Failed_2023-05-12_12-12-53_manifest.csv"
+    assert failed_manifest.name == "Failed_2023-05-12_12-12-53_manifest.yaml"
 
 
 @freeze_time("2023-05-12 12:12:53")

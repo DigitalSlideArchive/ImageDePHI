@@ -111,7 +111,7 @@ def create_redact_dir_and_manifest(base_output_dir: Path) -> tuple[Path, Path, P
     manifest_file = base_output_dir / f"Redacted_{time_stamp}_manifest.csv"
     failed_dir = base_output_dir / f"Failed_{time_stamp}"
     failed_manifest_file = (
-        base_output_dir / f"Failed_{time_stamp}" / f"Failed_{time_stamp}_manifest.csv"
+        base_output_dir / f"Failed_{time_stamp}" / f"Failed_{time_stamp}_manifest.yaml"
     )
     try:
         redact_dir.mkdir(parents=True)
@@ -158,9 +158,13 @@ def redact_images(
 
     output_file_counter = 1
     output_file_max = len(images_to_redact)
+    failed_img_counter = 0
     redact_dir, manifest_file, failed_dir, failed_manifest_file = create_redact_dir_and_manifest(
         output_dir
     )
+
+    with open(failed_manifest_file, "w") as manifest:
+        manifest.write("failed_images:\n")
 
     dcm_uid_map: dict[str, str] = {}
 
@@ -189,16 +193,17 @@ def redact_images(
                 logger.info(f"Redaction could not be performed for {image_file.name}.")
                 failed_file = failed_dir / image_file.name
                 failed_file.hardlink_to(image_file)
+                failed_img_counter += 1
                 with open(failed_manifest_file, "a") as manifest:
                     manifest.write(
-                        f"{image_file} failed to redact because of the following missing rules:\n"
+                        f"\t - {image_file.name} \n \t\t missing_tags: \n"
                     )
                     missing_tags = redaction_plan.report_plan()[image_file.name].get(
                         "missing_tags", []
                     )
                     if isinstance(missing_tags, list):
                         for rule in missing_tags:
-                            manifest.write(f"{rule}\n")
+                            manifest.write(f"\t\t\t - {rule}\n")
                 run_summary.append(
                     {
                         "input_path": image_file,
@@ -237,6 +242,8 @@ def redact_images(
                 if output_file_counter == output_file_max:
                     logger.info("Redactions completed")
             output_file_counter += 1
+    with open(failed_manifest_file, "a") as manifest:
+        manifest.write("failed_images_count: " + str(failed_img_counter) + "\n")
     logger.info(f"Writing manifest to {manifest_file}")
     with open(manifest_file, "w") as manifest:
         fieldnames = ["input_path", "output_path", "detail"]
