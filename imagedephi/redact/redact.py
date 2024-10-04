@@ -250,8 +250,9 @@ def redact_images(
                         failed_dir.rmdir()
             index += 1
             output_file_counter += 1
-    with open(failed_manifest_file, "a") as manifest:
-        manifest.write("failed_images_count: " + str(failed_img_counter) + "\n")
+    if failed_img_counter:
+        with open(failed_manifest_file, "a") as manifest:
+            manifest.write("failed_images_count: " + str(failed_img_counter) + "\n")
     logger.info(f"Writing manifest to {manifest_file}")
     with open(manifest_file, "w") as manifest:
         fieldnames = ["input_path", "output_path", "detail"]
