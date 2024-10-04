@@ -125,6 +125,7 @@ def imagedephi(
 @imagedephi.command(no_args_is_help=True)
 @global_options
 @click.argument("input-path", type=click.Path(exists=True, readable=True, path_type=Path))
+@click.option("-i", "--index", default=1, help="Starting index of the images to redact.", type=int)
 @click.option(
     "-o",
     "--output-dir",
@@ -146,6 +147,7 @@ def run(
     quiet,
     verbose,
     log_file,
+    index,
 ):
     """Perform the redaction of images."""
     params = _check_parent_params(ctx, profile, override_rules, recursive, quiet, verbose, log_file)
@@ -158,6 +160,7 @@ def run(
         rename=rename,
         recursive=params["recursive"],
         profile=params["profile"],
+        index=index,
     )
 
 

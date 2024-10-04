@@ -134,6 +134,7 @@ def redact_images(
     profile: str = "",
     overwrite: bool = False,
     recursive: bool = False,
+    index: int = 1,
 ) -> None:
     # Keep track of information about this run to write to a persistent log file (csv?)
     # (original_name, output_name) as bare minimum
@@ -195,9 +196,7 @@ def redact_images(
                 failed_file.hardlink_to(image_file)
                 failed_img_counter += 1
                 with open(failed_manifest_file, "a") as manifest:
-                    manifest.write(
-                        f"\t - {image_file.name} \n \t\t missing_tags: \n"
-                    )
+                    manifest.write(f"\t - {image_file.name} \n \t\t missing_tags: \n")
                     missing_tags = redaction_plan.report_plan()[image_file.name].get(
                         "missing_tags", []
                     )
@@ -225,7 +224,7 @@ def redact_images(
                         image_file,
                         output_parent_dir,
                         output_file_name_base,
-                        output_file_counter,
+                        index,
                         output_file_max,
                     )
                     if rename
@@ -241,6 +240,15 @@ def redact_images(
                 )
                 if output_file_counter == output_file_max:
                     logger.info("Redactions completed")
+                    if failed_img_counter:
+                        with open(failed_manifest_file, "a") as manifest:
+                            manifest.write(
+                                f"command: imagedephi run {failed_dir} --index {index}\n"
+                            )
+                    else:
+                        failed_manifest_file.unlink()
+                        failed_dir.rmdir()
+            index += 1
             output_file_counter += 1
     with open(failed_manifest_file, "a") as manifest:
         manifest.write("failed_images_count: " + str(failed_img_counter) + "\n")
