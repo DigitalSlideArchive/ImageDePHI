@@ -166,8 +166,8 @@ const forceRedact = () => {
       </div>
     </div>
     <dialog id="missingRulesModal" ref="missingRulesModal" class="modal">
-      <div class="modal-box max-w-96">
-        <div class="card max-w-96">
+      <div class="modal-box max-w-100">
+        <div class="card max-w-100">
           <div class="card-body">
             <h2 class="font-bold text-xl text-center">
               Missing Redaction Rules
@@ -184,13 +184,13 @@ const forceRedact = () => {
           </div>
           <div class="card-actions flex-nowrap justify-between">
             <button
-              class="btn btn-primary w-1/2 uppercase"
+              class="btn btn-accent w-1/2 text-white uppercase"
               @click="forceRedact()"
             >
               Continue
             </button>
             <button
-              class="btn btn-neutral w-1/2 uppercase"
+              class="btn btn-neutral text-white w-1/2 uppercase"
               @click="missingRulesModal.close()"
             >
               Cancel
