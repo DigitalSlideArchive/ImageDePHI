@@ -71,6 +71,7 @@ const redact_images = async () => {
     });
     redactionStateFlags.value.redacting = false;
     redactionModal.value.close();
+    redactionStateFlags.value.showImageTable = false;
     redactionStateFlags.value.redactionComplete =
       !!useRedactionPlan.imageRedactionPlan.total;
     redactionStateFlags.value.redactionSnackbar = true;
