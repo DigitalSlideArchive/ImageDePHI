@@ -241,6 +241,8 @@ def redact_images(
                 if output_file_counter == output_file_max:
                     logger.info("Redactions completed")
                     if failed_img_counter:
+                        # Ensure that the logged index is the correct starting point
+                        index += 1
                         with open(failed_manifest_file, "a") as manifest:
                             manifest.write(
                                 f"command: imagedephi run {failed_dir} --index {index}\n"
@@ -248,7 +250,7 @@ def redact_images(
                     else:
                         failed_manifest_file.unlink()
                         failed_dir.rmdir()
-            index += 1
+                index += 1
             output_file_counter += 1
     if failed_img_counter:
         with open(failed_manifest_file, "a") as manifest:
