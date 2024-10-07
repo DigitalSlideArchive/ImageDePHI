@@ -165,7 +165,7 @@ def redact_images(
     )
 
     with open(failed_manifest_file, "w") as manifest:
-        manifest.write("failed_images:\n")
+        manifest.write("---\nfailed_images: \n")
 
     dcm_uid_map: dict[str, str] = {}
 
@@ -196,13 +196,13 @@ def redact_images(
                 failed_file.hardlink_to(image_file)
                 failed_img_counter += 1
                 with open(failed_manifest_file, "a") as manifest:
-                    manifest.write(f"\t - {image_file.name} \n \t\t missing_tags: \n")
+                    manifest.write(f"  - {image_file.name}: \n    missing_tags: \n")
                     missing_tags = redaction_plan.report_plan()[image_file.name].get(
                         "missing_tags", []
                     )
                     if isinstance(missing_tags, list):
                         for rule in missing_tags:
-                            manifest.write(f"\t\t\t - {rule}\n")
+                            manifest.write(f"      - {rule}\n")
                 run_summary.append(
                     {
                         "input_path": image_file,
