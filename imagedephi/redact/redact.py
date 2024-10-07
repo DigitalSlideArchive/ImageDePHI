@@ -166,10 +166,24 @@ def redact_images(
                     f"{image_file.name} could not be processed. "
                     f"{e.args[0] if len(e.args) else e}"
                 )
+                run_summary.append(
+                    {
+                        "input_path": image_file,
+                        "output_path": "",
+                        "detail": "There was an unexpected error when redacting this image.",
+                    }
+                )
                 continue
             if not redaction_plan.is_comprehensive():
                 logger.info(f"Redaction could not be performed for {image_file.name}.")
                 redaction_plan.report_missing_rules()
+                run_summary.append(
+                    {
+                        "input_path": image_file,
+                        "output_path": "",
+                        "detail": "Could not redact with the provided set of rules.",
+                    }
+                )
             else:
                 redaction_plan.execute_plan()
                 output_parent_dir = redact_dir
@@ -194,6 +208,7 @@ def redact_images(
                     {
                         "input_path": image_file,
                         "output_path": output_path,
+                        "detail": "redacted successfully",
                     }
                 )
                 if output_file_counter == output_file_max:
@@ -201,7 +216,7 @@ def redact_images(
             output_file_counter += 1
     logger.info(f"Writing manifest to {manifest_file}")
     with open(manifest_file, "w") as manifest:
-        fieldnames = ["input_path", "output_path"]
+        fieldnames = ["input_path", "output_path", "detail"]
         writer = DictWriter(manifest, fieldnames=fieldnames)
         writer.writeheader()
         for row in run_summary:
