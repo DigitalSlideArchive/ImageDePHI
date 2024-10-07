@@ -8,6 +8,7 @@ from enum import Enum
 import importlib.resources
 import logging
 from pathlib import Path
+from shutil import copy2
 from typing import NamedTuple, TypeVar
 
 import tifftools
@@ -193,7 +194,9 @@ def redact_images(
             if not redaction_plan.is_comprehensive():
                 logger.info(f"Redaction could not be performed for {image_file.name}.")
                 failed_file = failed_dir / image_file.name
-                failed_file.hardlink_to(image_file)
+                # Using copy2 preserves metadata
+                # https://docs.python.org/3/library/shutil.html#shutil.copy2
+                copy2(image_file, failed_file)
                 failed_img_counter += 1
                 with open(failed_manifest_file, "a") as manifest:
                     manifest.write(f"  - {image_file.name}: \n    missing_tags: \n")
