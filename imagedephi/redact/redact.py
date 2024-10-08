@@ -274,7 +274,6 @@ def show_redaction_plan(
     update: bool = True,
 ) -> NamedTuple:
     base_rules = get_base_rules(profile)
-    strict = profile == ProfileChoice.Strict.value
     if input_path.is_dir():
         with logging_redirect_tqdm(loggers=[logger]):
             image_paths = generator_to_list_with_progress(

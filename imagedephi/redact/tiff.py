@@ -247,7 +247,9 @@ class TiffRedactionPlan(RedactionPlan):
             logger.info("This redaction plan is comprehensive.")
         else:
             # keep this line in logger? Or should we restructure a bit
-            logger.error("The following tags could not be redacted given the current set of rules.")
+            logger.error(
+                f"{self.image_path} - The following tags could not be redacted given the current set of rules."
+            )
             if report is not None:
                 report[self.image_path.name]["missing_tags"] = []
 

@@ -268,7 +268,9 @@ class DicomRedactionPlan(RedactionPlan):
         if self.is_comprehensive():
             logger.info("The redaction plan is comprehensive.")
         else:
-            logger.error("The following tags could not be redacted given the current set of rules.")
+            logger.error(
+                f"{self.image_path} - The following tags could not be redacted given the current set of rules."
+            )
             if report is not None:
                 report[self.image_path.name]["missing_tags"] = []
 
