@@ -79,7 +79,7 @@ def test_redact_svs(svs_input_path, tmp_path, override_rule_set):
 
 
 def test_plan_svs(caplog, svs_input_path, override_rule_set):
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
     redact.show_redaction_plan(svs_input_path, override_rule_set)
 
     assert "Aperio (.svs) Metadata Redaction Plan" in caplog.text
@@ -136,7 +136,7 @@ def test_redact_dcm(test_image_dcm, tmp_path, override_rule_set):
 
 
 def test_plan_dcm(caplog, test_image_dcm):
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
     redact.show_redaction_plan(test_image_dcm)
 
     assert "DICOM Metadata Redaction Plan" in caplog.text
