@@ -87,20 +87,16 @@ def iter_image_files(directory: Path, recursive: bool = False) -> Generator[Path
             yield from iter_image_files(child, recursive)
 
 
-def create_redact_dir_and_manifest(base_output_dir: Path) -> tuple[Path, Path, Path, Path]:
+def create_redact_dir_and_manifest(base_output_dir: Path, time_stamp: str) -> tuple[Path, Path]:
     """
     Given a directory, create and return a sub-directory within it.
 
     `identifier` should be a unique string for the new directory. If no value
     is supplied, a timestamp is used.
     """
-    time_stamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     redact_dir = base_output_dir / f"Redacted_{time_stamp}"
     manifest_file = base_output_dir / f"Redacted_{time_stamp}_manifest.csv"
-    failed_dir = base_output_dir / f"Failed_{time_stamp}"
-    failed_manifest_file = (
-        base_output_dir / f"Failed_{time_stamp}" / f"Failed_{time_stamp}_manifest.yaml"
-    )
+
     try:
         redact_dir.mkdir(parents=True)
         manifest_file.touch()
@@ -109,9 +105,7 @@ def create_redact_dir_and_manifest(base_output_dir: Path) -> tuple[Path, Path, P
         raise
     else:
         logger.info(f"Created redaction folder: {redact_dir}")
-        failed_dir.mkdir(parents=True)
-        failed_manifest_file.touch()
-        return redact_dir, manifest_file, failed_dir, failed_manifest_file
+        return redact_dir, manifest_file
 
 
 def redact_images(
@@ -124,6 +118,9 @@ def redact_images(
     recursive: bool = False,
     index: int = 1,
 ) -> None:
+
+    time_stamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
     # Keep track of information about this run to write to a persistent log file (csv?)
     # (original_name, output_name) as bare minimum
     # error message? rule set (base/override)?
@@ -142,12 +139,11 @@ def redact_images(
     output_file_counter = 1
     output_file_max = len(images_to_redact)
     failed_img_counter = 0
-    redact_dir, manifest_file, failed_dir, failed_manifest_file = create_redact_dir_and_manifest(
-        output_dir
+    redact_dir, manifest_file = create_redact_dir_and_manifest(output_dir, time_stamp)
+    failed_dir = output_dir / f"Failed_{time_stamp}"
+    failed_manifest_file = (
+        output_dir / f"Failed_{time_stamp}" / f"Failed_{time_stamp}_manifest.yaml"
     )
-
-    with open(failed_manifest_file, "w") as manifest:
-        manifest.write("---\nfailed_images: \n")
 
     dcm_uid_map: dict[str, str] = {}
 
@@ -167,24 +163,31 @@ def redact_images(
                 continue
             if not redaction_plan.is_comprehensive():
                 logger.info(f"Redaction could not be performed for {image_file.name}.")
-                failed_file = failed_dir / image_file.name
-                # Attempt to hardlink the image to the failed directory
-                # Copy occurs if hardlink fails ie. cross-device
-                try:
-                    failed_file.hardlink_to(image_file)
-                except OSError:
-                    # Using copy2 preserves metadata
-                    # https://docs.python.org/3/library/shutil.html#shutil.copy2
-                    copy2(image_file, failed_file)
                 failed_img_counter += 1
-                with open(failed_manifest_file, "a") as manifest:
-                    manifest.write(f"  - {image_file.name}: \n    missing_tags: \n")
-                    missing_tags = redaction_plan.report_plan()[image_file.name].get(
-                        "missing_tags", []
-                    )
-                    if isinstance(missing_tags, list):
-                        for rule in missing_tags:
-                            manifest.write(f"      - {rule}\n")
+
+                if failed_img_counter == 1:
+                    failed_dir.mkdir(parents=True)
+                    failed_manifest_file.touch()
+                if failed_manifest_file.exists():
+                    with open(failed_manifest_file, "w") as manifest:
+                        manifest.write("---\nfailed_images: \n")
+                    failed_img = failed_dir / image_file.name
+                    # Attempt to hardlink the image to the failed directory
+                    # Copy occurs if hardlink fails ie. cross-device
+                    try:
+                        failed_img.hardlink_to(image_file)
+                    except OSError:
+                        # Using copy2 preserves metadata
+                        # https://docs.python.org/3/library/shutil.html#shutil.copy2
+                        copy2(image_file, failed_img)
+                    with open(failed_manifest_file, "a") as manifest:
+                        manifest.write(f"  - {image_file.name}: \n    missing_tags: \n")
+                        missing_tags = redaction_plan.report_plan()[image_file.name].get(
+                            "missing_tags", []
+                        )
+                        if isinstance(missing_tags, list):
+                            for rule in missing_tags:
+                                manifest.write(f"      - {rule}\n")
                 redaction_plan.report_missing_rules()
 
             else:
@@ -228,10 +231,6 @@ def redact_images(
                         command = yaml.safe_load(yaml_command)
                         with open(failed_manifest_file, "a") as manifest:
                             yaml.dump(command, manifest)
-
-                    else:
-                        failed_manifest_file.unlink()
-                        failed_dir.rmdir()
                 index += 1
             output_file_counter += 1
     if failed_img_counter:
