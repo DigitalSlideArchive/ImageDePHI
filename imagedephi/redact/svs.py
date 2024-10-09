@@ -195,6 +195,8 @@ class SvsRedactionPlan(TiffRedactionPlan):
     def report_missing_rules(self, report=None) -> None:
         if self.is_comprehensive():
             logger.info("The redaction plan is comprehensive.")
+            if report:
+                report[self.image_path.name]["comprehensive"] = True
         else:
             if self.no_match_tags:
                 super().report_missing_rules(report)
@@ -203,10 +205,12 @@ class SvsRedactionPlan(TiffRedactionPlan):
                     "The following keys were found in Aperio ImageDescription strings "
                     "and could not be redacted given the current set of rules."
                 )
+                if report:
+                    report[self.image_path.name]["comprehensive"] = False
                 for key in self.no_match_description_keys:
                     logger.error(f"Missing key (Aperio ImageDescription): {key}")
                     if report is not None:
-                        report[self.image_path.name]["missing_keys"].append(key)
+                        report[self.image_path.name]["missing_description_keys"].append(key)
 
     def report_plan(
         self,

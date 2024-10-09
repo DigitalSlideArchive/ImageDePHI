@@ -79,10 +79,11 @@ def test_redact_svs(svs_input_path, tmp_path, override_rule_set):
 
 
 def test_plan_svs(caplog, svs_input_path, override_rule_set):
-    # logger.setLevel(logging.DEBUG)
     logger.setLevel(logging.INFO)
     redact.show_redaction_plan(svs_input_path, override_rule_set)
 
+    # Behavior for directories: skip printing full plans
+    # Behavior for single image file: print full plan
     if svs_input_path.is_dir():
         assert "Aperio (.svs) Metadata Redaction Plan" not in caplog.text
         assert "ICC Profile: delete" not in caplog.text

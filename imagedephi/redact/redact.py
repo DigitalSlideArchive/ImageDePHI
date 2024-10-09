@@ -22,6 +22,7 @@ from imagedephi.utils.logger import logger
 from imagedephi.utils.progress_log import push_progress
 
 from .build_redaction_plan import build_redaction_plan
+from .redaction_plan import log_report_for_unredactable_image
 from .svs import MalformedAperioFileError
 from .tiff import UnsupportedFileTypeError
 
@@ -337,6 +338,21 @@ def show_redaction_plan(
     if limit is not None and offset is not None:
         sorted_dict = OrderedDict(list(sorted_dict.items())[offset * limit : (offset + 1) * limit])
     images_plan = namedtuple("images_plan", ["data", "total", "tags"])
+
+    if input_path.is_dir():
+        # Provide a summary if the input path is a directory of images
+        logger.info(f"ImageDePHI summary for {input_path}:")
+        incomplete = [
+            file_path
+            for file_path in redaction_plan_report
+            if not redaction_plan_report[file_path]["comprehensive"]
+        ]
+        if incomplete:
+            logger.info(
+                f"{len(incomplete)} files are not able to be redacted with the provided rules."
+            )
+            for file in incomplete:
+                log_report_for_unredactable_image(file, redaction_plan_report[file])
 
     # Reset logging level if it was changed
     logger.setLevel(starting_logging_level)
