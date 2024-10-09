@@ -1,3 +1,4 @@
+import datetime
 import importlib.resources
 import logging
 from pathlib import Path, PurePath
@@ -59,17 +60,12 @@ def tiff_input_path(data_dir, test_image_tiff, request) -> Path:
 
 @freeze_time("2023-05-12 12:12:53")
 def test_create_redact_dir_and_manifest(tmp_path):
-    output_dir, manifest, failed_dir, failed_manifest = create_redact_dir_and_manifest(
-        tmp_path / "fake"
-    )
+    time_stamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    output_dir, manifest = create_redact_dir_and_manifest(tmp_path / "fake", time_stamp)
     assert output_dir.exists()
     assert output_dir.name == "Redacted_2023-05-12_12-12-53"
     assert manifest.exists()
     assert manifest.name == "Redacted_2023-05-12_12-12-53_manifest.csv"
-    assert failed_dir.exists()
-    assert failed_dir.name == "Failed_2023-05-12_12-12-53"
-    assert failed_manifest.exists()
-    assert failed_manifest.name == "Failed_2023-05-12_12-12-53_manifest.yaml"
 
 
 @freeze_time("2023-05-12 12:12:53")
