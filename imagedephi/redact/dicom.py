@@ -267,6 +267,8 @@ class DicomRedactionPlan(RedactionPlan):
     def report_missing_rules(self, report=None) -> None:
         if self.is_comprehensive():
             logger.info("The redaction plan is comprehensive.")
+            if report:
+                report[self.image_path.name]["comprehensive"] = True
         else:
             logger.error(
                 f"{self.image_path} - The following tags could not be redacted "
@@ -274,6 +276,7 @@ class DicomRedactionPlan(RedactionPlan):
             )
             if report is not None:
                 report[self.image_path.name]["missing_tags"] = []
+                report[self.image_path.name]["comprehensive"] = False
 
             for tag in self.no_match_tags:
                 logger.error(f"Missing tag (dicom): {tag} - {keyword_for_tag(tag)}")
