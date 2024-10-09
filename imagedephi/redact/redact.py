@@ -6,6 +6,7 @@ from csv import DictWriter
 import datetime
 from enum import Enum
 import importlib.resources
+import logging
 from pathlib import Path
 from typing import NamedTuple, TypeVar
 
@@ -287,6 +288,7 @@ def show_redaction_plan(
     if override_rules:
         override_ruleset = _get_user_rules(override_rules)
     strict = profile == ProfileChoice.Strict.value
+    starting_logging_level = logger.getEffectiveLevel()
     if input_path.is_dir():
         with logging_redirect_tqdm(loggers=[logger]):
             image_paths = generator_to_list_with_progress(
@@ -294,6 +296,8 @@ def show_redaction_plan(
                 progress_bar_desc="Collecting files to redact...",
             )
     else:
+        # For a single image, log all details of the plan
+        logger.setLevel(logging.DEBUG)
         image_paths = [input_path]
 
     global tags_used
@@ -333,4 +337,7 @@ def show_redaction_plan(
     if limit is not None and offset is not None:
         sorted_dict = OrderedDict(list(sorted_dict.items())[offset * limit : (offset + 1) * limit])
     images_plan = namedtuple("images_plan", ["data", "total", "tags"])
+
+    # Reset logging level if it was changed
+    logger.setLevel(starting_logging_level)
     return images_plan(sorted_dict, total, list(tags_used))
