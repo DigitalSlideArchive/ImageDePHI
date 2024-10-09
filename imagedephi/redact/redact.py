@@ -251,10 +251,16 @@ def redact_images(
                     if failed_img_counter:
                         # Ensure that the logged index is the correct starting point
                         index += 1
+                        yaml_command = f"""command: >
+                              imagedephi run
+                              {failed_dir}\\
+                              --output-dir {redact_dir}\\
+                              --index {index}\\"""
+
+                        command = yaml.safe_load(yaml_command)
                         with open(failed_manifest_file, "a") as manifest:
-                            manifest.write(
-                                f"command: imagedephi run {failed_dir} --index {index}\n"
-                            )
+                            yaml.dump(command, manifest)
+
                     else:
                         failed_manifest_file.unlink()
                         failed_dir.rmdir()
