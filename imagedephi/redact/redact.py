@@ -9,7 +9,7 @@ import importlib.resources
 import logging
 from pathlib import Path
 from shutil import copy2
-from typing import NamedTuple, TypeVar
+from typing import TYPE_CHECKING, NamedTuple, TypeVar
 
 import tifftools
 import tifftools.constants
@@ -25,6 +25,9 @@ from imagedephi.utils.progress_log import push_progress
 from .build_redaction_plan import build_redaction_plan
 from .svs import MalformedAperioFileError
 from .tiff import UnsupportedFileTypeError
+
+if TYPE_CHECKING:
+    from .redaction_plan import TagRedactionPlan
 
 tags_used = OrderedDict()
 redaction_plan_report = {}
@@ -158,6 +161,9 @@ def redact_images(
     output_file_counter = 1
     output_file_max = len(images_to_redact)
     failed_img_counter = 0
+    failed_images: dict[
+        str, list[dict[str, dict[str, int | str | list[str] | TagRedactionPlan]]]
+    ] = {"failed_images": []}
     redact_dir, manifest_file = create_redact_dir_and_manifest(output_dir, time_stamp)
     failed_dir = output_dir / f"Failed_{time_stamp}"
     failed_manifest_file = (
@@ -194,26 +200,24 @@ def redact_images(
                 if failed_img_counter == 1:
                     failed_dir.mkdir(parents=True)
                     failed_manifest_file.touch()
-                if failed_manifest_file.exists():
-                    with open(failed_manifest_file, "w") as manifest:
-                        manifest.write("---\nfailed_images: \n")
-                    failed_img = failed_dir / image_file.name
-                    # Attempt to hardlink the image to the failed directory
-                    # Copy occurs if hardlink fails ie. cross-device
-                    try:
-                        failed_img.hardlink_to(image_file)
-                    except OSError:
-                        # Using copy2 preserves metadata
-                        # https://docs.python.org/3/library/shutil.html#shutil.copy2
-                        copy2(image_file, failed_img)
-                    with open(failed_manifest_file, "a") as manifest:
-                        manifest.write(f"  - {image_file.name}: \n    missing_tags: \n")
-                        missing_tags = redaction_plan.report_plan()[image_file.name].get(
+
+                # Attempt to hardlink the image to the failed directory
+                # Copy occurs if hardlink fails ie. cross-device
+                failed_img = failed_dir / image_file.name
+                try:
+                    failed_img.hardlink_to(image_file)
+                except OSError:
+                    # Using copy2 preserves metadata
+                    # https://docs.python.org/3/library/shutil.html#shutil.copy2
+                    copy2(image_file, failed_img)
+                img_dict = {
+                    image_file.name: {
+                        "missing_tags": redaction_plan.report_plan()[image_file.name].get(
                             "missing_tags", []
                         )
-                        if isinstance(missing_tags, list):
-                            for rule in missing_tags:
-                                manifest.write(f"      - {rule}\n")
+                    }
+                }
+                failed_images["failed_images"].append(img_dict)
                 run_summary.append(
                     {
                         "input_path": image_file,
@@ -253,21 +257,25 @@ def redact_images(
                     logger.info("Redactions completed")
                     if failed_img_counter:
                         # Ensure that the logged index is the correct starting point
-                        index += 1
-                        yaml_command = f"""command: >
-                              imagedephi run
-                              {failed_dir}\\
-                              --output-dir {redact_dir}\\
-                              --index {index}\\"""
-
-                        command = yaml.safe_load(yaml_command)
                         with open(failed_manifest_file, "a") as manifest:
+                            yaml.dump(
+                                failed_images,
+                                manifest,
+                                explicit_start=True,
+                                default_flow_style=False,
+                            )
+                            manifest.write("failed_images_count: " + str(failed_img_counter) + "\n")
+                            index += 1
+                            yaml_command = f"""command: >
+                                imagedephi run
+                                {failed_dir}\\
+                                --output-dir {redact_dir}\\
+                                --index {index}\\"""
+
+                            command = yaml.safe_load(yaml_command)
                             yaml.dump(command, manifest)
                 index += 1
             output_file_counter += 1
-    if failed_img_counter:
-        with open(failed_manifest_file, "a") as manifest:
-            manifest.write("failed_images_count: " + str(failed_img_counter) + "\n")
     logger.info(f"Writing manifest to {manifest_file}")
     with open(manifest_file, "w") as manifest:
         fieldnames = ["input_path", "output_path", "detail"]
