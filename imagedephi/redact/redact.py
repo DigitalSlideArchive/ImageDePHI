@@ -194,6 +194,7 @@ def redact_images(
                 )
                 continue
             if not redaction_plan.is_comprehensive():
+                nested_failed_dir: Path = Path()
                 logger.info(f"Redaction could not be performed for {image_file.name}.")
                 failed_img_counter += 1
 
@@ -201,9 +202,18 @@ def redact_images(
                     failed_dir.mkdir(parents=True)
                     failed_manifest_file.touch()
 
+                if recursive:
+                    nested_failed_dir = Path(
+                        str(image_file).replace(str(input_path), str(failed_dir), 1)
+                    ).parent
+                    nested_failed_dir.mkdir(parents=True, exist_ok=True)
+
                 # Attempt to hardlink the image to the failed directory
                 # Copy occurs if hardlink fails ie. cross-device
-                failed_img = failed_dir / image_file.name
+                if nested_failed_dir.name == image_file.parent.name:
+                    failed_img = nested_failed_dir / image_file.name
+                else:
+                    failed_img = failed_dir / image_file.name
                 try:
                     failed_img.hardlink_to(image_file)
                 except OSError:
