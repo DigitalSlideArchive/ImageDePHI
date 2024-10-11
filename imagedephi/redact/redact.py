@@ -276,14 +276,11 @@ def redact_images(
                             )
                             manifest.write("failed_images_count: " + str(failed_img_counter) + "\n")
                             index += 1
-                            yaml_command = f"""command: >
-                                imagedephi run
-                                {failed_dir}\\
-                                --output-dir {redact_dir}\\
-                                --index {index}\\"""
+
+                            yaml_command = f"""command: imagedephi run {failed_dir} --output-dir {redact_dir.parent} --index {index}"""  # noqa
 
                             command = yaml.safe_load(yaml_command)
-                            yaml.dump(command, manifest)
+                            yaml.dump(command, manifest, width=float("inf"))
                 index += 1
             output_file_counter += 1
     logger.info(f"Writing manifest to {manifest_file}")
