@@ -278,7 +278,14 @@ def redact_images(
                             index += 1
 
                             yaml_command = f"""command: imagedephi run {failed_dir} --output-dir {redact_dir.parent} --index {index}"""  # noqa
-
+                            options = [
+                                f" --override-rules {override_rules}" if override_rules else "",
+                                " --overwrite" if overwrite else "",
+                                f" --profile {profile}" if profile != "default" else "",
+                                " --recursive" if recursive else "",
+                                " --skip-rename" if not rename else "",
+                            ]
+                            yaml_command += " ".join(filter(None, options))
                             command = yaml.safe_load(yaml_command)
                             yaml.dump(command, manifest, width=float("inf"))
                 index += 1
