@@ -246,7 +246,7 @@ class TiffRedactionPlan(RedactionPlan):
         if self.is_comprehensive():
             logger.info("This redaction plan is comprehensive.")
             if report:
-                report[self.image_path.name]["comprehensize"] = True
+                report[self.image_path.name]["comprehensive"] = True
         else:
             # keep this line in logger? Or should we restructure a bit
             logger.error(
