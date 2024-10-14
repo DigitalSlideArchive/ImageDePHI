@@ -22,12 +22,12 @@ from imagedephi.utils.logger import logger
 from imagedephi.utils.progress_log import push_progress
 
 from .build_redaction_plan import build_redaction_plan
-from .redaction_plan import log_report_for_unredactable_image
 from .svs import MalformedAperioFileError
 from .tiff import UnsupportedFileTypeError
 
 tags_used = OrderedDict()
 redaction_plan_report = {}
+unprocessable_image_messages: list[str] = []
 
 T = TypeVar("T")
 
@@ -178,7 +178,6 @@ def redact_images(
                 continue
             if not redaction_plan.is_comprehensive():
                 logger.info(f"Redaction could not be performed for {image_file.name}.")
-                redaction_plan.report_missing_rules()
                 run_summary.append(
                     {
                         "input_path": image_file,
@@ -305,24 +304,33 @@ def show_redaction_plan(
 
     def _create_redaction_plan_report():
         global redaction_plan_report
-        for image_path in image_paths:
-            try:
-                redaction_plan = build_redaction_plan(image_path, base_rules, override_ruleset)
-            except tifftools.TifftoolsError:
-                logger.error(f"Could not open {image_path.name} as a tiff.")
-                continue
-            except MalformedAperioFileError:
-                logger.error(f"{image_path.name} could not be processed as a valid Aperio file.")
-                continue
-            except UnsupportedFileTypeError as e:
-                logger.error(f"{image_path.name} could not be processed. {e.args[0]}")
-                continue
-            # Handle and report other errors without stopping the process
-            except Exception as e:
-                logger.error(f"{image_path.name} could not be processed. {e.args[0]}")
-                continue
-            logger.info(f"Redaction plan for {image_path.name}:")
-            redaction_plan_report.update(redaction_plan.report_plan())  # type: ignore
+        global unprocessable_image_messages
+        unprocessable_image_messages = []
+        with logging_redirect_tqdm(loggers=[logger]):
+            for image_path in tqdm(image_paths, desc="Reporting plan", position=0, leave=True):
+                try:
+                    redaction_plan = build_redaction_plan(image_path, base_rules, override_rules)
+                except tifftools.TifftoolsError:
+                    unprocessable_image_messages.append(f"Could not open {image_path} as a tiff.")
+                    continue
+                except MalformedAperioFileError:
+                    unprocessable_image_messages.append(
+                        f"{image_path} could not be processed as a valid Aperio file."
+                    )
+                    continue
+                except UnsupportedFileTypeError as e:
+                    unprocessable_image_messages.append(
+                        f"{image_path} could not be processed. {e.args[0]}"
+                    )
+                    continue
+                # Handle and report other errors without stopping the process
+                except Exception as e:
+                    unprocessable_image_messages.append(
+                        f"{image_path} could not be processed. {e.args[0]}"
+                    )
+                    continue
+                logger.info(f"Redaction plan for {image_path.name}:")
+                redaction_plan_report.update(redaction_plan.report_plan())  # type: ignore
 
     if not update:
         global redaction_plan_report
@@ -348,11 +356,22 @@ def show_redaction_plan(
             if not redaction_plan_report[file_path]["comprehensive"]
         ]
         if incomplete:
-            logger.info(
-                f"{len(incomplete)} files are not able to be redacted with the provided rules."
-            )
+            logger.info(f"{len(incomplete)} file(s) could not be redacted with the provided rules.")
+            logger.info("The following images could not be redacted:")
             for file in incomplete:
-                log_report_for_unredactable_image(file, redaction_plan_report[file])
+                logger.info(f"{file}")
+            logger.info(
+                "For more details about individual images that couldn't be redacted, run "
+                "'imagedephi plan <unredactable_file>'"
+            )
+        if unprocessable_image_messages:
+            logger.info(
+                f"{len(unprocessable_image_messages)} file(s) could not be processed by ImageDePHI."
+            )
+
+    # Report exceptions outside of the directory level report
+    for message in unprocessable_image_messages:
+        logger.info(message)
 
     # Reset logging level if it was changed
     logger.setLevel(starting_logging_level)
