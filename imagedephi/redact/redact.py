@@ -355,11 +355,15 @@ def show_redaction_plan(
             for file_path in redaction_plan_report
             if not redaction_plan_report[file_path]["comprehensive"]
         ]
+        logger.info(
+            f"{len(image_paths) - (len(incomplete) + len(unprocessable_image_messages))}"
+            " images able to be redacted with the provided rule set."
+        )
         if incomplete:
             logger.info(f"{len(incomplete)} file(s) could not be redacted with the provided rules.")
-            logger.info("The following images could not be redacted:")
+            logger.info("The following images could not be redacted given the current rule set:")
             for file in incomplete:
-                logger.info(f"{file}")
+                logger.info(f"\t{file}")
             logger.info(
                 "For more details about individual images that couldn't be redacted, run "
                 "'imagedephi plan <unredactable_file>'"
@@ -371,7 +375,7 @@ def show_redaction_plan(
 
     # Report exceptions outside of the directory level report
     for message in unprocessable_image_messages:
-        logger.info(message)
+        logger.info(f"\t{message}")
 
     # Reset logging level if it was changed
     logger.setLevel(starting_logging_level)
