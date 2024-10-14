@@ -39,20 +39,16 @@ def build_redaction_plan(
         if file_extension == FileFormat.TIFF:
             merged_rules = base_rules.tiff.copy()
             if override_rules:
-                if override_rules.strict:
-                    merged_rules = override_rules.tiff.copy()
-                else:
-                    merged_rules.metadata.update(override_rules.tiff.metadata)
+                merged_rules.metadata.update(override_rules.tiff.metadata)
+                merged_rules.associated_images.update(override_rules.tiff.associated_images)
 
             return TiffRedactionPlan(image_path, merged_rules, strict)
         elif file_extension == FileFormat.SVS:
             merged_rules = base_rules.svs.copy()
             if override_rules:
-                if override_rules.strict:
-                    merged_rules = override_rules.svs.copy()
-                else:
-                    merged_rules.metadata.update(override_rules.svs.metadata)
-                    merged_rules.image_description.update(override_rules.svs.image_description)
+                merged_rules.metadata.update(override_rules.svs.metadata)
+                merged_rules.associated_images.update(override_rules.svs.associated_images)
+                merged_rules.image_description.update(override_rules.svs.image_description)
             return SvsRedactionPlan(image_path, merged_rules, strict)
         else:
             raise UnsupportedFileTypeError(f"File format for {image_path} not supported.")
@@ -65,6 +61,7 @@ def build_redaction_plan(
         if override_rules:
             dicom_rules.metadata.update(override_rules.dicom.metadata)
             dicom_rules.custom_metadata_action = override_rules.dicom.custom_metadata_action
+            dicom_rules.associated_images.update(override_rules.dicom.associated_images)
         return DicomRedactionPlan(image_path, dicom_rules, dcm_uid_map)
     else:
         raise UnsupportedFileTypeError(f"File format for {image_path} not supported.")
