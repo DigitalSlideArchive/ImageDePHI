@@ -22,19 +22,19 @@ def test_e2e_run(
     result = cli_runner.invoke(
         main.imagedephi,
         [
-            "--override-rules",
-            str(rules_dir / "example_user_rules.yaml"),
             "run",
             str(data_dir / "input" / "tiff"),
             "--output-dir",
             str(tmp_path),
+            "-R",
+            str(rules_dir / "example_user_rules.yaml"),
         ],
     )
-
     assert result.exit_code == 0
-    output_file = tmp_path / "Redacted_2023-05-12_12-12-53" / "study_slide_1.tif"
+    output_file = tmp_path / "Redacted_2023-05-12_12-12-53" / "my_study_slide_1.tif"
     output_file_bytes = output_file.read_bytes()
     assert b"large_image_converter" not in output_file_bytes
+    assert b"Redacted by ImageDePHI" in output_file_bytes
 
 
 @freeze_time("2024-05-20 11:46:00")

@@ -66,6 +66,26 @@ def global_options(func):
     return func
 
 
+def _check_parent_params(ctx, profile, override_rules, recursive, quiet, verbose, log_file):
+    params = {
+        "override_rules": (
+            ctx.parent.params["override_rules"]
+            if ctx.parent.params["override_rules"]
+            else override_rules
+        ),
+        "profile": (
+            ctx.parent.params["profile"] if ctx.parent.params["profile"] != "default" else profile
+        ),
+        "recursive": (
+            ctx.parent.params["recursive"] if ctx.parent.params["recursive"] else recursive
+        ),
+        "quiet": ctx.parent.params["quiet"] if ctx.parent.params["quiet"] else quiet,
+        "verbose": ctx.parent.params["verbose"] if ctx.parent.params["verbose"] else verbose,
+        "log_file": ctx.parent.params["log_file"] if ctx.parent.params["log_file"] else log_file,
+    }
+    return params
+
+
 CONTEXT_SETTINGS = {"help_option_names": ["--help"]}
 if sys.platform == "win32":
     # Allow Windows users to get help via "/?".
@@ -128,15 +148,16 @@ def run(
     log_file,
 ):
     """Perform the redaction of images."""
-    if verbose or quiet or log_file:
-        set_logging_config(verbose, quiet, log_file)
+    params = _check_parent_params(ctx, profile, override_rules, recursive, quiet, verbose, log_file)
+    if params["verbose"] or params["quiet"] or params["log_file"]:
+        set_logging_config(params["verbose"], params["quiet"], params["log_file"])
     redact_images(
         input_path,
         output_dir,
-        override_rules,
-        rename,
-        recursive=recursive,
-        profile=profile,
+        override_rules=params["override_rules"],
+        rename=rename,
+        recursive=params["recursive"],
+        profile=params["profile"],
     )
 
 
@@ -155,11 +176,18 @@ def plan(
     log_file,
 ) -> None:
     """Print the redaction plan for images."""
+    params = _check_parent_params(ctx, profile, override_rules, recursive, quiet, verbose, log_file)
+
     # Even if the user doesn't use the verbose flag, ensure logging level is set to
     # show info output of this command.
-    v = verbose if verbose else 1
-    set_logging_config(v, quiet, log_file)
-    show_redaction_plan(input_path, override_rules, recursive, profile)
+    v = params["verbose"] if params["verbose"] else 1
+    set_logging_config(v, params["quiet"], params["log_file"])
+    show_redaction_plan(
+        input_path,
+        override_rules=params["override_rules"],
+        recursive=params["recursive"],
+        profile=params["profile"],
+    )
 
 
 @imagedephi.command
