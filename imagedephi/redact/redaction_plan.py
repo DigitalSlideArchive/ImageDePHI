@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
     TagRedactionPlan = dict[str, int | float | TagData | ByteInfo]
 
-    RedactionPlanReport = dict[str, dict[str, int | str | TagRedactionPlan]]
+    RedactionPlanReport = dict[str, dict[str, int | str | list[str] | TagRedactionPlan]]
 
 
 class RedactionPlan:

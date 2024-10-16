@@ -7,7 +7,8 @@ import datetime
 from enum import Enum
 import importlib.resources
 from pathlib import Path
-from typing import NamedTuple
+from shutil import copy2
+from typing import TYPE_CHECKING, NamedTuple
 
 import tifftools
 import tifftools.constants
@@ -24,8 +25,12 @@ from .build_redaction_plan import build_redaction_plan
 from .svs import MalformedAperioFileError
 from .tiff import UnsupportedFileTypeError
 
+if TYPE_CHECKING:
+    from .redaction_plan import TagRedactionPlan
+
 tags_used = OrderedDict()
 redaction_plan_report = {}
+missing_rules = False
 
 
 class ProfileChoice(Enum):
@@ -85,16 +90,16 @@ def iter_image_files(directory: Path, recursive: bool = False) -> Generator[Path
             yield from iter_image_files(child, recursive)
 
 
-def create_redact_dir_and_manifest(base_output_dir: Path) -> tuple[Path, Path]:
+def create_redact_dir_and_manifest(base_output_dir: Path, time_stamp: str) -> tuple[Path, Path]:
     """
     Given a directory, create and return a sub-directory within it.
 
     `identifier` should be a unique string for the new directory. If no value
     is supplied, a timestamp is used.
     """
-    time_stamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     redact_dir = base_output_dir / f"Redacted_{time_stamp}"
     manifest_file = base_output_dir / f"Redacted_{time_stamp}_manifest.csv"
+
     try:
         redact_dir.mkdir(parents=True)
         manifest_file.touch()
@@ -114,7 +119,11 @@ def redact_images(
     profile: str = "",
     overwrite: bool = False,
     recursive: bool = False,
+    index: int = 1,
 ) -> None:
+
+    time_stamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
     # Keep track of information about this run to write to a persistent log file (csv?)
     # (original_name, output_name) as bare minimum
     # error message? rule set (base/override)?
@@ -132,7 +141,15 @@ def redact_images(
     )
     output_file_counter = 1
     output_file_max = len(images_to_redact)
-    redact_dir, manifest_file = create_redact_dir_and_manifest(output_dir)
+    failed_img_counter = 0
+    failed_images: dict[
+        str, list[dict[str, dict[str, int | str | list[str] | TagRedactionPlan]]]
+    ] = {"failed_images": []}
+    redact_dir, manifest_file = create_redact_dir_and_manifest(output_dir, time_stamp)
+    failed_dir = output_dir / f"Failed_{time_stamp}"
+    failed_manifest_file = (
+        output_dir / f"Failed_{time_stamp}" / f"Failed_{time_stamp}_manifest.yaml"
+    )
 
     dcm_uid_map: dict[str, str] = {}
 
@@ -151,8 +168,42 @@ def redact_images(
                 )
                 continue
             if not redaction_plan.is_comprehensive():
+                nested_failed_dir: Path = Path()
                 logger.info(f"Redaction could not be performed for {image_file.name}.")
+                failed_img_counter += 1
+
+                if failed_img_counter == 1:
+                    failed_dir.mkdir(parents=True)
+                    failed_manifest_file.touch()
+
+                if recursive:
+                    nested_failed_dir = Path(
+                        str(image_file).replace(str(input_path), str(failed_dir), 1)
+                    ).parent
+                    nested_failed_dir.mkdir(parents=True, exist_ok=True)
+
+                # Attempt to hardlink the image to the failed directory
+                # Copy occurs if hardlink fails ie. cross-device
+                if nested_failed_dir.name == image_file.parent.name:
+                    failed_img = nested_failed_dir / image_file.name
+                else:
+                    failed_img = failed_dir / image_file.name
+                try:
+                    failed_img.hardlink_to(image_file)
+                except OSError:
+                    # Using copy2 preserves metadata
+                    # https://docs.python.org/3/library/shutil.html#shutil.copy2
+                    copy2(image_file, failed_img)
+                img_dict = {
+                    image_file.name: {
+                        "missing_tags": redaction_plan.report_plan()[image_file.name].get(
+                            "missing_tags", []
+                        )
+                    }
+                }
+                failed_images["failed_images"].append(img_dict)
                 redaction_plan.report_missing_rules()
+
             else:
                 redaction_plan.report_plan()
                 redaction_plan.execute_plan()
@@ -167,7 +218,7 @@ def redact_images(
                         image_file,
                         output_parent_dir,
                         output_file_name_base,
-                        output_file_counter,
+                        index,
                         output_file_max,
                     )
                     if rename
@@ -182,6 +233,30 @@ def redact_images(
                 )
                 if output_file_counter == output_file_max:
                     logger.info("Redactions completed")
+                    if failed_img_counter:
+                        # Ensure that the logged index is the correct starting point
+                        with open(failed_manifest_file, "a") as manifest:
+                            yaml.dump(
+                                failed_images,
+                                manifest,
+                                explicit_start=True,
+                                default_flow_style=False,
+                            )
+                            manifest.write("failed_images_count: " + str(failed_img_counter) + "\n")
+                            index += 1
+
+                            yaml_command = f"""command: imagedephi run {failed_dir} --output-dir {redact_dir.parent} --index {index}"""  # noqa
+                            options = [
+                                f" --override-rules {override_rules}" if override_rules else "",
+                                " --overwrite" if overwrite else "",
+                                f" --profile {profile}" if profile != "default" else "",
+                                " --recursive" if recursive else "",
+                                " --skip-rename" if not rename else "",
+                            ]
+                            yaml_command += " ".join(filter(None, options))
+                            command = yaml.safe_load(yaml_command)
+                            yaml.dump(command, manifest, width=float("inf"))
+                index += 1
             output_file_counter += 1
     logger.info(f"Writing manifest to {manifest_file}")
     with open(manifest_file, "w") as manifest:
@@ -261,6 +336,8 @@ def show_redaction_plan(
 
     def _create_redaction_plan_report():
         global redaction_plan_report
+        global missing_rules
+        missing_rules = False
         for image_path in image_paths:
             try:
                 redaction_plan = build_redaction_plan(image_path, base_rules, override_ruleset)
@@ -277,6 +354,8 @@ def show_redaction_plan(
             except Exception as e:
                 logger.error(f"{image_path.name} could not be processed. {e.args[0]}")
                 continue
+            if not redaction_plan.is_comprehensive():
+                missing_rules = True
             logger.info(f"Redaction plan for {image_path.name}")
             redaction_plan_report.update(redaction_plan.report_plan())  # type: ignore
 
@@ -287,11 +366,12 @@ def show_redaction_plan(
         tags_used = OrderedDict()
         _create_redaction_plan_report()
     else:
+
         _create_redaction_plan_report()
 
     total = len(redaction_plan_report)  # type: ignore
     sorted_dict = _sort_data(redaction_plan_report)  # type: ignore
     if limit is not None and offset is not None:
         sorted_dict = OrderedDict(list(sorted_dict.items())[offset * limit : (offset + 1) * limit])
-    images_plan = namedtuple("images_plan", ["data", "total", "tags"])
-    return images_plan(sorted_dict, total, list(tags_used))
+    images_plan = namedtuple("images_plan", ["data", "total", "tags", "missing_rules"])
+    return images_plan(sorted_dict, total, list(tags_used), missing_rules)
