@@ -1,21 +1,17 @@
 from __future__ import annotations
 
 import asyncio
-from dataclasses import dataclass
 import logging
 from pathlib import Path
 import sys
-from typing import TextIO
 import webbrowser
 
 import click
 from hypercorn import Config
 from hypercorn.asyncio import serve
-import yaml
 
 from imagedephi.gui.app import app
 from imagedephi.redact import ProfileChoice, redact_images, show_redaction_plan
-from imagedephi.rules import Ruleset
 from imagedephi.utils.cli import FallthroughGroup, run_coroutine
 from imagedephi.utils.logger import logger
 from imagedephi.utils.network import unused_tcp_port, wait_for_port
@@ -42,7 +38,10 @@ _global_options = [
         type=click.Path(path_type=Path),
     ),
     click.option(
-        "-r", "--recursive", is_flag=True, help="Apply the command to images in subdirectories"
+        "-R",
+        "--override-rules",
+        type=click.Path(exists=True, readable=True, path_type=Path),
+        help="User-defined rules to override defaults.",
     ),
     click.option(
         "-p",
@@ -55,6 +54,9 @@ _global_options = [
         " our standard base rules, and is the default profile used.",
         default=ProfileChoice.Default.value,
     ),
+    click.option(
+        "-r", "--recursive", is_flag=True, help="Apply the command to images in subdirectories"
+    ),
 ]
 
 
@@ -62,11 +64,6 @@ def global_options(func):
     for option in _global_options:
         func = option(func)
     return func
-
-
-@dataclass
-class ImagedephiContext:
-    override_rule_set: Ruleset | None = None
 
 
 CONTEXT_SETTINGS = {"help_option_names": ["--help"]}
@@ -91,30 +88,16 @@ def set_logging_config(v: int, q: int, log_file: Path | None = None):
     context_settings=CONTEXT_SETTINGS,
 )
 @click.version_option(prog_name="ImageDePHI")
-@click.option(
-    "-R",
-    "--override-rules",
-    type=click.File("r"),
-    help="User-defined rules to override defaults.",
-)
 @global_options
-@click.pass_context
 def imagedephi(
-    ctx: click.Context,
-    override_rules: TextIO | None,
     verbose: int,
     quiet: int,
     log_file: Path,
-    recursive: bool,
+    override_rules: Path | None,
     profile: str,
+    recursive: bool,
 ) -> None:
     """Redact microscopy whole slide images."""
-    obj = ImagedephiContext()
-    # Store separately, to preserve the type of "obj"
-    ctx.obj = obj
-
-    if override_rules:
-        obj.override_rule_set = Ruleset.parse_obj(yaml.safe_load(override_rules))
     if verbose or quiet or log_file:
         set_logging_config(verbose, quiet, log_file)
 
@@ -131,16 +114,17 @@ def imagedephi(
     type=click.Path(exists=True, file_okay=False, readable=True, writable=True, path_type=Path),
 )
 @click.option("--rename/--skip-rename", default=True)
-@click.pass_obj
+@click.pass_context
 def run(
-    obj: ImagedephiContext,
+    ctx,
     input_path: Path,
     output_dir: Path,
-    rename: bool,
-    recursive,
+    override_rules: Path | None,
     profile: str,
-    verbose,
+    recursive: bool,
+    rename: bool,
     quiet,
+    verbose,
     log_file,
 ):
     """Perform the redaction of images."""
@@ -149,7 +133,7 @@ def run(
     redact_images(
         input_path,
         output_dir,
-        obj.override_rule_set,
+        override_rules,
         rename,
         recursive=recursive,
         profile=profile,
@@ -159,16 +143,23 @@ def run(
 @imagedephi.command
 @global_options
 @click.argument("input-path", type=click.Path(exists=True, readable=True, path_type=Path))
-@click.pass_obj
+@click.pass_context
 def plan(
-    obj: ImagedephiContext, input_path: Path, recursive, profile, quiet, verbose, log_file
+    ctx,
+    input_path: Path,
+    profile: str,
+    override_rules: Path | None,
+    recursive: bool,
+    quiet,
+    verbose,
+    log_file,
 ) -> None:
     """Print the redaction plan for images."""
     # Even if the user doesn't use the verbose flag, ensure logging level is set to
     # show info output of this command.
     v = verbose if verbose else 1
     set_logging_config(v, quiet, log_file)
-    show_redaction_plan(input_path, obj.override_rule_set, recursive, profile)
+    show_redaction_plan(input_path, override_rules, recursive, profile)
 
 
 @imagedephi.command
