@@ -18,21 +18,19 @@ from imagedephi.utils.logger import logger
 def base_rule_set():
     base_rules_path = importlib.resources.files("imagedephi") / "base_rules.yaml"
     with base_rules_path.open() as base_rules_stream:
-        return Ruleset.parse_obj(yaml.safe_load(base_rules_stream))
+        return Ruleset.model_validate(yaml.safe_load(base_rules_stream))
 
 
 @pytest.fixture
 def override_rule_set(rules_dir: Path):
     rule_file = rules_dir / "example_user_rules.yaml"
-    with rule_file.open() as rule_stream:
-        return Ruleset.parse_obj(yaml.safe_load(rule_stream))
+    return rule_file
 
 
 @pytest.fixture
 def strict_rule_set():
     strict_rules_path = importlib.resources.files("imagedephi") / "minimum_rules.yaml"
-    with strict_rules_path.open() as rules_stream:
-        return Ruleset.parse_obj(yaml.safe_load(rules_stream))
+    return strict_rules_path
 
 
 @pytest.fixture(
@@ -180,10 +178,16 @@ def test_strict_skip_dcm(dcm_input_path, tmp_path) -> None:
     "action,custom_tag_exists", [("keep", True), ("delete", False), ("use_rule", True)]
 )
 def test_dcm_private_redaction(dcm_input_path, tmp_path, action, custom_tag_exists) -> None:
-    override_rules = Ruleset()
-    override_rules.dicom.custom_metadata_action = action
+    override_ruleset = Ruleset()
+    override_ruleset.dicom.custom_metadata_action = action
+
     if action == "use_rule":
-        override_rules.dicom.metadata["(1001, 1001)"] = KeepRule(key_name="TestItem", action="keep")
+        override_ruleset.dicom.metadata["(1001, 1001)"] = KeepRule(
+            key_name="TestItem", action="keep"
+        )
+    override_rules = tmp_path / "override_rules.yaml"
+    with override_rules.open("w") as override_rules_stream:
+        yaml.safe_dump(override_ruleset.model_dump(), override_rules_stream)
     redact.redact_images(
         dcm_input_path,
         tmp_path,
