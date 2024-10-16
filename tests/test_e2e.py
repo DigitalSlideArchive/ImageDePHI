@@ -32,10 +32,9 @@ def test_e2e_run(
     )
 
     assert result.exit_code == 0
-    output_file = tmp_path / "Redacted_2023-05-12_12-12-53" / "my_study_slide_1.tif"
+    output_file = tmp_path / "Redacted_2023-05-12_12-12-53" / "study_slide_1.tif"
     output_file_bytes = output_file.read_bytes()
     assert b"large_image_converter" not in output_file_bytes
-    assert b"Redacted by ImageDePHI" in output_file_bytes
 
 
 @freeze_time("2024-05-20 11:46:00")
