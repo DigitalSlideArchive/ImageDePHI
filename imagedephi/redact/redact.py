@@ -287,7 +287,6 @@ def show_redaction_plan(
     override_ruleset = None
     if override_rules:
         override_ruleset = _get_user_rules(override_rules)
-    strict = profile == ProfileChoice.Strict.value
     starting_logging_level = logger.getEffectiveLevel()
     if input_path.is_dir():
         with logging_redirect_tqdm(loggers=[logger]):
@@ -309,7 +308,7 @@ def show_redaction_plan(
         with logging_redirect_tqdm(loggers=[logger]):
             for image_path in tqdm(image_paths, desc="Reporting plan", position=0, leave=True):
                 try:
-                    redaction_plan = build_redaction_plan(image_path, base_rules, override_rules)
+                    redaction_plan = build_redaction_plan(image_path, base_rules, override_ruleset)
                 except tifftools.TifftoolsError:
                     unprocessable_image_messages.append(f"Could not open {image_path} as a tiff.")
                     continue
