@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from collections.abc import Generator
 from datetime import date, datetime
-from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING
 from uuid import uuid4
@@ -58,13 +57,6 @@ for vr in valuerep.BYTES_VR:
 WSI_IMAGE_TYPE_INDEX = 2
 
 
-class WsiImageType(Enum):
-    OVERVIEW = "OVERVIEW"
-    VOLUME = "VOLUME"
-    THUMBNAIL = "THUMBNAIL"
-    LABEL = "LABEL"
-
-
 class DicomRedactionPlan(RedactionPlan):
     """
     Represents a plan of action for redacting metadata from DICOM images.
@@ -75,7 +67,7 @@ class DicomRedactionPlan(RedactionPlan):
     file_format = FileFormat.DICOM
     image_path: Path
     dicom_data: pydicom.FileDataset
-    image_type: WsiImageType
+    image_type: str
     metadata_redaction_steps: dict[int, ConcreteMetadataRule]
     no_match_tags: list[BaseTag]
     uid_map: dict[str, str]
@@ -99,7 +91,7 @@ class DicomRedactionPlan(RedactionPlan):
     def __init__(self, image_path: Path, rules: DicomRules, uid_map: dict[str, str] | None) -> None:
         self.image_path = image_path
         self.dicom_data = pydicom.dcmread(image_path)
-        self.image_type = WsiImageType(self.dicom_data.ImageType[WSI_IMAGE_TYPE_INDEX])
+        self.image_type = str(self.dicom_data.ImageType[WSI_IMAGE_TYPE_INDEX])
 
         self.metadata_redaction_steps = {}
         self.no_match_tags = []
@@ -107,9 +99,7 @@ class DicomRedactionPlan(RedactionPlan):
         # Determine what, if any, action to take with this file's
         # image data. Currently only matters for label and overview
         # images.
-        self.associated_image_rule = rules.associated_images.get(
-            self.image_type.value.lower(), None
-        )
+        self.associated_image_rule = rules.associated_images.get(self.image_type.lower(), None)
 
         # When redacting many files at a time, keep track of all UIDs across all files,
         # since the DICOM format uses separate files for different resolutions and
@@ -180,7 +170,7 @@ class DicomRedactionPlan(RedactionPlan):
         if self.associated_image_rule:
             if self.associated_image_rule.action == "delete":
                 logger.info(
-                    f"This image is a DICOM {self.image_type.value}."
+                    f"This image is a DICOM {self.image_type}."
                     "This file will not be written to the output directory."
                 )
                 return {}
