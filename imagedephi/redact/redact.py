@@ -6,8 +6,9 @@ from csv import DictWriter
 import datetime
 from enum import Enum
 import importlib.resources
+import logging
 from pathlib import Path
-from typing import NamedTuple
+from typing import NamedTuple, TypeVar
 
 import tifftools
 import tifftools.constants
@@ -26,6 +27,9 @@ from .tiff import UnsupportedFileTypeError
 
 tags_used = OrderedDict()
 redaction_plan_report = {}
+unprocessable_image_messages: list[str] = []
+
+T = TypeVar("T")
 
 
 class ProfileChoice(Enum):
@@ -85,6 +89,15 @@ def iter_image_files(directory: Path, recursive: bool = False) -> Generator[Path
             yield from iter_image_files(child, recursive)
 
 
+def generator_to_list_with_progress(
+    generator: Generator[T, None, None], progress_bar_desc="Working..."
+) -> list[T]:
+    result = []
+    for item in tqdm(generator, desc=progress_bar_desc, dynamic_ncols=True, unit=" image(s) found"):
+        result.append(item)
+    return result
+
+
 def create_redact_dir_and_manifest(base_output_dir: Path) -> tuple[Path, Path]:
     """
     Given a directory, create and return a sub-directory within it.
@@ -127,9 +140,15 @@ def redact_images(
         override_ruleset.output_file_name if override_ruleset else base_rules.output_file_name
     )
     # Convert to a list in order to get the length
-    images_to_redact = list(
-        iter_image_files(input_path, recursive) if input_path.is_dir() else [input_path]
-    )
+    if input_path.is_dir():
+        with logging_redirect_tqdm(loggers=[logger]):
+            images_to_redact = generator_to_list_with_progress(
+                iter_image_files(input_path, recursive),
+                progress_bar_desc="Collecting files to redact...",
+            )
+    else:
+        images_to_redact = [input_path]
+
     output_file_counter = 1
     output_file_max = len(images_to_redact)
     redact_dir, manifest_file = create_redact_dir_and_manifest(output_dir)
@@ -149,12 +168,24 @@ def redact_images(
                     f"{image_file.name} could not be processed. "
                     f"{e.args[0] if len(e.args) else e}"
                 )
+                run_summary.append(
+                    {
+                        "input_path": image_file,
+                        "output_path": "",
+                        "detail": "There was an unexpected error when redacting this image.",
+                    }
+                )
                 continue
             if not redaction_plan.is_comprehensive():
                 logger.info(f"Redaction could not be performed for {image_file.name}.")
-                redaction_plan.report_missing_rules()
+                run_summary.append(
+                    {
+                        "input_path": image_file,
+                        "output_path": "",
+                        "detail": "Could not redact with the provided set of rules.",
+                    }
+                )
             else:
-                redaction_plan.report_plan()
                 redaction_plan.execute_plan()
                 output_parent_dir = redact_dir
                 if recursive:
@@ -178,6 +209,7 @@ def redact_images(
                     {
                         "input_path": image_file,
                         "output_path": output_path,
+                        "detail": "redacted successfully",
                     }
                 )
                 if output_file_counter == output_file_max:
@@ -185,7 +217,7 @@ def redact_images(
             output_file_counter += 1
     logger.info(f"Writing manifest to {manifest_file}")
     with open(manifest_file, "w") as manifest:
-        fieldnames = ["input_path", "output_path"]
+        fieldnames = ["input_path", "output_path", "detail"]
         writer = DictWriter(manifest, fieldnames=fieldnames)
         writer.writeheader()
         for row in run_summary:
@@ -251,34 +283,53 @@ def show_redaction_plan(
     offset: int | None = None,
     update: bool = True,
 ) -> NamedTuple:
-    image_paths = iter_image_files(input_path, recursive) if input_path.is_dir() else [input_path]
     base_rules = get_base_rules(profile)
     override_ruleset = None
     if override_rules:
         override_ruleset = _get_user_rules(override_rules)
+    starting_logging_level = logger.getEffectiveLevel()
+    if input_path.is_dir():
+        with logging_redirect_tqdm(loggers=[logger]):
+            image_paths = generator_to_list_with_progress(
+                iter_image_files(input_path, recursive),
+                progress_bar_desc="Collecting files to redact...",
+            )
+    else:
+        # For a single image, log all details of the plan
+        logger.setLevel(logging.DEBUG)
+        image_paths = [input_path]
 
     global tags_used
 
     def _create_redaction_plan_report():
         global redaction_plan_report
-        for image_path in image_paths:
-            try:
-                redaction_plan = build_redaction_plan(image_path, base_rules, override_ruleset)
-            except tifftools.TifftoolsError:
-                logger.error(f"Could not open {image_path.name} as a tiff.")
-                continue
-            except MalformedAperioFileError:
-                logger.error(f"{image_path.name} could not be processed as a valid Aperio file.")
-                continue
-            except UnsupportedFileTypeError as e:
-                logger.error(f"{image_path.name} could not be processed. {e.args[0]}")
-                continue
-            # Handle and report other errors without stopping the process
-            except Exception as e:
-                logger.error(f"{image_path.name} could not be processed. {e.args[0]}")
-                continue
-            logger.info(f"Redaction plan for {image_path.name}")
-            redaction_plan_report.update(redaction_plan.report_plan())  # type: ignore
+        global unprocessable_image_messages
+        unprocessable_image_messages = []
+        with logging_redirect_tqdm(loggers=[logger]):
+            for image_path in tqdm(image_paths, desc="Reporting plan", position=0, leave=True):
+                try:
+                    redaction_plan = build_redaction_plan(image_path, base_rules, override_ruleset)
+                except tifftools.TifftoolsError:
+                    unprocessable_image_messages.append(f"Could not open {image_path} as a tiff.")
+                    continue
+                except MalformedAperioFileError:
+                    unprocessable_image_messages.append(
+                        f"{image_path} could not be processed as a valid Aperio file."
+                    )
+                    continue
+                except UnsupportedFileTypeError as e:
+                    unprocessable_image_messages.append(
+                        f"{image_path} could not be processed. {e.args[0]}"
+                    )
+                    continue
+                # Handle and report other errors without stopping the process
+                except Exception as e:
+                    unprocessable_image_messages.append(
+                        f"{image_path} could not be processed. {e.args[0]}"
+                    )
+                    continue
+                logger.info(f"Redaction plan for {image_path.name}:")
+                redaction_plan_report.update(redaction_plan.report_plan())  # type: ignore
 
     if not update:
         global redaction_plan_report
@@ -294,4 +345,37 @@ def show_redaction_plan(
     if limit is not None and offset is not None:
         sorted_dict = OrderedDict(list(sorted_dict.items())[offset * limit : (offset + 1) * limit])
     images_plan = namedtuple("images_plan", ["data", "total", "tags"])
+
+    if input_path.is_dir():
+        # Provide a summary if the input path is a directory of images
+        logger.info(f"ImageDePHI summary for {input_path}:")
+        incomplete = [
+            file_path
+            for file_path in redaction_plan_report
+            if not redaction_plan_report[file_path]["comprehensive"]
+        ]
+        logger.info(
+            f"{len(image_paths) - (len(incomplete) + len(unprocessable_image_messages))}"
+            " images able to be redacted with the provided rule set."
+        )
+        if incomplete:
+            logger.info(f"{len(incomplete)} file(s) could not be redacted with the provided rules.")
+            logger.info("The following images could not be redacted given the current rule set:")
+            for file in incomplete:
+                logger.info(f"\t{file}")
+            logger.info(
+                "For more details about individual images that couldn't be redacted, run "
+                "'imagedephi plan <unredactable_file>'"
+            )
+        if unprocessable_image_messages:
+            logger.info(
+                f"{len(unprocessable_image_messages)} file(s) could not be processed by ImageDePHI."
+            )
+
+    # Report exceptions outside of the directory level report
+    for message in unprocessable_image_messages:
+        logger.info(f"\t{message}")
+
+    # Reset logging level if it was changed
+    logger.setLevel(starting_logging_level)
     return images_plan(sorted_dict, total, list(tags_used))

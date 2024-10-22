@@ -82,8 +82,14 @@ def test_plan_svs(caplog, svs_input_path, override_rule_set):
     logger.setLevel(logging.INFO)
     redact.show_redaction_plan(svs_input_path, override_rule_set)
 
-    assert "Aperio (.svs) Metadata Redaction Plan" in caplog.text
-    assert "ICC Profile: delete" in caplog.text
+    # Behavior for directories: skip printing full plans
+    # Behavior for single image file: print full plan
+    if svs_input_path.is_dir():
+        assert "Aperio (.svs) Metadata Redaction Plan" not in caplog.text
+        assert "ICC Profile: delete" not in caplog.text
+    else:
+        assert "Aperio (.svs) Metadata Redaction Plan" in caplog.text
+        assert "ICC Profile: delete" in caplog.text
 
 
 def test_associated_image_key_no_description(data_dir, base_rule_set):
@@ -136,7 +142,7 @@ def test_redact_dcm(test_image_dcm, tmp_path, override_rule_set):
 
 
 def test_plan_dcm(caplog, test_image_dcm):
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
     redact.show_redaction_plan(test_image_dcm)
 
     assert "DICOM Metadata Redaction Plan" in caplog.text
