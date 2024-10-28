@@ -6,15 +6,13 @@ build-backend = "hatchling.build"
 name = "ImageDePHI"
 requires-python = ">=3.11"
 dependencies = [
-    "click<8.1.4",
+    "click",
     "tifftools",
     "fastapi",
     "python-multipart",
     "hypercorn",
     "pyyaml",
     "Pillow",
-    # Pinned to < 3 until wsidicom is updated
-    "pydicom<3",
     "tqdm",
     "wsidicom",
     "websockets",
