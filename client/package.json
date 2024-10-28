@@ -37,7 +37,7 @@
     "vue-eslint-parser": "^9.4.2",
     "vue-tsc": "^1.8.5"
   },
-  "packageManager": "yarn@4.1.1",
+  "packageManager": "yarn@4.5.1+sha256.dc2e45a77f87a9c2a76708d098ab54ca0cfdd5ec2cf7d9e3c1f24bf786a2383c",
   "dependenciesMeta": {
     "remixicon@3.7.0": {
       "unplugged": true
