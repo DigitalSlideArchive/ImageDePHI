@@ -200,3 +200,14 @@ def test_e2e_manifest(cli_runner, data_dir: Path, tmp_path: Path, test_image_tif
     manifest_file_bytes = manifest_path.read_bytes()
     assert b"study_slide_1.tif" in manifest_file_bytes
     assert str(test_image_tiff).encode() in manifest_file_bytes
+
+
+@pytest.mark.parametrize("args", [["foo"], ["-r", "foo"]])
+def test_e2e_no_such_command(cli_runner, args):
+    result = cli_runner.invoke(main.imagedephi, args)
+    assert result.exit_code == 0
+
+    # Assert that the user has been told their command was invalid
+    assert "No such command" in result.output
+    # Assert the usage docs are shown to the user
+    assert "Usage: imagedephi" in result.output
