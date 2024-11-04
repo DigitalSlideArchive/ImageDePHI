@@ -44,5 +44,13 @@ class FallthroughGroup(click.Group):
                 # Execute the normal Click "no_args_is_help" behavior
                 click.echo(ctx.get_help(), color=ctx.color)
                 ctx.exit()
+        elif ctx.protected_args and ctx.protected_args[0] not in self.commands:
+            # If the subcommand stored in "ctx.protected_args" is not a real
+            # subcommand, show the entire help text in addition to the "no such
+            # command" mesasge.
+            click.echo(f"Error: No such command: '{ctx.protected_args[0]}'.")
+            click.echo(ctx.get_help(), color=ctx.color)
+            ctx.exit()
+
         # All non-help cases reach here
         return super().invoke(ctx)
