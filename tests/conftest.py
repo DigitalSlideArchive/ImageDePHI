@@ -9,6 +9,7 @@ registry = {
     "test_dcm_image.dcm": "sha512:4cb4c76799ce5d6f3f66c6d3bc055c5527b9fbef3d684450f48c870a5fbd882c87f3d59349ace778e80e78085276fecd278844af98a2324b754345aab6d6eac5",  # noqa: E501
     "test_image.tif": "sha512:269d974a373f08e3274a1074fa595f8c70c496c64590412b6233eb2e3ce691c92963e5d0a3518848f15d9353783624faab18a002a9e049691cb5b627e40c9423",  # noqa: E501
     "test_svs_image_blank.svs": "sha512:76350f39bafd86ced9d94b9a095200d3894034c36a3bc9a45a57a8f5ea820b8fd877ae483e9d9d4aef018cd8ca96c54ea815467ec94f6d692fca0ecc69afab23",  # noqa: E501
+    "test_svs_no_extension": "sha512:76350f39bafd86ced9d94b9a095200d3894034c36a3bc9a45a57a8f5ea820b8fd877ae483e9d9d4aef018cd8ca96c54ea815467ec94f6d692fca0ecc69afab23",  # noqa: E501
 }
 
 
@@ -44,6 +45,11 @@ def test_image_svs() -> Path:
 @pytest.fixture
 def test_image_dcm() -> Path:
     return retrieve_file("test_dcm_image.dcm", Path(__file__).with_name("data") / "input" / "dcm")
+
+
+@pytest.fixture
+def test_image_svs_no_extension() -> Path:
+    return retrieve_file("test_svs_no_extension", Path(__file__).with_name("data") / "input")
 
 
 @pytest.fixture
