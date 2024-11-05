@@ -2,6 +2,7 @@ from pathlib import Path
 
 from imagedephi.rules import FileFormat, Ruleset
 from imagedephi.utils.image import get_file_format_from_path
+from imagedephi.utils.tiff import get_is_svs
 
 from .dicom import DicomRedactionPlan
 from .redaction_plan import RedactionPlan
@@ -13,14 +14,6 @@ class ImageDePHIRedactionError(Exception):
     """Thrown when the program encounters problems with current configuration and image files."""
 
 
-FILE_EXTENSION_MAP: dict[str, FileFormat] = {
-    ".tif": FileFormat.TIFF,
-    ".tiff": FileFormat.TIFF,
-    ".svs": FileFormat.SVS,
-    ".dcm": FileFormat.DICOM,
-}
-
-
 def build_redaction_plan(
     image_path: Path,
     base_rules: Ruleset,
@@ -30,28 +23,19 @@ def build_redaction_plan(
     file_format = get_file_format_from_path(image_path)
     strict = override_rules.strict if override_rules else base_rules.strict
     if file_format == FileFormat.TIFF:
-        # Since SVS is a subset of tiff, fall back on file extension
-        file_extension = (
-            FILE_EXTENSION_MAP[image_path.suffix]
-            if image_path.suffix in FILE_EXTENSION_MAP
-            else file_format
-        )
-        if file_extension == FileFormat.TIFF:
-            merged_rules = base_rules.tiff.copy()
+        if get_is_svs(image_path):
+            merged_svs_rules = base_rules.svs.copy()
             if override_rules:
-                merged_rules.metadata.update(override_rules.tiff.metadata)
-                merged_rules.associated_images.update(override_rules.tiff.associated_images)
-
-            return TiffRedactionPlan(image_path, merged_rules, strict)
-        elif file_extension == FileFormat.SVS:
-            merged_rules = base_rules.svs.copy()
-            if override_rules:
-                merged_rules.metadata.update(override_rules.svs.metadata)
-                merged_rules.associated_images.update(override_rules.svs.associated_images)
-                merged_rules.image_description.update(override_rules.svs.image_description)
-            return SvsRedactionPlan(image_path, merged_rules, strict)
+                merged_svs_rules.metadata.update(override_rules.svs.metadata)
+                merged_svs_rules.associated_images.update(override_rules.svs.associated_images)
+                merged_svs_rules.image_description.update(override_rules.svs.image_description)
+            return SvsRedactionPlan(image_path, merged_svs_rules, strict)
         else:
-            raise UnsupportedFileTypeError(f"File format for {image_path} not supported.")
+            merged_tiff_rules = base_rules.tiff.copy()
+            if override_rules:
+                merged_tiff_rules.metadata.update(override_rules.tiff.metadata)
+                merged_tiff_rules.associated_images.update(override_rules.tiff.associated_images)
+            return TiffRedactionPlan(image_path, merged_tiff_rules, strict)
     elif file_format == FileFormat.DICOM:
         if strict:
             raise ImageDePHIRedactionError(
