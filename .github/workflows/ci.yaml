@@ -31,10 +31,9 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: "20"
-      - name: Set up yarn
+      - name: Enable Corepack
         run: |
           corepack enable
-          yarn set version berry
       - name: Install tox
         run: |
           pip install --upgrade pip
