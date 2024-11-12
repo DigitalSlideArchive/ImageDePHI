@@ -30,6 +30,10 @@ const directoryData: Ref<DirectoryData> = ref({
 });
 
 const updateDirectories = async (currentDirectory?: string) => {
+  directoryData.value.children = [];
+  directoryData.value.childrenImages = [];
+  directoryData.value.childrenYaml = [];
+
   const data = await getDirectoryInfo(currentDirectory);
   directoryData.value = await {
     ...data,
@@ -106,6 +110,10 @@ const updateTableData = () => {
               </li>
             </ul>
           </div>
+        </div>
+        <div v-if="directoryData.children.length==0 && directoryData.childrenYaml.length==0" class="text-center">
+          <span class="loading loading-spinner text-primary"></span>
+          <span class="ml-2 italic font-light align-top">Collecting Directory Data</span>
         </div>
         <ul class="text-blue-700">
           <li
