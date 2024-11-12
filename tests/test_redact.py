@@ -80,6 +80,14 @@ def test_redact_svs(svs_input_path, tmp_path, override_rule_set):
     assert b"macro" not in svs_output_file_bytes
 
 
+def test_redact_svs_no_extension(mocker, test_image_svs_no_extension, tmp_path):
+    # Ensure the correct redaction plan is called for an SVS file with no
+    # extension
+    spy = mocker.spy(SvsRedactionPlan, "__init__")
+    redact.redact_images(test_image_svs_no_extension, tmp_path)
+    assert spy.call_count == 1
+
+
 def test_plan_svs(caplog, svs_input_path, override_rule_set):
     logger.setLevel(logging.INFO)
     redact.show_redaction_plan(svs_input_path, override_rule_set)
