@@ -18,7 +18,24 @@ With the virtual environment active, run the CLI:
 imagedephi
 ```
 
-### Developing the Web GUI
+### Development
+#### Requirements
+
+```bash
+python ^3.11
+node ^20
+```
+
+#### Initial Install
+This project uses yarn modern. As such you'll need to enable corepack to detect the correct yarn version:
+
+```bash
+cd /client
+corepack enable
+```
+
+
+#### Developing the Web GUI
 While developing the web GUI, it may be useful to launch web server
 that auto-reloads code changes and shows in-browser exception tracebacks:
 ```bash
