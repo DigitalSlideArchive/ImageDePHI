@@ -57,6 +57,13 @@ const closeModal = () => {
   modal.value.close();
 };
 
+const updateSelectedDirectories = (path: string) => {
+  selectedDirectories.value[props.modalId] = path;
+  localStorage.setItem('inputDirectory', selectedDirectories.value.inputDirectory);
+  localStorage.setItem('outputDirectory', selectedDirectories.value.outputDirectory);
+  localStorage.setItem('rulesetDirectory', selectedDirectories.value.rulesetDirectory);
+};
+
 const updateTableData = () => {
   redactionStateFlags.value.redactionSnackbar = false;
   useRedactionPlan.updateImageData({
