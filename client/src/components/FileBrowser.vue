@@ -29,18 +29,26 @@ const directoryData: Ref<DirectoryData> = ref({
   childrenYaml: [],
 });
 
+const loadingData = ref(false);
+
 const updateDirectories = async (currentDirectory?: string) => {
   directoryData.value.children = [];
   directoryData.value.childrenImages = [];
   directoryData.value.childrenYaml = [];
+  const timeout = setTimeout(() => {
+    loadingData.value = true;
+  }, 100);
 
   const data = await getDirectoryInfo(currentDirectory);
+  clearTimeout(timeout);
+  loadingData.value = false;
   directoryData.value = await {
     ...data,
     children: data.child_directories,
     childrenImages: data.child_images,
     childrenYaml: data.child_yaml_files,
   };
+  loadingData.value = false;
   calculateVisibleItems();
 };
 updateDirectories();
@@ -156,10 +164,7 @@ onBeforeUnmount(() => {
           </div>
         </div>
         <div
-          v-if="
-            directoryData.children.length == 0 &&
-            directoryData.childrenYaml.length == 0
-          "
+          v-if="loadingData"
           class="text-center"
         >
           <span class="loading loading-spinner text-primary"></span>
