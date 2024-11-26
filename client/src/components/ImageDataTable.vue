@@ -14,7 +14,10 @@ defineProps({
   <div v-if="!usedColumns" class="m-auto flex justify-center">
     Loading.. <span class="loading loading-bars loading-md"></span>
   </div>
-  <table v-if="usedColumns" class="table table-auto text-center bg-base-100">
+  <table
+    v-if="usedColumns"
+    class="table table-xs table-auto text-center bg-base-100"
+  >
     <thead>
       <tr class="text-base bg-gray-600">
         <th class="bg-neutral text-white py-5 px-6">Image File Name</th>
@@ -36,14 +39,10 @@ defineProps({
       </tr>
     </thead>
     <tbody class="text-base bg-base-100">
-      <tr
-        v-for="(image, index) in imageRedactionPlan.data"
-        :key="index"
-        class="h-[125px]"
-      >
+      <tr v-for="(image, index) in imageRedactionPlan.data" :key="index">
         <th>{{ index }}</th>
         <td>
-          <img :src="image.thumbnail" class="w-20 h-20" />
+          <img :src="image.thumbnail" />
         </td>
         <td>
           <div
@@ -68,7 +67,7 @@ defineProps({
           </div>
         </td>
         <template v-for="tag in usedColumns" :key="tag">
-          <td class="text-ellipsis overflow-hidden max-w-[300px]">
+          <td class="text-ellipsis overflow-hidden max-w-[200px]">
             <span
               v-if="image[tag]"
               :class="
@@ -77,13 +76,13 @@ defineProps({
                   : ''
               "
             >
-              <span v-if="image[tag].binary">
+              <span v-if="image[tag].binary" class="text-nowrap">
                 {{ image[tag].binary.bytes }} bytes
                 <span>
-                  {{ image[tag].binary.value.slice(0, 32) }}
+                  {{ image[tag].binary.value.slice(0, 20) }}
                 </span>
               </span>
-              <span v-else>
+              <span v-else class="text-nowrap">
                 {{
                   typeof image[tag].value === "object"
                     ? image[tag].value.join(", ")

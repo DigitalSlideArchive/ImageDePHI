@@ -228,10 +228,8 @@ const forceRedact = () => {
         redactionStateFlags.showImageTable
       "
     />
-    <div v-if="redactionStateFlags.redactionComplete">
-      <ImageDataDisplay />
-    </div>
-    <div v-if="redactionStateFlags.redactionSnackbar" class="toast">
+    <ImageDataDisplay v-if="redactionStateFlags.redactionComplete" />
+    <div v-if="redactionStateFlags.redactionSnackbar" class="toast z-[100]">
       <div class="alert alert-success">
         <span class="font-semibold">Redaction Complete</span>
         <div>

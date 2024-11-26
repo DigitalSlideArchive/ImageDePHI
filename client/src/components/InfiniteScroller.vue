@@ -24,7 +24,7 @@ onMounted(() => {
 <template>
   <div
     ref="infiniteScroller"
-    class="card rounded max-h-[90vh] max-w-[75vw] overflow-auto customScroll"
+    class="card rounded max-h-[calc(100vh-50px)] max-w-[calc(100vw-425px)] overflow-auto customScroll"
   >
     <slot></slot>
     <div ref="endOfTable"></div>
