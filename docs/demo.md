@@ -112,24 +112,69 @@ You'll find a new directory in the location you selected as your output director
 
 ## Using the CLI
 
-Here is one example of a workflow to redact images using only CLI commands.
+If you would prefer to use the CLI to redact the images, follow this section to walk through the same example using that tool instead of the UI. Make sure the follow the instructions at the top of this guide to get the demo data.
 
-#### 1. Use the `plan` command to see if there are any missing rules
+#### 1. Use the `plan` command
+
+The `plan` command is one way to determine if the files you want to redact are able to be redacted. If not, the output of the `plan` command will help you discover what you'll need to do in order to redact your images. After obtaining the test data, run the following command:
 
 ```bash
-imagedephi plan demo-data
+imagedephi plan demo_files
 ```
+
+You'll see in the output of that command that one of the files cannot be redacted. In order to find out why, you can run:
+
+```bash
+imagedephi plan demo_files/SEER_Mouse_1_17158543_demo.svs
+```
+
+Running the `plan` command on a single image will provide a detailed report of exactly how that particular image is redacted. To see this level of detail for all images in a directory, use the `-v` (verbose) option.
+
+The ouput of the `plan` command for that particular image reveals that it contains a metadata item with tag `55500` with no corresponding rule.
 
 #### 2. Create an override rule set
 
-#### 3. Add the missing rule
+In order to redact the demo images, we'll need to give the program a rule it can use for tag `55500`. The mechanism we can use to do this is with an override, or custom, rule set.
+
+Image DePHI comes with a base set of rules that covers most commonly seen metadata tags for SVS and DICOM images. If your images contain metadata not covered by the base rules, you'll need a custom rule set.
+
+For this demo, create a file called `custom_rules.yaml` add add the following:
+
+```yaml
+---
+name: Custom Rules
+description: Custom ruleset used for the Image DePHI demo.
+svs:
+    metadata:
+        '55500':
+            action: delete
+```
+
+We now have a ruleset to supplement the base rules and enable redaction of the demo images.
 
 #### 4. Use the `plan` command with the override rule set
 
+First, let's verify that our custom rule set works as intended. Run the following command:
+
+```bash
+imagedephi plan -R custom_rules.yaml demo_files
+```
+
+Note the message "3 images able to be redacted" in the output. This means all of the demo files can now be redacted.
+
 #### 5. Use the `run` command to redact the images
 
-#### 6. Inspect the manifest
+The `run` command is very similar to `plan`, except it also needs to be told where to save the redacted files. This is done using the `-o` option. Run the following:
 
-#### 7. Skip renaming/use a custom name
+```bash
+mkdir ./output_files
+imagedephi run -R custom_rules.yaml -o ./output_files demo_files
+```
 
+After that command finishes, you'll see a new directory in `./output_files` called `Redacted_<timestamp>` containing the redacted files.
 
+You'll also see a file next to that directory called `Redacted_<timestamp>_manifest.csv`. This will contain a mapping of input file names to output file names, as well as any errors that may have occurred during redaction.
+
+## Next Steps
+
+For more information about the Image DePHI rules system, be sure to check out the [documention](../README.md).
