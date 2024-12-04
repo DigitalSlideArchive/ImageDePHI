@@ -178,3 +178,6 @@ You'll also see a file next to that directory called `Redacted_<timestamp>_manif
 ## Next Steps
 
 For more information about the Image DePHI rules system, be sure to check out the [documention](../README.md).
+
+## Demo Data Citation
+‘NCI SRP Mouse Tissue Whole Slide Images with Fake PHI/PII' data set, Version 1.0. Generated: December 29, 2021; Scanner: Leica Microsystems, Aperio AT2; Provided by: The National Cancer Institute (NCI) Surveillance Research Program (SRP).
