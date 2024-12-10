@@ -258,9 +258,9 @@ def demo_data(data_dir: Path):
             for row in tqdm(rows, desc="Downloading demo images...", position=0, leave=True):
                 file_name = row["file_name"]
                 hash = row["hash"]
-                algo, hash_value = hash.split(":")
+                algo, hash_val = hash.split(":")
                 pooch.retrieve(
-                    url=f"http://data.kitware.com/api/v1/file/hashsum/{algo}/{hash_value}/download",
+                    url=f"https://data.kitware.com/api/v1/file/hashsum/{algo}/{hash_val}/download",
                     known_hash=hash,
                     fname=file_name,
                     path=demo_file_dir,
