@@ -1,22 +1,22 @@
-# Image DePHI Demo
+# ImageDePHI Demo
 
-This walkthrough will guide you through using the Image DePHI program.
+This walkthrough will guide you through using the ImageDePHI program.
 
 ## Getting the demo data
 
-In order to get the demo data, you will need to have installed Image DePHI and run the following command:
+In order to get the demo data, you will need to have installed ImageDePHI and run the following command:
 
 ```bash
 imagedephi demo-data
 ```
 
-This will create a new directory in the location it is run called `demo_files` and download several whole slide images into that directory. These images contain fake PHI, which we will redact with Image DePHI.
+This will create a new directory in the location it is run called `demo_files` and download several whole slide images into that directory. These images contain fake PHI, which we will redact with ImageDePHI.
 
 ## Redacting with the Graphical User Interface (GUI)
-Image DePHI allows redaction of whole slide images through either a graphical user interface, accessible through a web browser, or a command line interface. First, let's take a look at the readaction workflow using the graphical user interface.
+ImageDePHI allows redaction of whole slide images through either a graphical user interface, accessible through a web browser, or a command line interface. First, let's take a look at the redaction workflow using the graphical user interface.
 
 #### 1. Starting the program
-In order to start the program, install Image DePHI and run:
+In order to start the program, install ImageDePHI and run:
 
 ```bash
 imagedephi gui
@@ -31,9 +31,9 @@ imagedephi gui --port 8888
 ```
 
 #### 2. Looking at the UI
-If your browser is not already open to Image DePHI, open up your browser and go to `127.0.0.1:<port>` where `<port>` is either the random port picked by the command above or the number you supplied to the `--port` flag if you used that option to start the server.
+If your browser is not already open to ImageDePHI, open up your browser and go to `127.0.0.1:<port>` where `<port>` is either the random port picked by the command above or the number you supplied to the `--port` flag if you used that option to start the server.
 
-![Initial Image DePHI UI](./images/initial_ui.png)
+![Initial ImageDePHI UI](./images/initial_ui.png)
 
 You should be greeted by the initial UI screen. On the left hand side there are several options for specifying which files should be redacted and how they should be redacted. We will go over each step individually.
 
@@ -49,7 +49,7 @@ Navigate your computer's file system until you come to the directory where you d
 
 #### 4. Select Output Destination
 
-Next, select a location for redacted images. Image DePHI does not modify your original images. Instead, it creates new, redacted images saved into the location selected here.
+Next, select a location for redacted images. ImageDePHI does not modify your original images. Instead, it creates new, redacted images saved into the location selected here.
 
 ![Output directory selector](./images/step_2_output_directory_select_directory.png)
 For this demo, select the directory that is the parent of your `demo_files/` directory. A new directory will be created at this location for the redacted images.
@@ -60,13 +60,13 @@ After selecting your input directory, you will see a table previewing the redact
 
 Looking at the metadata tags, you'll see that, for example, the "Date" tag is red with strikethrough. This indicates that this field will be removed and not present in the redacted output file. Scrolling over, you'll see tags like "AppMag" and "BitsPerSample" have no special styling, indicating that they will be included in the output file.
 
-Most importantly, you'll see that there's an issue in the "Redaction Status" column for the image "SEER_Mouse_1_17158543_demo.svs". If you hover over the red icon you'll see the message "1 tag(s) missing redaction rules." Below that you'll see "55500: 55500," indicating that this image contains a metadata tag with the number "55500" that Image DePHI doesn't know how to redact.
+Most importantly, you'll see that there's an issue in the "Redaction Status" column for the image "SEER_Mouse_1_17158543_demo.svs". If you hover over the red icon you'll see the message "1 tag(s) missing redaction rules." Below that you'll see "55500: 55500," indicating that this image contains a metadata tag with the number "55500" that ImageDePHI doesn't know how to redact.
 
 ![Image grid showing an error](./images/image_grid_errors_ui.png)
 
 #### 6. Creating a Custom Rule Set
 
-The base rule set provided by Image DePHI is used every time images are redacted. User-defined rule sets can be used to supplement or modify the behavior defined by the base rules.
+The base rule set provided by ImageDePHI is used every time images are redacted. User-defined rule sets can be used to supplement or modify the behavior defined by the base rules.
 
 The base rule set does not contain a rule for tag `55500`, so in order to redact the demo images, the program will need to be supplied a ruleset that knows what to do with tag `55500`.
 
@@ -75,14 +75,14 @@ Let's create that ruleset now. Create a new file called `custom_rules.yaml` and 
 ```yaml
 ---
 name: Custom Rules
-description: Custom ruleset used for the Image DePHI demo.
+description: Custom ruleset used for the ImageDePHI demo.
 svs:
     metadata:
         '55500':
             action: delete
 ```
 
-If you'd like to know the default behavior of Image DePHI, take a look at the [base rules](../imagedephi/base_rules.yaml).
+If you'd like to know the default behavior of ImageDePHI, take a look at the [base rules](../imagedephi/base_rules.yaml).
 
 #### 7. Using Your Custom Ruleset
 
@@ -92,7 +92,7 @@ Click the folder icon in Step 3 (Rulesets) to open the file navigator.
 
 ![Custom ruleset file navigator](./images/step_3_ruleset_select_ruleset.png)
 
-Navigate to the custom rule set you created in step 6 and select it. The rule set you select in this step will be composed with the base rule set provided by Image DePHI. If a tag appears in both the base rules and the custom rule set, the custom rule will be applied instead of the base rule.
+Navigate to the custom rule set you created in step 6 and select it. The rule set you select in this step will be composed with the base rule set provided by ImageDePHI. If a tag appears in both the base rules and the custom rule set, the custom rule will be applied instead of the base rule.
 
 The table should update to reflect that the program now knows how to redact tag `55500`, and each image should have a green checkmark icon in the "Redaction Status" column.
 
@@ -136,14 +136,14 @@ The ouput of the `plan` command for that particular image reveals that it contai
 
 In order to redact the demo images, we'll need to give the program a rule it can use for tag `55500`. The mechanism we can use to do this is with an override, or custom, rule set.
 
-Image DePHI comes with a base set of rules that covers most commonly seen metadata tags for SVS and DICOM images. If your images contain metadata not covered by the base rules, you'll need a custom rule set.
+ImageDePHI comes with a base set of rules that covers most commonly seen metadata tags for SVS and DICOM images. If your images contain metadata not covered by the base rules, you'll need a custom rule set.
 
 For this demo, create a file called `custom_rules.yaml` add add the following:
 
 ```yaml
 ---
 name: Custom Rules
-description: Custom ruleset used for the Image DePHI demo.
+description: Custom ruleset used for the ImageDePHI demo.
 svs:
     metadata:
         '55500':
@@ -177,7 +177,7 @@ You'll also see a file next to that directory called `Redacted_<timestamp>_manif
 
 ## Next Steps
 
-For more information about the Image DePHI rules system, be sure to check out the [documention](../README.md).
+For more information about the ImageDePHI rules system, be sure to check out the [documention](../README.md).
 
 ## Demo Data Citation
 ‘NCI SRP Mouse Tissue Whole Slide Images with Fake PHI/PII' data set, Version 1.0. Generated: December 29, 2021; Scanner: Leica Microsystems, Aperio AT2; Provided by: The National Cancer Institute (NCI) Surveillance Research Program (SRP).
