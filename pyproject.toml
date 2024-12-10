@@ -13,6 +13,7 @@ dependencies = [
     "hypercorn",
     "pyyaml",
     "Pillow",
+    "pooch",
     # Pinned to < 3 until wsidicom is updated
     "pydicom<3",
     "tqdm",

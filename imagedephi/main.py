@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import asyncio
+import csv
+import importlib.resources
 import logging
 from pathlib import Path
 import sys
@@ -9,6 +11,9 @@ import webbrowser
 import click
 from hypercorn import Config
 from hypercorn.asyncio import serve
+import pooch
+from tqdm import tqdm
+from tqdm.contrib.logging import logging_redirect_tqdm
 
 from imagedephi.gui.app import app
 from imagedephi.redact import ProfileChoice, redact_images, show_redaction_plan
@@ -227,3 +232,36 @@ async def gui(port: int) -> None:
                 shutdown_trigger=shutdown_event.wait,  # type: ignore
             )
         )
+
+
+@imagedephi.command
+@click.option(
+    "--data-dir",
+    type=click.Path(file_okay=False, readable=True, writable=True, path_type=Path),
+    default=Path.cwd(),
+    help="Location where demo data will be downloaded.",
+)
+def demo_data(data_dir: Path):
+    """Download data for the Image DePHI demo to the specified directory."""
+    try:
+        demo_file_dir = data_dir / "demo_files"
+        demo_file_dir.mkdir(parents=True, exist_ok=True)
+    except PermissionError:
+        logger.error("Cannot create demo data directory, permission error")
+        raise
+    demo_file_manifest = importlib.resources.files("imagedephi") / "demo_files.csv"
+    with demo_file_manifest.open() as fd:
+        reader = csv.DictReader(fd)
+        rows = [row for row in reader]
+        logger.info(f"Downloading files to {demo_file_dir}")
+        with logging_redirect_tqdm(loggers=[logger]):
+            for row in tqdm(rows, desc="Downloading demo images...", position=0, leave=True):
+                file_name = row["file_name"]
+                hash = row["hash"]
+                algo, hash_val = hash.split(":")
+                pooch.retrieve(
+                    url=f"https://data.kitware.com/api/v1/file/hashsum/{algo}/{hash_val}/download",
+                    known_hash=hash,
+                    fname=file_name,
+                    path=demo_file_dir,
+                )
