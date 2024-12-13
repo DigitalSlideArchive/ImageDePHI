@@ -196,11 +196,11 @@ def test_strict_skip_dcm(dcm_input_path, tmp_path) -> None:
 def test_dcm_private_redaction(dcm_input_path, tmp_path, action, custom_tag_exists) -> None:
     override_ruleset = Ruleset()
     override_ruleset.dicom.custom_metadata_action = action
-
     if action == "use_rule":
-        override_ruleset.dicom.metadata["(1001, 1001)"] = KeepRule(
+        override_ruleset.dicom.metadata["(1001,1001)"] = KeepRule(
             key_name="TestItem", action="keep"
         )
+
     override_rules = tmp_path / "override_rules.yaml"
     with override_rules.open("w") as override_rules_stream:
         yaml.safe_dump(override_ruleset.model_dump(), override_rules_stream)
