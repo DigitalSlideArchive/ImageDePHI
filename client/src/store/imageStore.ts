@@ -2,6 +2,8 @@ import { reactive } from "vue";
 import { imagePlanResponse, ImagePlanParams } from "./types";
 import { getRedactionPlan, getImages } from "../api/rest";
 import { selectedDirectories } from "./directoryStore";
+import { redactionStateFlags } from "./redactionStore";
+
 
 export const useRedactionPlan = reactive({
   imageRedactionPlan: {} as imagePlanResponse,
@@ -42,3 +44,8 @@ export const useRedactionPlan = reactive({
     this.imageRedactionPlan = {} as imagePlanResponse;
   },
 });
+
+export const updateTableData = (params: ImagePlanParams) => {
+  redactionStateFlags.value.redactionSnackbar = false;
+  useRedactionPlan.updateImageData(params);
+}

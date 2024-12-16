@@ -2,7 +2,7 @@
 import { ref, Ref, onMounted, onBeforeUnmount, nextTick } from "vue";
 import { getDirectoryInfo } from "../api/rest";
 import { selectedDirectories } from "../store/directoryStore";
-import { useRedactionPlan } from "../store/imageStore";
+import { useRedactionPlan, updateTableData } from "../store/imageStore";
 import { redactionStateFlags } from "../store/redactionStore";
 import { DirectoryData, Path } from "../store/types";
 
@@ -62,20 +62,6 @@ const updateSelectedDirectories = (path: string) => {
   localStorage.setItem('inputDirectory', selectedDirectories.value.inputDirectory);
   localStorage.setItem('outputDirectory', selectedDirectories.value.outputDirectory);
   localStorage.setItem('rulesetDirectory', selectedDirectories.value.rulesetDirectory);
-};
-
-const updateTableData = () => {
-  redactionStateFlags.value.redactionSnackbar = false;
-  useRedactionPlan.updateImageData({
-    directory: selectedDirectories.value.inputDirectory,
-    rules: selectedDirectories.value.rulesetDirectory,
-    limit: 50,
-    offset: 0,
-    update: false,
-  });
-};
-const updateSelectedDirectories = async (path: string) => {
-  selectedDirectories.value[props.modalId] = path;
 };
 
 const visibleImages: Ref<Path[]> = ref([]);
