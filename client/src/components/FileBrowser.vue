@@ -1,10 +1,7 @@
 <script setup lang="ts">
-import { ref, Ref, onMounted, onBeforeUnmount, nextTick } from "vue";
-import { getDirectoryInfo } from "../api/rest";
-import { selectedDirectories } from "../store/directoryStore";
-import { useRedactionPlan, updateTableData } from "../store/imageStore";
-import { redactionStateFlags } from "../store/redactionStore";
-import { DirectoryData, Path } from "../store/types";
+import { ref, onMounted, onBeforeUnmount } from "vue";
+import { selectedDirectories, updateDirectories, directoryData, loadingData, calculateVisibleItems, visibleImages, remainingImages } from "../store/directoryStore";
+import { updateTableData } from "../store/imageStore";
 
 const props = defineProps({
   modalId: {
@@ -21,38 +18,6 @@ const modal = ref();
 defineExpose({ modal });
 defineEmits(["update-image-list"]);
 
-const directoryData: Ref<DirectoryData> = ref({
-  directory: "",
-  ancestors: [],
-  children: [],
-  childrenImages: [],
-  childrenYaml: [],
-});
-
-const loadingData = ref(false);
-
-const updateDirectories = async (currentDirectory?: string) => {
-  directoryData.value.children = [];
-  directoryData.value.childrenImages = [];
-  directoryData.value.childrenYaml = [];
-  const timeout = setTimeout(() => {
-    loadingData.value = true;
-  }, 100);
-
-  const data = await getDirectoryInfo(currentDirectory);
-  clearTimeout(timeout);
-  loadingData.value = false;
-  directoryData.value = await {
-    ...data,
-    children: data.child_directories,
-    childrenImages: data.child_images,
-    childrenYaml: data.child_yaml_files,
-  };
-  loadingData.value = false;
-  calculateVisibleItems();
-};
-updateDirectories();
-
 const closeModal = () => {
   modal.value.close();
 };
@@ -64,41 +29,6 @@ const updateSelectedDirectories = (path: string) => {
   localStorage.setItem('rulesetDirectory', selectedDirectories.value.rulesetDirectory);
 };
 
-const visibleImages: Ref<Path[]> = ref([]);
-const remainingImages = ref(0);
-
-const calculateVisibleItems = () => {
-  const menuTop = document.querySelector(".menu-top");
-  const listContainer = document.querySelector(".list-container");
-  // Determine and set the height of the list container
-  listContainer?.setAttribute(
-    "style",
-    `height: calc(100% - (${menuTop?.clientHeight}px + 3.5rem))`,
-  );
-
-  nextTick(() => {
-    const listItems = listContainer?.querySelectorAll("li");
-    const containerHeight = listContainer?.clientHeight;
-    const listHeight = ref(0);
-    const visibleItems = ref(0);
-    // Determine the height of each list item
-    const listItemHeight = listItems && listItems[0] ? listItems[0].clientHeight : 0;
-
-    directoryData.value.childrenImages.forEach(() => {
-      listHeight.value += listItemHeight;
-      if (containerHeight && listHeight.value < containerHeight) {
-        visibleItems.value += 1;
-      }
-    });
-
-    visibleImages.value = directoryData.value.childrenImages.slice(
-      0,
-      visibleItems.value,
-    );
-    remainingImages.value =
-      directoryData.value.childrenImages.length - visibleItems.value;
-  });
-};
 onMounted(() => {
   calculateVisibleItems();
   window.addEventListener("resize", calculateVisibleItems);

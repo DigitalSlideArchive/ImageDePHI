@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { selectedDirectories } from "../store/directoryStore";
+import { selectedDirectories, updateDirectories } from "../store/directoryStore";
 import { useRedactionPlan } from "../store/imageStore";
 
 const props = defineProps({
@@ -31,10 +31,10 @@ const props = defineProps({
 
 const openModal = () => {
   props.stepTitle.includes("Input")
-    ? props.inputModal.modal.showModal()
+    ? (props.inputModal.modal.showModal(), updateDirectories(selectedDirectories.value.inputDirectory))
     : props.stepTitle.includes("Output")
-      ? props.outputModal.modal.showModal()
-      : props.rulesetModal.modal.showModal();
+      ? (props.outputModal.modal.showModal(), updateDirectories(selectedDirectories.value.outputDirectory))
+      : (props.rulesetModal.modal.showModal(), updateDirectories(selectedDirectories.value.rulesetDirectory));
 };
 
 const clearRuleset = () => {

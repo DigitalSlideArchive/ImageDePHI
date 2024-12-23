@@ -34,8 +34,6 @@ def select_directory(
 ):
     directory_path = Path(directory)
     # TODO: if input_directory is specified but an empty string, it gets instantiated as the CWD
-    if not directory_path.is_dir():
-        raise HTTPException(status_code=404, detail="Input directory not a directory")
 
     def image_url(path: str, key: str) -> str:
         params = {"file_name": str(directory_path / path), "image_key": key}

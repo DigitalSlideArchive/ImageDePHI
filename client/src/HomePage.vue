@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onBeforeUnmount, onMounted } from "vue";
+import { ref, onMounted } from "vue";
 
 import { redactImages } from "./api/rest";
 import { selectedDirectories } from "./store/directoryStore";
