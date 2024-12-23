@@ -109,7 +109,6 @@ onMounted(() => {
     redactionStateFlags.value.showImageTable = true;
   }
 });
-
 </script>
 
 <template>
@@ -153,8 +152,8 @@ onMounted(() => {
             :modal-id="'inputDirectory'"
             :title="'Input Directory'"
             @update-image-list="
-              (redactionStateFlags.showImageTable = true),
-                (redactionStateFlags.redactionComplete = false)
+              ((redactionStateFlags.showImageTable = true),
+              (redactionStateFlags.redactionComplete = false))
             "
           />
           <FileBrowser

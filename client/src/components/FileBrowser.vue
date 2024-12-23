@@ -52,9 +52,17 @@ onBeforeUnmount(() => {
               class="btn btn-primary float-right text-white uppercase"
               type="button"
               @click="
-                $emit('update-image-list'),
-                  closeModal(),
-                  title !== 'Output Directory' ? updateTableData() : ''
+                ($emit('update-image-list'),
+                closeModal(),
+                title !== 'Output Directory'
+                  ? updateTableData({
+                      directory: selectedDirectories.value.inputDirectory,
+                      rules: selectedDirectories.value.rulesetDirectory,
+                      limit: 50,
+                      offset: 0,
+                      update: false,
+                    })
+                  : '')
               "
             >
               Select
@@ -76,8 +84,8 @@ onBeforeUnmount(() => {
                   v-else
                   class="text-blue-700"
                   @click="
-                    updateDirectories(ancestor.path),
-                      updateSelectedDirectories(ancestor.path)
+                    (updateDirectories(ancestor.path),
+                    updateSelectedDirectories(ancestor.path))
                   "
                 >
                   {{ ancestor.name ? ancestor.name : "/" }}

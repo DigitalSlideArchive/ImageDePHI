@@ -4,7 +4,6 @@ import { getRedactionPlan, getImages } from "../api/rest";
 import { selectedDirectories } from "./directoryStore";
 import { redactionStateFlags } from "./redactionStore";
 
-
 export const useRedactionPlan = reactive({
   imageRedactionPlan: {} as imagePlanResponse,
   currentDirectory: selectedDirectories.value.inputDirectory,
@@ -48,4 +47,4 @@ export const useRedactionPlan = reactive({
 export const updateTableData = (params: ImagePlanParams) => {
   redactionStateFlags.value.redactionSnackbar = false;
   useRedactionPlan.updateImageData(params);
-}
+};
