@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "lint:tsc": "vue-tsc --noEmit",
-    "lint:check": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --ignore-path .gitignore --fix ",
+    "lint:check": "eslint . --fix ",
     "lint:format": "prettier src  --write",
     "lint": "npm-run-all lint:tsc lint:check lint:format",
     "dev": "NODE_ENV=development vite --port 8080",
