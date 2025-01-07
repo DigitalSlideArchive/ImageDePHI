@@ -199,3 +199,10 @@ Additionally, DICOM redaction supports additional redaction operations.
 * `empty`: Replace the tag's value with `None`.
 * `replace_dummy`: Replace the tag's value with a dummy value, which is dependant on the original value type. For example, if the tag's value is a string, the dummy value is the empty string. If the tag's value is an integer, the dummy value is 0.
 * `replace_uid`: If the tag's value is a UID, it will be replaced with a randomly generated UID of the form `"2.25.<uuid>"` where `<uuid>` is a UUID generated a run time. The new custom UID is stored by Image DePHI and used to replace other UIDs that share the same initial value. This way, if a UID is used in different tags within an image, they all get the same replacement value.
+
+## Related Projects
+
+Other efforts related to anonimyzing medical images include:
+
+- [`dicom-anonymizer`](https://github.com/KitwareMedical/dicom-anonymizer): A python tool for anonymizing DICOM files
+- [WSI DeID](https://github.com/DigitalSlideArchive/DSA-WSI-DeID): A workflow built onto the [Digital Slide Archive](https://github.com/DigitalSlideArchive/digital_slide_archive/?tab=readme-ov-file#digital-slide-archive) for redacting medical images.
