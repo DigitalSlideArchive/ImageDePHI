@@ -11,10 +11,7 @@ defineProps({
 });
 </script>
 <template>
-  <div
-    v-if="!usedColumns"
-    class="m-auto flex justify-center"
-  >
+  <div v-if="!usedColumns" class="m-auto flex justify-center">
     Loading.. <span class="loading loading-bars loading-md" />
   </div>
   <table
@@ -23,15 +20,9 @@ defineProps({
   >
     <thead>
       <tr class="text-base bg-gray-600">
-        <th class="bg-neutral text-white py-5 px-6">
-          Image File Name
-        </th>
-        <th class="bg-gray-600 text-white py-5 px-10">
-          Image
-        </th>
-        <th class="bg-gray-600 text-white">
-          Redaction Status
-        </th>
+        <th class="bg-neutral text-white py-5 px-6">Image File Name</th>
+        <th class="bg-gray-600 text-white py-5 px-10">Image</th>
+        <th class="bg-gray-600 text-white">Redaction Status</th>
         <th
           v-if="Object.keys(imageRedactionPlan.data).includes('missing_tags')"
           class="text-white p-4"
@@ -60,14 +51,8 @@ defineProps({
             :data-tip="`${image.missing_tags.length} tag(s) missing redaction rules.`"
           >
             <i class="ri-error-warning-fill text-red-600 text-xl" />
-            <div
-              v-for="(obj, pos) in image.missing_tags"
-              :key="pos"
-            >
-              <span
-                v-for="(value, key) in obj"
-                :key="key"
-              >
+            <div v-for="(obj, pos) in image.missing_tags" :key="pos">
+              <span v-for="(value, key) in obj" :key="key">
                 {{ key }}: {{ value }}
               </span>
             </div>

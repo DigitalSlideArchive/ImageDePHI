@@ -113,11 +113,7 @@ onMounted(() => {
 
 <template>
   <div class="flex">
-    <input
-      id="side-drawer"
-      type="checkbox"
-      class="drawer-toggle"
-    >
+    <input id="side-drawer" type="checkbox" class="drawer-toggle" />
     <div class="flex max-w-md">
       <div
         :class="`pl-4 py-4 ${redactionStateFlags.redacting ? 'opacity-50' : ''}`"
@@ -125,7 +121,7 @@ onMounted(() => {
         <div class="bg-base-100 drop-shadow-xl rounded flex flex-col">
           <div class="flex justify-between content-center p-4 border-b">
             <div class="max-h6 w-auto self-center">
-              <img src="/logo.png">
+              <img src="/logo.png" />
             </div>
             <div class="flex items-center space-y-0.5">
               <a class="btn btn-ghost btn-square btn-sm">
@@ -156,8 +152,8 @@ onMounted(() => {
             :modal-id="'inputDirectory'"
             :title="'Input Directory'"
             @update-image-list="
-              ((redactionStateFlags.showImageTable = true),
-               (redactionStateFlags.redactionComplete = false))
+              (redactionStateFlags.showImageTable = true),
+                (redactionStateFlags.redactionComplete = false)
             "
           />
           <FileBrowser
@@ -183,11 +179,7 @@ onMounted(() => {
         </div>
       </div>
     </div>
-    <dialog
-      id="missingRulesModal"
-      ref="missingRulesModal"
-      class="modal"
-    >
+    <dialog id="missingRulesModal" ref="missingRulesModal" class="modal">
       <div class="modal-box max-w-100">
         <div class="card max-w-100">
           <div class="card-body">
@@ -222,20 +214,16 @@ onMounted(() => {
       </div>
     </dialog>
 
-    <dialog
-      id="redactionModal"
-      ref="redactionModal"
-      class="modal"
-    >
+    <dialog id="redactionModal" ref="redactionModal" class="modal">
       <div class="modal-box w-96">
         <div class="card">
           <div class="card-body">
-            <h2 class="card-title">
-              Redaction in progress:
-            </h2>
+            <h2 class="card-title">Redaction in progress:</h2>
             <p>
               Redacting images
-              <span class="float-right">{{ progress.count }}/{{ progress.max }}</span>
+              <span class="float-right"
+                >{{ progress.count }}/{{ progress.max }}</span
+              >
             </p>
             <progress
               v-if="redactionStateFlags.redacting"
@@ -250,7 +238,7 @@ onMounted(() => {
     <ImageDataDisplay
       v-if="
         useRedactionPlan.imageRedactionPlan.total &&
-          redactionStateFlags.showImageTable
+        redactionStateFlags.showImageTable
       "
     />
     <ImageDataDisplay v-if="redactionStateFlags.redactionComplete" />

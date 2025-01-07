@@ -33,14 +33,16 @@ const props = defineProps({
 });
 
 const openModal = () => {
-  props.stepTitle.includes("Input")
-    ? (props.inputModal.modal.showModal(),
-      updateDirectories(selectedDirectories.value.inputDirectory))
-    : props.stepTitle.includes("Output")
-      ? (props.outputModal.modal.showModal(),
-        updateDirectories(selectedDirectories.value.outputDirectory))
-      : (props.rulesetModal.modal.showModal(),
-        updateDirectories(selectedDirectories.value.rulesetDirectory));
+  if (props.stepTitle.includes("Input")) {
+    props.inputModal.modal.showModal();
+    updateDirectories(selectedDirectories.value.inputDirectory);
+  } else if (props.stepTitle.includes("Output")) {
+    props.outputModal.modal.showModal();
+    updateDirectories(selectedDirectories.value.outputDirectory);
+  } else {
+    props.rulesetModal.modal.showModal();
+    updateDirectories(selectedDirectories.value.rulesetDirectory);
+  }
 };
 
 const clearRuleset = () => {
@@ -83,10 +85,7 @@ const clearRuleset = () => {
           </span>
         </div>
       </div>
-      <button
-        class="btn btn-ghost btn-square btn-sm"
-        @click="openModal"
-      >
+      <button class="btn btn-ghost btn-square btn-sm" @click="openModal">
         <i class="ri-folder-open-fill text-secondary text-lg" />
       </button>
     </div>

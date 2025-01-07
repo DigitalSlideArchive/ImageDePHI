@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ["./index.html", "./src/**/*.{vue,js,ts}"],
@@ -34,7 +35,7 @@ module.exports = {
     themes: [
       {
         light: {
-           
+
           ...require("daisyui/src/theming/themes")["light"],
 
           primary: "#5A387C",
