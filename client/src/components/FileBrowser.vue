@@ -40,7 +40,11 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <dialog :id="modalId" ref="modal" class="modal">
+  <dialog
+    :id="modalId"
+    ref="modal"
+    class="modal"
+  >
     <div class="w-full max-w-4xl h-4/5 rounded-xl overflow-hidden">
       <div class="modal-box w-full max-w-4xl h-4/5 overflow-auto pt-0">
         <div class="sticky top-0 pt-6 bg-white menu-top">
@@ -78,14 +82,13 @@ onBeforeUnmount(() => {
                 <span
                   v-if="index === directoryData.ancestors.length - 1"
                   class="font-black"
-                  >{{ ancestor.name ? ancestor.name : "/" }}</span
-                >
+                >{{ ancestor.name ? ancestor.name : "/" }}</span>
                 <a
                   v-else
                   class="text-blue-700"
                   @click="
                     (updateDirectories(ancestor.path),
-                    updateSelectedDirectories(ancestor.path))
+                     updateSelectedDirectories(ancestor.path))
                   "
                 >
                   {{ ancestor.name ? ancestor.name : "/" }}

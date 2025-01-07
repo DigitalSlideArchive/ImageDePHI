@@ -83,8 +83,11 @@ const clearRuleset = () => {
           </span>
         </div>
       </div>
-      <button class="btn btn-ghost btn-square btn-sm" @click="openModal">
-        <i class="ri-folder-open-fill text-secondary text-lg"></i>
+      <button
+        class="btn btn-ghost btn-square btn-sm"
+        @click="openModal"
+      >
+        <i class="ri-folder-open-fill text-secondary text-lg" />
       </button>
     </div>
     <div
@@ -118,7 +121,7 @@ const clearRuleset = () => {
           data-tip="Clear selected rules"
           @click="clearRuleset"
         >
-          <i class="ri-close-circle-fill text-secondary text-lg"></i>
+          <i class="ri-close-circle-fill text-secondary text-lg" />
         </button>
       </div>
       <div

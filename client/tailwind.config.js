@@ -34,7 +34,7 @@ module.exports = {
     themes: [
       {
         light: {
-          // eslint-disable-next-line @typescript-eslint/no-var-requires
+           
           ...require("daisyui/src/theming/themes")["light"],
 
           primary: "#5A387C",
