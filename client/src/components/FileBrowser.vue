@@ -56,8 +56,8 @@ onBeforeUnmount(() => {
                 closeModal(),
                 title !== 'Output Directory'
                   ? updateTableData({
-                      directory: selectedDirectories.value.inputDirectory,
-                      rules: selectedDirectories.value.rulesetDirectory,
+                      directory: selectedDirectories.inputDirectory,
+                      rules: selectedDirectories.rulesetDirectory,
                       limit: 50,
                       offset: 0,
                       update: false,
