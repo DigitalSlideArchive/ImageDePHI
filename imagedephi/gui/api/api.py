@@ -34,6 +34,8 @@ def select_directory(
 ):
     directory_path = Path(directory)
     # TODO: if input_directory is specified but an empty string, it gets instantiated as the CWD
+    if not directory_path.exists():
+        raise HTTPException(status_code=404, detail="Input directory not found")
 
     def image_url(path: str, key: str) -> str:
         params = {"file_name": str(directory_path / path), "image_key": key}
@@ -140,6 +142,8 @@ def get_redaction_plan(
         raise HTTPException(status_code=404, detail="Input directory not found")
 
     if rules_path:
+        if not Path(rules_path).exists():
+            raise HTTPException(status_code=404, detail="Rules file not found")
         return show_redaction_plan(
             input_path, override_rules=Path(rules_path), limit=limit, offset=offset, update=update
         )._asdict()
