@@ -163,7 +163,23 @@ onBeforeUnmount(() => {
       </div>
     </div>
     <form method="dialog" class="modal-backdrop w-screen h-screen absolute">
-      <button>close</button>
+      <button
+        @click="
+          ($emit('update-image-list'),
+          closeModal(),
+          title !== 'Output Directory'
+            ? updateTableData({
+                directory: selectedDirectories.inputDirectory,
+                rules: selectedDirectories.rulesetDirectory,
+                limit: 50,
+                offset: 0,
+                update: false,
+              })
+            : '')
+        "
+      >
+        close
+      </button>
     </form>
   </dialog>
 </template>
