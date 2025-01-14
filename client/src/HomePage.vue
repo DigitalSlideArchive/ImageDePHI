@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 
 import { redactImages } from "./api/rest";
 import { selectedDirectories } from "./store/directoryStore";
-import { useRedactionPlan } from "./store/imageStore";
+import { useRedactionPlan, updateTableData } from "./store/imageStore";
 import { redactionStateFlags } from "./store/redactionStore";
 
 import MenuSteps from "./components/MenuSteps.vue";
@@ -96,6 +96,19 @@ const forceRedact = () => {
   missingRulesModal.value.close();
   redact_images();
 };
+
+onMounted(() => {
+  if (selectedDirectories.value.inputDirectory) {
+    updateTableData({
+      directory: selectedDirectories.value.inputDirectory,
+      rules: selectedDirectories.value.rulesetDirectory,
+      limit: 50,
+      offset: 0,
+      update: false,
+    });
+    redactionStateFlags.value.showImageTable = true;
+  }
+});
 </script>
 
 <template>
@@ -139,8 +152,8 @@ const forceRedact = () => {
             :modal-id="'inputDirectory'"
             :title="'Input Directory'"
             @update-image-list="
-              (redactionStateFlags.showImageTable = true),
-                (redactionStateFlags.redactionComplete = false)
+              ((redactionStateFlags.showImageTable = true),
+              (redactionStateFlags.redactionComplete = false))
             "
           />
           <FileBrowser

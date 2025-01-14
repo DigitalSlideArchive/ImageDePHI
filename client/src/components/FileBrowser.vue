@@ -1,10 +1,7 @@
 <script setup lang="ts">
-import { ref, Ref, onMounted, onBeforeUnmount, nextTick } from "vue";
-import { getDirectoryInfo } from "../api/rest";
-import { selectedDirectories } from "../store/directoryStore";
-import { useRedactionPlan } from "../store/imageStore";
-import { redactionStateFlags } from "../store/redactionStore";
-import { DirectoryData, Path } from "../store/types";
+import { ref, onMounted, onBeforeUnmount } from "vue";
+import { selectedDirectories, updateDirectories, directoryData, loadingData, calculateVisibleItems, visibleImages, remainingImages } from "../store/directoryStore";
+import { updateTableData } from "../store/imageStore";
 
 const props = defineProps({
   modalId: {
@@ -21,91 +18,17 @@ const modal = ref();
 defineExpose({ modal });
 defineEmits(["update-image-list"]);
 
-const directoryData: Ref<DirectoryData> = ref({
-  directory: "",
-  ancestors: [],
-  children: [],
-  childrenImages: [],
-  childrenYaml: [],
-});
-
-const loadingData = ref(false);
-
-const updateDirectories = async (currentDirectory?: string) => {
-  directoryData.value.children = [];
-  directoryData.value.childrenImages = [];
-  directoryData.value.childrenYaml = [];
-  const timeout = setTimeout(() => {
-    loadingData.value = true;
-  }, 100);
-
-  const data = await getDirectoryInfo(currentDirectory);
-  clearTimeout(timeout);
-  loadingData.value = false;
-  directoryData.value = await {
-    ...data,
-    children: data.child_directories,
-    childrenImages: data.child_images,
-    childrenYaml: data.child_yaml_files,
-  };
-  loadingData.value = false;
-  calculateVisibleItems();
-};
-updateDirectories();
-
 const closeModal = () => {
   modal.value.close();
 };
 
-const updateTableData = () => {
-  redactionStateFlags.value.redactionSnackbar = false;
-  useRedactionPlan.updateImageData({
-    directory: selectedDirectories.value.inputDirectory,
-    rules: selectedDirectories.value.rulesetDirectory,
-    limit: 50,
-    offset: 0,
-    update: false,
-  });
-};
-const updateSelectedDirectories = async (path: string) => {
+const updateSelectedDirectories = (path: string) => {
   selectedDirectories.value[props.modalId] = path;
+  localStorage.setItem('inputDirectory', selectedDirectories.value.inputDirectory);
+  localStorage.setItem('outputDirectory', selectedDirectories.value.outputDirectory);
+  localStorage.setItem('rulesetDirectory', selectedDirectories.value.rulesetDirectory);
 };
 
-const visibleImages: Ref<Path[]> = ref([]);
-const remainingImages = ref(0);
-
-const calculateVisibleItems = () => {
-  const menuTop = document.querySelector(".menu-top");
-  const listContainer = document.querySelector(".list-container");
-  // Determine and set the height of the list container
-  listContainer?.setAttribute(
-    "style",
-    `height: calc(100% - (${menuTop?.clientHeight}px + 3.5rem))`,
-  );
-
-  nextTick(() => {
-    const listItems = listContainer?.querySelectorAll("li");
-    const containerHeight = listContainer?.clientHeight;
-    const listHeight = ref(0);
-    const visibleItems = ref(0);
-    // Determine the height of each list item
-    const listItemHeight = listItems && listItems[0] ? listItems[0].clientHeight : 0;
-
-    directoryData.value.childrenImages.forEach(() => {
-      listHeight.value += listItemHeight;
-      if (containerHeight && listHeight.value < containerHeight) {
-        visibleItems.value += 1;
-      }
-    });
-
-    visibleImages.value = directoryData.value.childrenImages.slice(
-      0,
-      visibleItems.value,
-    );
-    remainingImages.value =
-      directoryData.value.childrenImages.length - visibleItems.value;
-  });
-};
 onMounted(() => {
   calculateVisibleItems();
   window.addEventListener("resize", calculateVisibleItems);
@@ -129,9 +52,17 @@ onBeforeUnmount(() => {
               class="btn btn-primary float-right text-white uppercase"
               type="button"
               @click="
-                $emit('update-image-list'),
-                  closeModal(),
-                  title !== 'Output Directory' ? updateTableData() : ''
+                ($emit('update-image-list'),
+                closeModal(),
+                title !== 'Output Directory'
+                  ? updateTableData({
+                      directory: selectedDirectories.inputDirectory,
+                      rules: selectedDirectories.rulesetDirectory,
+                      limit: 50,
+                      offset: 0,
+                      update: false,
+                    })
+                  : '')
               "
             >
               Select
@@ -153,8 +84,8 @@ onBeforeUnmount(() => {
                   v-else
                   class="text-blue-700"
                   @click="
-                    updateDirectories(ancestor.path),
-                      updateSelectedDirectories(ancestor.path)
+                    (updateDirectories(ancestor.path),
+                    updateSelectedDirectories(ancestor.path))
                   "
                 >
                   {{ ancestor.name ? ancestor.name : "/" }}
@@ -232,7 +163,23 @@ onBeforeUnmount(() => {
       </div>
     </div>
     <form method="dialog" class="modal-backdrop w-screen h-screen absolute">
-      <button>close</button>
+      <button
+        @click="
+          ($emit('update-image-list'),
+          closeModal(),
+          title !== 'Output Directory'
+            ? updateTableData({
+                directory: selectedDirectories.inputDirectory,
+                rules: selectedDirectories.rulesetDirectory,
+                limit: 50,
+                offset: 0,
+                update: false,
+              })
+            : '')
+        "
+      >
+        close
+      </button>
     </form>
   </dialog>
 </template>

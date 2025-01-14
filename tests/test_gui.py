@@ -38,7 +38,7 @@ def test_gui_select_directory_not_found(
     )
 
     assert response.status_code == 404
-    assert response.json() == {"detail": "Input directory not a directory"}
+    assert response.json() == {"detail": "Input directory not found"}
 
 
 def test_gui_redact(
