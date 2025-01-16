@@ -12,7 +12,7 @@ defineProps({
 </script>
 <template>
   <div v-if="!usedColumns" class="m-auto flex justify-center">
-    Loading.. <span class="loading loading-bars loading-md"></span>
+    Loading.. <span class="loading loading-bars loading-md" />
   </div>
   <table
     v-if="usedColumns"
@@ -50,7 +50,7 @@ defineProps({
             class="tooltip tooltip-right"
             :data-tip="`${image.missing_tags.length} tag(s) missing redaction rules.`"
           >
-            <i class="ri-error-warning-fill text-red-600 text-xl"></i>
+            <i class="ri-error-warning-fill text-red-600 text-xl" />
             <div v-for="(obj, pos) in image.missing_tags" :key="pos">
               <span v-for="(value, key) in obj" :key="key">
                 {{ key }}: {{ value }}
@@ -63,7 +63,7 @@ defineProps({
             class="tooltip tooltip-right"
             :data-tip="`No missing redaction rules.`"
           >
-            <i class="ri-checkbox-circle-fill text-green-600 text-xl"></i>
+            <i class="ri-checkbox-circle-fill text-green-600 text-xl" />
           </div>
         </td>
         <template v-for="tag in usedColumns" :key="tag">

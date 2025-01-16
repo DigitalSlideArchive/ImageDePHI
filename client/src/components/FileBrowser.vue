@@ -1,6 +1,14 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from "vue";
-import { selectedDirectories, updateDirectories, directoryData, loadingData, calculateVisibleItems, visibleImages, remainingImages } from "../store/directoryStore";
+import {
+  selectedDirectories,
+  updateDirectories,
+  directoryData,
+  loadingData,
+  calculateVisibleItems,
+  visibleImages,
+  remainingImages,
+} from "../store/directoryStore";
 import { updateTableData } from "../store/imageStore";
 
 const props = defineProps({
@@ -24,9 +32,18 @@ const closeModal = () => {
 
 const updateSelectedDirectories = (path: string) => {
   selectedDirectories.value[props.modalId] = path;
-  localStorage.setItem('inputDirectory', selectedDirectories.value.inputDirectory);
-  localStorage.setItem('outputDirectory', selectedDirectories.value.outputDirectory);
-  localStorage.setItem('rulesetDirectory', selectedDirectories.value.rulesetDirectory);
+  localStorage.setItem(
+    "inputDirectory",
+    selectedDirectories.value.inputDirectory,
+  );
+  localStorage.setItem(
+    "outputDirectory",
+    selectedDirectories.value.outputDirectory,
+  );
+  localStorage.setItem(
+    "rulesetDirectory",
+    selectedDirectories.value.rulesetDirectory,
+  );
 };
 
 onMounted(() => {
@@ -52,17 +69,17 @@ onBeforeUnmount(() => {
               class="btn btn-primary float-right text-white uppercase"
               type="button"
               @click="
-                ($emit('update-image-list'),
-                closeModal(),
-                title !== 'Output Directory'
-                  ? updateTableData({
-                      directory: selectedDirectories.inputDirectory,
-                      rules: selectedDirectories.rulesetDirectory,
-                      limit: 50,
-                      offset: 0,
-                      update: false,
-                    })
-                  : '')
+                $emit('update-image-list'),
+                  closeModal(),
+                  title !== 'Output Directory'
+                    ? updateTableData({
+                        directory: selectedDirectories.inputDirectory,
+                        rules: selectedDirectories.rulesetDirectory,
+                        limit: 50,
+                        offset: 0,
+                        update: false,
+                      })
+                    : ''
               "
             >
               Select
@@ -84,8 +101,8 @@ onBeforeUnmount(() => {
                   v-else
                   class="text-blue-700"
                   @click="
-                    (updateDirectories(ancestor.path),
-                    updateSelectedDirectories(ancestor.path))
+                    updateDirectories(ancestor.path),
+                      updateSelectedDirectories(ancestor.path)
                   "
                 >
                   {{ ancestor.name ? ancestor.name : "/" }}
@@ -94,10 +111,7 @@ onBeforeUnmount(() => {
             </ul>
           </div>
         </div>
-        <div
-          v-if="loadingData"
-          class="text-center"
-        >
+        <div v-if="loadingData" class="text-center">
           <span class="loading loading-spinner text-primary"></span>
           <span class="ml-2 italic font-light align-top"
             >Collecting Directory Data</span
@@ -165,17 +179,17 @@ onBeforeUnmount(() => {
     <form method="dialog" class="modal-backdrop w-screen h-screen absolute">
       <button
         @click="
-          ($emit('update-image-list'),
-          closeModal(),
-          title !== 'Output Directory'
-            ? updateTableData({
-                directory: selectedDirectories.inputDirectory,
-                rules: selectedDirectories.rulesetDirectory,
-                limit: 50,
-                offset: 0,
-                update: false,
-              })
-            : '')
+          $emit('update-image-list'),
+            closeModal(),
+            title !== 'Output Directory'
+              ? updateTableData({
+                  directory: selectedDirectories.inputDirectory,
+                  rules: selectedDirectories.rulesetDirectory,
+                  limit: 50,
+                  offset: 0,
+                  update: false,
+                })
+              : ''
         "
       >
         close

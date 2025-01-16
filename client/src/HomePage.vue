@@ -125,7 +125,7 @@ onMounted(() => {
             </div>
             <div class="flex items-center space-y-0.5">
               <a class="btn btn-ghost btn-square btn-sm">
-                <i class="ri-side-bar-line text-lg text-neutral"></i>
+                <i class="ri-side-bar-line text-lg text-neutral" />
               </a>
             </div>
           </div>
@@ -152,8 +152,8 @@ onMounted(() => {
             :modal-id="'inputDirectory'"
             :title="'Input Directory'"
             @update-image-list="
-              ((redactionStateFlags.showImageTable = true),
-              (redactionStateFlags.redactionComplete = false))
+              (redactionStateFlags.showImageTable = true),
+                (redactionStateFlags.redactionComplete = false)
             "
           />
           <FileBrowser
@@ -186,7 +186,7 @@ onMounted(() => {
             <h2 class="font-bold text-xl text-center">
               Missing Redaction Rules
             </h2>
-            <div class="divider my-1"></div>
+            <div class="divider my-1" />
             <p class="indent-8 font-medium">
               One or more images are missing redaction rules. If you continue
               these images will not be redacted.
@@ -230,7 +230,7 @@ onMounted(() => {
               class="progress progress-primary"
               :value="progress.count"
               :max="progress.max"
-            ></progress>
+            />
           </div>
         </div>
       </div>
@@ -253,7 +253,7 @@ onMounted(() => {
             class="btn btn-xs btn-ghost"
             @click="redactionStateFlags.redactionSnackbar = false"
           >
-            <i class="ri-close-line"></i>
+            <i class="ri-close-line" />
           </button>
         </div>
       </div>

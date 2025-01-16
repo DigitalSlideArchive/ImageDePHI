@@ -68,7 +68,8 @@ export const calculateVisibleItems = () => {
     const listHeight = ref(0);
     const visibleItems = ref(0);
     // Determine the height of each list item
-    const listItemHeight = listItems && listItems[0] ? listItems[0].clientHeight : 0;
+    const listItemHeight =
+      listItems && listItems[0] ? listItems[0].clientHeight : 0;
 
     directoryData.value.childrenImages.forEach(() => {
       listHeight.value += listItemHeight;
