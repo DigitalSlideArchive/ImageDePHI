@@ -192,12 +192,12 @@ def redact_images(
                         "detail": "There was an unexpected error when redacting this image.",
                     }
                 )
+                output_file_counter += 1
                 continue
             if not redaction_plan.is_comprehensive():
                 nested_failed_dir: Path = Path()
-                logger.info(f"Redaction could not be performed for {image_file.name}.")
+                logger.error(f"Redaction could not be performed for {image_file.name}.")
                 failed_img_counter += 1
-
                 if failed_img_counter == 1:
                     failed_dir.mkdir(parents=True)
                     failed_manifest_file.touch()
