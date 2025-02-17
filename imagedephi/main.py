@@ -14,6 +14,7 @@ from hypercorn.asyncio import serve
 import pooch
 from tqdm import tqdm
 from tqdm.contrib.logging import logging_redirect_tqdm
+import yaml
 
 from imagedephi.gui.app import app
 from imagedephi.redact import ProfileChoice, redact_images, show_redaction_plan
@@ -129,8 +130,19 @@ def imagedephi(
 
 @imagedephi.command(no_args_is_help=True)
 @global_options
-@click.argument("input-path", type=click.Path(exists=True, readable=True, path_type=Path))
+@click.argument(
+    "input-path",
+    type=click.Path(exists=True, readable=True, path_type=Path),
+    required=False
+)
 @click.option("-i", "--index", default=1, help="Starting index of the images to redact.", type=int)
+@click.option(
+    "-c",
+    "--command-file",
+    type=click.Path(exists=True, readable=True, path_type=Path),
+    help="File containing redaction command. "
+    "[INPUT_PATH] must be provided as an argument or in the command file.",
+)
 @click.option(
     "-o",
     "--output-dir",
@@ -153,19 +165,29 @@ def run(
     verbose,
     log_file,
     index,
+    command_file: Path,
 ):
     """Perform the redaction of images."""
     params = _check_parent_params(ctx, profile, override_rules, recursive, quiet, verbose, log_file)
     if params["verbose"] or params["quiet"] or params["log_file"]:
         set_logging_config(params["verbose"], params["quiet"], params["log_file"])
+    command_params = {}
+    if command_file:
+        with command_file.open() as f:
+            command_params = yaml.safe_load(f)
+            command_input = command_params["input_path"]
+            if input_path is None and command_params.get("input_path") is None:
+                raise click.BadParameter(
+                    "Input path must be provided either in the command file or as an argument."
+                )
     redact_images(
-        input_path,
-        output_dir,
-        override_rules=params["override_rules"],
-        rename=rename,
-        recursive=params["recursive"],
-        profile=params["profile"],
-        index=index,
+        input_path or Path(command_input),
+        output_dir or command_params.get("output_dir"),
+        override_rules=params["override_rules"] or command_params.get("override_rules"),
+        rename=rename if "rename" not in command_params else command_params["rename"],
+        recursive=params["recursive"] if "recursive" not in command_params else command_params["recursive"],
+        profile=params["profile"] if "profile" not in command_params else command_params["profile"],
+        index=index if "index" not in command_params else command_params["index"],
     )
 
 
