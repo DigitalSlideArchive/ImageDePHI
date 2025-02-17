@@ -125,7 +125,7 @@ def create_redact_dir_and_manifest(base_output_dir: Path, time_stamp: str) -> tu
 
 
 def redact_images(
-    input_path: Path,
+    input_paths: list[Path],
     output_dir: Path,
     override_rules: Path | None = None,
     rename: bool = True,
@@ -148,15 +148,17 @@ def redact_images(
     output_file_name_base = (
         override_ruleset.output_file_name if override_ruleset else base_rules.output_file_name
     )
-    # Convert to a list in order to get the length
-    if input_path.is_dir():
-        with logging_redirect_tqdm(loggers=[logger]):
-            images_to_redact = generator_to_list_with_progress(
-                iter_image_files(input_path, recursive),
-                progress_bar_desc="Collecting files to redact...",
-            )
-    else:
-        images_to_redact = [input_path]
+    images_to_redact = []
+    for input_path in input_paths:
+        # Convert to a list in order to get the length
+        if input_path.is_dir():
+            with logging_redirect_tqdm(loggers=[logger]):
+                images_to_redact += generator_to_list_with_progress(
+                    iter_image_files(input_path, recursive),
+                    progress_bar_desc="Collecting files to redact...",
+                )
+        else:
+            images_to_redact += [input_path]
 
     output_file_counter = 1
     output_file_max = len(images_to_redact)

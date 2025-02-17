@@ -133,7 +133,8 @@ def imagedephi(
 @click.argument(
     "input-path",
     type=click.Path(exists=True, readable=True, path_type=Path),
-    required=False
+    required=False,
+    nargs=-1,
 )
 @click.option("-i", "--index", default=1, help="Starting index of the images to redact.", type=int)
 @click.option(
@@ -155,7 +156,7 @@ def imagedephi(
 @click.pass_context
 def run(
     ctx,
-    input_path: Path,
+    input_path: list[Path],
     output_dir: Path,
     override_rules: Path | None,
     profile: str,
@@ -175,17 +176,24 @@ def run(
     if command_file:
         with command_file.open() as f:
             command_params = yaml.safe_load(f)
-            command_input = command_params["input_path"]
+            command_input: list[Path] = [Path(path) for path in command_params["input_path"]]
             if input_path is None and command_params.get("input_path") is None:
                 raise click.BadParameter(
                     "Input path must be provided either in the command file or as an argument."
                 )
+            for path in command_input:
+                if not Path(path).exists():
+                    raise click.BadParameter(f"Path {path} does not exist.")
     redact_images(
-        input_path or Path(command_input),
+        input_path or command_input,
         output_dir or command_params.get("output_dir"),
         override_rules=params["override_rules"] or command_params.get("override_rules"),
         rename=rename if "rename" not in command_params else command_params["rename"],
-        recursive=params["recursive"] if "recursive" not in command_params else command_params["recursive"],
+        recursive=(
+            params["recursive"]
+            if "recursive" not in command_params
+            else command_params["recursive"]
+        ),
         profile=params["profile"] if "profile" not in command_params else command_params["profile"],
         index=index if "index" not in command_params else command_params["index"],
     )
