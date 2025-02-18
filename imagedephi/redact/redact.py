@@ -355,7 +355,7 @@ def _sort_data(data):
 
 
 def show_redaction_plan(
-    input_path: Path,
+    input_paths: list[Path],
     override_rules: Path | None = None,
     recursive=False,
     profile="",
@@ -368,16 +368,14 @@ def show_redaction_plan(
     if override_rules:
         override_ruleset = _get_user_rules(override_rules)
     starting_logging_level = logger.getEffectiveLevel()
-    if input_path.is_dir():
-        with logging_redirect_tqdm(loggers=[logger]):
-            image_paths = generator_to_list_with_progress(
-                iter_image_dirs(input_path, recursive),
-                progress_bar_desc="Collecting files to redact...",
-            )
-    else:
+    with logging_redirect_tqdm(loggers=[logger]):
+        image_paths = generator_to_list_with_progress(
+            iter_image_dirs(input_paths, recursive),
+            progress_bar_desc="Collecting files to redact...",
+        )
+    if len(image_paths) == 1:
         # For a single image, log all details of the plan
         logger.setLevel(logging.DEBUG)
-        image_paths = [input_path]
 
     global tags_used
 
@@ -431,31 +429,36 @@ def show_redaction_plan(
         sorted_dict = OrderedDict(list(sorted_dict.items())[offset * limit : (offset + 1) * limit])
     images_plan = namedtuple("images_plan", ["data", "total", "tags", "missing_rules"])
 
-    if input_path.is_dir():
-        # Provide a summary if the input path is a directory of images
-        logger.info(f"ImageDePHI summary for {input_path}:")
-        incomplete = [
-            file_path
-            for file_path in redaction_plan_report
-            if not redaction_plan_report[file_path]["comprehensive"]
-        ]
-        logger.info(
-            f"{len(image_paths) - (len(incomplete) + len(unprocessable_image_messages))}"
-            " images able to be redacted with the provided rule set."
-        )
-        if incomplete:
-            logger.info(f"{len(incomplete)} file(s) could not be redacted with the provided rules.")
-            logger.info("The following images could not be redacted given the current rule set:")
-            for file in incomplete:
-                logger.info(f"\t{file}")
+    for input_path in input_paths:
+        if input_path.is_dir():
+            # Provide a summary if the input path is a directory of images
+            logger.info(f"ImageDePHI summary for {input_path}:")
+            incomplete = [
+                file_path
+                for file_path in redaction_plan_report
+                if not redaction_plan_report[file_path]["comprehensive"]
+            ]
             logger.info(
-                "For more details about individual images that couldn't be redacted, run "
-                "'imagedephi plan <unredactable_file>'"
+                f"{len(image_paths) - (len(incomplete) + len(unprocessable_image_messages))}"
+                " images able to be redacted with the provided rule set."
             )
-        if unprocessable_image_messages:
-            logger.info(
-                f"{len(unprocessable_image_messages)} file(s) could not be processed by ImageDePHI."
-            )
+            if incomplete:
+                logger.info(
+                    f"{len(incomplete)} file(s) could not be redacted with the provided rules."
+                )
+                logger.info(
+                    "The following images could not be redacted given the current rule set:"
+                )
+                for file in incomplete:
+                    logger.info(f"\t{file}")
+                logger.info(
+                    "For more details about individual images that couldn't be redacted, run "
+                    "'imagedephi plan <unredactable_file>'"
+                )
+            if unprocessable_image_messages:
+                logger.info(
+                    f"{len(unprocessable_image_messages)} file(s) could not be processed by ImageDePHI."
+                )
 
     # Report exceptions outside of the directory level report
     for message in unprocessable_image_messages:

@@ -201,11 +201,11 @@ def run(
 
 @imagedephi.command(no_args_is_help=True)
 @global_options
-@click.argument("input-path", type=click.Path(exists=True, readable=True, path_type=Path))
+@click.argument("input-path", type=click.Path(exists=True, readable=True, path_type=Path), nargs=-1)
 @click.pass_context
 def plan(
     ctx,
-    input_path: Path,
+    input_path: list[Path],
     profile: str,
     override_rules: Path | None,
     recursive: bool,
