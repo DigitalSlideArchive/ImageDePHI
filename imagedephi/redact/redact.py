@@ -7,6 +7,7 @@ import datetime
 from enum import Enum
 import importlib.resources
 import logging
+from operator import is_
 from pathlib import Path
 from shutil import copy2
 from typing import TYPE_CHECKING, NamedTuple, TypeVar
@@ -77,21 +78,27 @@ def get_base_rules(profile: str = "") -> Ruleset:
         return base_rule_set
 
 
-def iter_image_files(directory: Path, recursive: bool = False) -> Generator[Path, None, None]:
-    """Given a directory return an iterable of available images."""
-    for child in sorted(directory.iterdir()):
-        # Use first four bits to check if its a tiff file
-        if child.is_file():
-            file_format = None
-            try:
-                file_format = get_file_format_from_path(child)
-            except PermissionError:
-                # Don't attempt to redact inaccessible files
-                pass
-            if file_format:
-                yield child
-        elif child.is_dir() and recursive:
-            yield from iter_image_files(child, recursive)
+def iter_image_dirs(paths: list[Path], recursive: bool = False) -> Generator[Path, None, None]:
+    for path in paths:
+        if path.is_file():
+            yield from iter_image_files(path)
+        elif path.is_dir() and recursive:
+            yield from iter_image_dirs(sorted(path.iterdir()), recursive)
+        elif path.is_dir() and not recursive:
+            for child in path.iterdir():
+                if child.is_file():
+                    yield from iter_image_files(child)
+
+
+def iter_image_files(path: Path) -> Generator[Path, None, None]:
+    file_format = None
+    try:
+        file_format = get_file_format_from_path(path)
+    except PermissionError:
+        # Don't attempt to redact inaccessible files
+        pass
+    if file_format:
+        yield path
 
 
 def generator_to_list_with_progress(
@@ -149,16 +156,12 @@ def redact_images(
         override_ruleset.output_file_name if override_ruleset else base_rules.output_file_name
     )
     images_to_redact = []
-    for input_path in input_paths:
-        # Convert to a list in order to get the length
-        if input_path.is_dir():
-            with logging_redirect_tqdm(loggers=[logger]):
-                images_to_redact += generator_to_list_with_progress(
-                    iter_image_files(input_path, recursive),
-                    progress_bar_desc="Collecting files to redact...",
-                )
-        else:
-            images_to_redact += [input_path]
+
+    with logging_redirect_tqdm(loggers=[logger]):
+        images_to_redact += generator_to_list_with_progress(
+            iter_image_dirs(input_paths, recursive),
+            progress_bar_desc="Collecting files to redact...",
+        )
 
     output_file_counter = 1
     output_file_max = len(images_to_redact)
@@ -368,7 +371,7 @@ def show_redaction_plan(
     if input_path.is_dir():
         with logging_redirect_tqdm(loggers=[logger]):
             image_paths = generator_to_list_with_progress(
-                iter_image_files(input_path, recursive),
+                iter_image_dirs(input_path, recursive),
                 progress_bar_desc="Collecting files to redact...",
             )
     else:
