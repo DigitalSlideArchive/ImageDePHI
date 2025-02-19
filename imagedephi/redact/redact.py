@@ -7,7 +7,6 @@ import datetime
 from enum import Enum
 import importlib.resources
 import logging
-from operator import is_
 from pathlib import Path
 from shutil import copy2
 from typing import TYPE_CHECKING, NamedTuple, TypeVar
@@ -208,8 +207,11 @@ def redact_images(
                     failed_manifest_file.touch()
 
                 if recursive:
+                    if image_file.parent in input_paths:
+                        failed_parent_index = input_paths.index(image_file.parent)
+                    # TODO Handle multi level recursive
                     nested_failed_dir = Path(
-                        str(image_file).replace(str(input_path), str(failed_dir), 1)
+                        str(image_file).replace(str(input_paths[failed_parent_index]), str(failed_dir), 1)
                     ).parent
                     nested_failed_dir.mkdir(parents=True, exist_ok=True)
 
@@ -245,8 +247,12 @@ def redact_images(
                 redaction_plan.execute_plan()
                 output_parent_dir = redact_dir
                 if recursive:
+                    if image_file.parent in input_paths:
+                        parent_index = input_paths.index(image_file.parent)
+                    # TODO Handle multi level recursive
+
                     output_parent_dir = Path(
-                        str(image_file).replace(str(input_path), str(redact_dir), 1)
+                        str(image_file).replace(str(input_paths[parent_index]), str(redact_dir), 1)
                     ).parent
                     output_parent_dir.mkdir(parents=True, exist_ok=True)
                 output_path = (
