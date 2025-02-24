@@ -209,9 +209,14 @@ def redact_images(
                 if recursive:
                     if image_file.parent in input_paths:
                         failed_parent_index = input_paths.index(image_file.parent)
-                    # TODO Handle multi level recursive
+                    for ancestor in image_file.parents:
+                        if ancestor in input_paths:
+                            failed_parent_index = input_paths.index(ancestor)
+                            break
                     nested_failed_dir = Path(
-                        str(image_file).replace(str(input_paths[failed_parent_index]), str(failed_dir), 1)
+                        str(image_file).replace(
+                            str(input_paths[failed_parent_index]), str(failed_dir), 1
+                        )
                     ).parent
                     nested_failed_dir.mkdir(parents=True, exist_ok=True)
 
@@ -249,7 +254,10 @@ def redact_images(
                 if recursive:
                     if image_file.parent in input_paths:
                         parent_index = input_paths.index(image_file.parent)
-                    # TODO Handle multi level recursive
+                    for ancestor in image_file.parents:
+                        if ancestor in input_paths:
+                            parent_index = input_paths.index(ancestor)
+                            break
 
                     output_parent_dir = Path(
                         str(image_file).replace(str(input_paths[parent_index]), str(redact_dir), 1)
