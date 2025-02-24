@@ -26,8 +26,9 @@ def retrieve_file(file_name: str, output_path: Path) -> Path:
 
 
 @pytest.fixture
-def secret_metadata_image() -> Path:
-    return retrieve_file("secret_metadata.tiff", Path(__file__).with_name("data") / "input")
+def secret_metadata_image() -> list[Path]:
+    path_list = [retrieve_file("secret_metadata.tiff", Path(__file__).with_name("data") / "input")]
+    return path_list
 
 
 @pytest.fixture
@@ -43,13 +44,15 @@ def test_image_svs() -> Path:
 
 
 @pytest.fixture
-def test_image_dcm() -> Path:
-    return retrieve_file("test_dcm_image.dcm", Path(__file__).with_name("data") / "input" / "dcm")
+def test_image_dcm() -> list[Path]:
+    path_list = [retrieve_file("test_dcm_image.dcm", Path(__file__).with_name("data") / "input" / "dcm")]
+    return path_list
 
 
 @pytest.fixture
-def test_image_svs_no_extension() -> Path:
-    return retrieve_file("test_svs_no_extension", Path(__file__).with_name("data") / "input")
+def test_image_svs_no_extension() -> list[Path]:
+    path_list = [retrieve_file("test_svs_no_extension", Path(__file__).with_name("data") / "input")]
+    return path_list
 
 
 @pytest.fixture
