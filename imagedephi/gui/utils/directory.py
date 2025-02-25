@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from imagedephi.redact import iter_image_files
+from imagedephi.redact import iter_image_dirs
 
 
 class DirectoryData:
@@ -26,7 +26,7 @@ class DirectoryData:
         ]
 
         self.child_images = [
-            {"name": image.name, "path": image} for image in list(iter_image_files(directory))
+            {"name": image.name, "path": image} for image in list(iter_image_dirs([directory]))
         ]
         self.child_yaml_files = [
             {"name": yaml_file.name, "path": yaml_file} for yaml_file in _iter_yaml_files(directory)
