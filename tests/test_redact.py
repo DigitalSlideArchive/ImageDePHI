@@ -95,13 +95,10 @@ def test_plan_svs(caplog, svs_input_paths, override_rule_set):
     logger.setLevel(logging.INFO)
     redact.show_redaction_plan(svs_input_paths, override_rule_set)
 
-    # Should this test be re-written or should the length check be refactored?
-    #
-
     # Behavior for directories: skip printing full plans
     # Behavior for single image file: print full plan
     for svs_input_path in svs_input_paths:
-        if svs_input_path.is_dir():
+        if svs_input_path.is_dir() and len(list(svs_input_path.iterdir())) > 1:
             assert "Aperio (.svs) Metadata Redaction Plan" not in caplog.text
             assert "ICC Profile: delete" not in caplog.text
         else:

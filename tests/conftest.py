@@ -45,7 +45,9 @@ def test_image_svs() -> Path:
 
 @pytest.fixture
 def test_image_dcm() -> list[Path]:
-    path_list = [retrieve_file("test_dcm_image.dcm", Path(__file__).with_name("data") / "input" / "dcm")]
+    path_list = [
+        retrieve_file("test_dcm_image.dcm", Path(__file__).with_name("data") / "input" / "dcm")
+    ]
     return path_list
 
 

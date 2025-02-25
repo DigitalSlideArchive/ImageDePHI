@@ -177,6 +177,7 @@ def run(
         with command_file.open() as f:
             command_params = yaml.safe_load(f)
             command_input: list[Path] = [Path(path) for path in command_params["input_path"]]
+            command_output = Path(command_params["output_dir"])
             if input_path is None and command_params.get("input_path") is None:
                 raise click.BadParameter(
                     "Input path must be provided either in the command file or as an argument."
@@ -184,9 +185,10 @@ def run(
             for path in command_input:
                 if not Path(path).exists():
                     raise click.BadParameter(f"Path {path} does not exist.")
+
     redact_images(
         input_path or command_input,
-        output_dir or command_params.get("output_dir"),
+        output_dir or command_output,
         override_rules=params["override_rules"] or command_params.get("override_rules"),
         rename=rename if "rename" not in command_params else command_params["rename"],
         recursive=(
