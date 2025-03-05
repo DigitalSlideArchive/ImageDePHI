@@ -175,6 +175,36 @@ After that command finishes, you'll see a new directory in `./output_files` call
 
 You'll also see a file next to that directory called `Redacted_<timestamp>_manifest.csv`. This will contain a mapping of input file names to output file names, as well as any errors that may have occurred during redaction.
 
+### Using a command file in the CLI
+In some instances you may want to pass a command file to the CLI. For example you may have an long list of input files that would be cumbersome to type in a terminal.
+
+For this demo create a file called `command_file.yaml` and add the following:
+
+```bash
+---
+command: plan
+input_path:
+  - "demo_files"
+output_dir: ~/redacted_images
+```
+Now run the following:
+
+```bash
+imagedephi plan -c command_file.yaml
+```
+This option is supported by both the `plan` and `run` commands. Any option that can be added to these commands can also be added to the command file.
+
+```bash
+---
+command: run
+input_path:
+  - "demo_files"
+output_dir: /redacted_images
+recursive: True
+```
+**Please Note** The `command` line is not required but recommended to aid you in determining which options to use in the file.
+
+
 ## Next Steps
 
 For more information about the ImageDePHI rules system, be sure to check out the [documention](../README.md).
