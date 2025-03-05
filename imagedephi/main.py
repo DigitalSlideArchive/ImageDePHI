@@ -204,6 +204,13 @@ def run(
 @imagedephi.command(no_args_is_help=True)
 @global_options
 @click.argument("input-path", type=click.Path(exists=True, readable=True, path_type=Path), nargs=-1)
+@click.option(
+    "-c",
+    "--command-file",
+    type=click.Path(exists=True, readable=True, path_type=Path),
+    help="File containing redaction command. "
+    "[INPUT_PATH] must be provided as an argument or in the command file.",
+)
 @click.pass_context
 def plan(
     ctx,
@@ -214,6 +221,7 @@ def plan(
     quiet,
     verbose,
     log_file,
+    command_file: Path,
 ) -> None:
     """Print the redaction plan for images."""
     params = _check_parent_params(ctx, profile, override_rules, recursive, quiet, verbose, log_file)
@@ -222,11 +230,25 @@ def plan(
     # show info output of this command.
     v = params["verbose"] if params["verbose"] else 1
     set_logging_config(v, params["quiet"], params["log_file"])
+
+    command_params = {}
+    if command_file:
+        with command_file.open() as f:
+            command_params = yaml.safe_load(f)
+            command_input: list[Path] = [Path(path) for path in command_params["input_path"]]
+            if input_path is None and command_params.get("input_path") is None:
+                raise click.BadParameter(
+                    "Input path must be provided either in the command file or as an argument."
+                )
+            for path in command_input:
+                if not Path(path).exists():
+                    raise click.BadParameter(f"Path {path} does not exist.")
+
     show_redaction_plan(
-        input_path,
-        override_rules=params["override_rules"],
-        recursive=params["recursive"],
-        profile=params["profile"],
+        input_path or command_input,
+        override_rules=params["override_rules"] or command_params.get("override_rules"),
+        recursive=(params["recursive"] if "recursive" not in command_params else command_params["recursive"]),
+        profile=params["profile"] if "profile" not in command_params else command_params["profile"],
     )
 
 
