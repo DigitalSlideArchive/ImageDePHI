@@ -247,7 +247,11 @@ def plan(
     show_redaction_plan(
         input_path or command_input,
         override_rules=params["override_rules"] or command_params.get("override_rules"),
-        recursive=(params["recursive"] if "recursive" not in command_params else command_params["recursive"]),
+        recursive=(
+            params["recursive"]
+            if "recursive" not in command_params
+            else command_params["recursive"]
+        ),
         profile=params["profile"] if "profile" not in command_params else command_params["profile"],
     )
 
