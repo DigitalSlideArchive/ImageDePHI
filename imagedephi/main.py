@@ -147,7 +147,6 @@ def imagedephi(
 @click.option(
     "-o",
     "--output-dir",
-    default=Path.cwd(),
     show_default="current working directory",
     help="Path where output directory will be created.",
     type=click.Path(exists=True, file_okay=False, readable=True, writable=True, path_type=Path),
@@ -177,11 +176,13 @@ def run(
         with command_file.open() as f:
             command_params = yaml.safe_load(f)
             command_input: list[Path] = [Path(path) for path in command_params["input_path"]]
-            command_output = Path(command_params["output_dir"])
+            command_output = Path(command_params["output_dir"]) if "output_dir" in command_params else None
             if input_path is None and command_params.get("input_path") is None:
                 raise click.BadParameter(
                     "Input path must be provided either in the command file or as an argument."
                 )
+            if output_dir is None and command_params.get("output_dir") is None:
+                output_dir = Path.cwd()
             for path in command_input:
                 if not Path(path).exists():
                     raise click.BadParameter(f"Path {path} does not exist.")
