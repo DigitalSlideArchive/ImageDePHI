@@ -12,10 +12,12 @@ import click
 from hypercorn import Config
 from hypercorn.asyncio import serve
 import pooch
+from pydantic import ValidationError
 from tqdm import tqdm
 from tqdm.contrib.logging import logging_redirect_tqdm
 import yaml
 
+from imagedephi.command_file import CommandFile
 from imagedephi.gui.app import app
 from imagedephi.redact import ProfileChoice, redact_images, show_redaction_plan
 from imagedephi.utils.cli import FallthroughGroup, run_coroutine
@@ -131,7 +133,7 @@ def imagedephi(
 @imagedephi.command(no_args_is_help=True)
 @global_options
 @click.argument(
-    "input-path",
+    "input-paths",
     type=click.Path(exists=True, readable=True, path_type=Path),
     required=False,
     nargs=-1,
@@ -155,8 +157,8 @@ def imagedephi(
 @click.pass_context
 def run(
     ctx,
-    input_path: list[Path],
-    output_dir: Path,
+    input_paths: list[Path],
+    output_dir: Path | None,
     override_rules: Path | None,
     profile: str,
     recursive: bool,
@@ -172,39 +174,85 @@ def run(
     if params["verbose"] or params["quiet"] or params["log_file"]:
         set_logging_config(params["verbose"], params["quiet"], params["log_file"])
     command_params = {}
+    command_inputs: list[Path] = []
+    command_output: Path
+    cf_override_rules: Path | None = None
+    cf_profile: str = ""
+    # cf_rename will only be checked if rename is false so default should be false.
+    cf_rename: bool = False
+    cf_recursive: bool = False
+    cf_index: int = 1
     if command_file:
-        with command_file.open() as f:
-            command_params = yaml.safe_load(f)
-            command_input: list[Path] = [Path(path) for path in command_params["input_path"]]
-            command_output = Path(command_params["output_dir"]) if "output_dir" in command_params else None
-            if input_path is None and command_params.get("input_path") is None:
-                raise click.BadParameter(
-                    "Input path must be provided either in the command file or as an argument."
-                )
-            if output_dir is None and command_params.get("output_dir") is None:
+        if command_file.suffix not in [".yaml", ".yml"]:
+            with command_file.open() as f:
+                command_inputs = [
+                    Path(line) for line in f.read().splitlines() if Path(line).exists()
+                ]
+            if output_dir is None:
                 output_dir = Path.cwd()
-            for path in command_input:
-                if not Path(path).exists():
-                    raise click.BadParameter(f"Path {path} does not exist.")
+        else:
+            with command_file.open() as f:
+                command_params = yaml.safe_load(f)
+                try:
+                    CommandFile.model_validate(command_params)
+                except ValidationError:
+                    click.echo(
+                        "Command file does not match the expected format. "
+                        "Treating as list of input paths."
+                    )
+                    command_inputs.extend(
+                        [Path(path) for path in command_params if Path(path).exists()]
+                    )
 
+                else:
+                    command_inputs.extend(
+                        [
+                            Path(path)
+                            for path in command_params["input_paths"]
+                            if Path(path).exists()
+                        ]
+                    )
+                    command_output = (
+                        Path(command_params["output_dir"])
+                        if "output_dir" in command_params
+                        else Path.cwd()
+                    )
+                    cf_override_rules = (
+                        command_params.get("override_rules")
+                        if "override_rules" in command_params
+                        else None
+                    )
+                    cf_profile = (
+                        str(command_params.get("profile")) if "profile" in command_params else ""
+                    )
+                    cf_rename = (
+                        bool(command_params.get("rename")) if "rename" in command_params else True
+                    )
+                    cf_recursive = (
+                        bool(command_params.get("recursive"))
+                        if "recursive" in command_params
+                        else False
+                    )
+                    cf_index = int(command_params["index"]) if "index" in command_params else 1
+
+    if not input_paths and not command_inputs:
+        raise click.BadParameter("At least one input path must be provided.")
     redact_images(
-        input_path or command_input,
+        input_paths or command_inputs,
         output_dir or command_output,
-        override_rules=params["override_rules"] or command_params.get("override_rules"),
-        rename=rename if "rename" not in command_params else command_params["rename"],
-        recursive=(
-            params["recursive"]
-            if "recursive" not in command_params
-            else command_params["recursive"]
-        ),
-        profile=params["profile"] if "profile" not in command_params else command_params["profile"],
-        index=index if "index" not in command_params else command_params["index"],
+        override_rules=params["override_rules"] or cf_override_rules,
+        rename=rename or cf_rename,
+        recursive=params["recursive"] or cf_recursive,
+        profile=params["profile"] or cf_profile,
+        index=index or cf_index,
     )
 
 
 @imagedephi.command(no_args_is_help=True)
 @global_options
-@click.argument("input-path", type=click.Path(exists=True, readable=True, path_type=Path), nargs=-1)
+@click.argument(
+    "input-paths", type=click.Path(exists=True, readable=True, path_type=Path), nargs=-1
+)
 @click.option(
     "-c",
     "--command-file",
@@ -215,7 +263,7 @@ def run(
 @click.pass_context
 def plan(
     ctx,
-    input_path: list[Path],
+    input_paths: list[Path],
     profile: str,
     override_rules: Path | None,
     recursive: bool,
@@ -233,27 +281,54 @@ def plan(
     set_logging_config(v, params["quiet"], params["log_file"])
 
     command_params = {}
+    command_inputs: list[Path] = []
     if command_file:
-        with command_file.open() as f:
-            command_params = yaml.safe_load(f)
-            command_input: list[Path] = [Path(path) for path in command_params["input_path"]]
-            if input_path is None and command_params.get("input_path") is None:
-                raise click.BadParameter(
-                    "Input path must be provided either in the command file or as an argument."
-                )
-            for path in command_input:
-                if not Path(path).exists():
-                    raise click.BadParameter(f"Path {path} does not exist.")
+        if command_file.suffix not in [".yaml", ".yml"]:
+            with command_file.open() as f:
+                command_inputs = [
+                    Path(line) for line in f.read().splitlines() if Path(line).exists()
+                ]
+        else:
+            with command_file.open() as f:
+                command_params = yaml.safe_load(f)
+                try:
+                    CommandFile.model_validate(command_params)
+                except ValidationError:
+                    click.echo(
+                        "Command file does not match the expected format."
+                        "Treating as list of input paths."
+                    )
+                    command_inputs.extend(
+                        [Path(path) for path in command_params if Path(path).exists()]
+                    )
+                else:
+                    command_inputs.extend(
+                        [
+                            Path(path)
+                            for path in command_params["input_paths"]
+                            if Path(path).exists()
+                        ]
+                    )
 
+    if not input_paths and not command_inputs:
+        raise click.BadParameter("At least one input path must be provided.")
     show_redaction_plan(
-        input_path or command_input,
-        override_rules=params["override_rules"] or command_params.get("override_rules"),
-        recursive=(
-            params["recursive"]
-            if "recursive" not in command_params
-            else command_params["recursive"]
+        input_paths or command_inputs,
+        override_rules=(
+            params["override_rules"] or command_params.get("override_rules")
+            if "override_rules" in command_params
+            else None
         ),
-        profile=params["profile"] if "profile" not in command_params else command_params["profile"],
+        recursive=(
+            params["recursive"] or command_params.get("recursive")
+            if "recursive" in command_params
+            else False
+        ),
+        profile=(
+            params["profile"] or command_params.get("profile")
+            if "profile" in command_params
+            else None
+        ),
     )
 
 
