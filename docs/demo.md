@@ -197,12 +197,14 @@ This option is supported by both the `plan` and `run` commands. Any option that 
 ```bash
 ---
 command: run
-input_path:
+input_paths:
   - "demo_files"
 output_dir: /redacted_images
 recursive: True
 ```
-**Please Note** The `command` line is not required but recommended to aid you in determining which options to use in the file.
+**Please Note** The command file is meant to supplement the command given in the terminal. Any option supplied in the terminal takes priority.
+
+Additionally you can supply an unformatted yaml or text file. This will be treated as a list of  `input_files`.
 
 
 ## Next Steps
