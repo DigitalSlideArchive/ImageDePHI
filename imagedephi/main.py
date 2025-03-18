@@ -195,6 +195,7 @@ def run(
                 command_params = yaml.safe_load(f)
                 try:
                     CommandFile.model_validate(command_params)
+
                 except ValidationError:
                     click.echo(
                         "Command file does not match the expected format. "
@@ -203,7 +204,8 @@ def run(
                     command_inputs.extend(
                         [Path(path) for path in command_params if Path(path).exists()]
                     )
-
+                    if output_dir is None:
+                        output_dir = Path.cwd()
                 else:
                     command_inputs.extend(
                         [
