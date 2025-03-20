@@ -202,9 +202,19 @@ input_paths:
 output_dir: /redacted_images
 recursive: True
 ```
-**Please Note** The command file is meant to supplement the command given in the terminal. Any option supplied in the terminal takes priority.
+ **Please Note:** The command file is meant to supplement the command given in the terminal. Any option supplied in the terminal takes priority.
 
-Additionally you can supply an unformatted yaml or text file. This will be treated as a list of  `input_files`.
+Additionally you can supply an unformatted yaml or text file with the `--file_list` option.
+
+Create a file called `file_list.txt` and add the following:
+```bash
+demo_files
+```
+Now run the following:
+
+```bash
+imagedephi plan -f file_list.txt
+```
 
 
 ## Next Steps
