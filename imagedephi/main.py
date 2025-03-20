@@ -147,6 +147,12 @@ def imagedephi(
     "[INPUT_PATH] must be provided as an argument or in the command file.",
 )
 @click.option(
+    "-f",
+    "--file-list",
+    type=click.Path(exists=True, readable=True, path_type=Path),
+    help="File containing list of input paths.",
+)
+@click.option(
     "-o",
     "--output-dir",
     show_default="current working directory",
@@ -168,12 +174,13 @@ def run(
     log_file,
     index,
     command_file: Path,
+    file_list: Path,
 ):
     """Perform the redaction of images."""
     params = _check_parent_params(ctx, profile, override_rules, recursive, quiet, verbose, log_file)
     if params["verbose"] or params["quiet"] or params["log_file"]:
         set_logging_config(params["verbose"], params["quiet"], params["log_file"])
-    command_params = {}
+    file_contents = {}
     command_inputs: list[Path] = []
     command_output: Path
     cf_override_rules: Path | None = None
@@ -184,63 +191,67 @@ def run(
     cf_index: int = 1
     if command_file:
         if command_file.suffix not in [".yaml", ".yml"]:
-            with command_file.open() as f:
-                command_inputs = [
-                    Path(line) for line in f.read().splitlines() if Path(line).exists()
-                ]
+            click.echo(
+                "Command file does not match the expected format. \n"
+                "Please edit the file to match the expected format \n"
+                "or use the --file-list option if your file is in list form."
+            )
+            exit(1)
+
+        with command_file.open() as f:
+            file_contents = yaml.safe_load(f)
+        try:
+            CommandFile.model_validate(file_contents)
+
+        except ValidationError:
+            click.echo(
+                "Command file does not match the expected format. \n"
+                "Please edit the file to match the expected format \n"
+                "or use the --file-list option if your file is in list form."
+            )
+
+        else:
+            command_inputs.extend(
+                [Path(path) for path in file_contents["input_paths"] if Path(path).exists()]
+            )
+            command_output = (
+                Path(file_contents["output_dir"]) if "output_dir" in file_contents else Path.cwd()
+            )
+            cf_override_rules = (
+                file_contents.get("override_rules") if "override_rules" in file_contents else None
+            )
+            cf_profile = str(file_contents.get("profile")) if "profile" in file_contents else ""
+            cf_rename = bool(file_contents.get("rename")) if "rename" in file_contents else True
+            cf_recursive = (
+                bool(file_contents.get("recursive")) if "recursive" in file_contents else False
+            )
+            cf_index = int(file_contents["index"]) if "index" in file_contents else 1
+        if not input_paths and not command_inputs:
+            raise click.BadParameter("At least one input path must be provided.")
+
+    if file_list:
+        file_input_paths = []
+        if file_list.suffix not in [".yaml", ".yml"]:
+            with file_list.open() as f:
+                file_input_paths.extend(
+                    [Path(line) for line in f.read().splitlines() if Path(line).exists()]
+                )
+
             if output_dir is None:
                 output_dir = Path.cwd()
         else:
-            with command_file.open() as f:
-                command_params = yaml.safe_load(f)
-                try:
-                    CommandFile.model_validate(command_params)
+            with file_list.open() as f:
+                file_contents = yaml.safe_load(f)
 
-                except ValidationError:
-                    click.echo(
-                        "Command file does not match the expected format. "
-                        "Treating as list of input paths."
-                    )
-                    command_inputs.extend(
-                        [Path(path) for path in command_params if Path(path).exists()]
-                    )
-                    if output_dir is None:
-                        output_dir = Path.cwd()
-                else:
-                    command_inputs.extend(
-                        [
-                            Path(path)
-                            for path in command_params["input_paths"]
-                            if Path(path).exists()
-                        ]
-                    )
-                    command_output = (
-                        Path(command_params["output_dir"])
-                        if "output_dir" in command_params
-                        else Path.cwd()
-                    )
-                    cf_override_rules = (
-                        command_params.get("override_rules")
-                        if "override_rules" in command_params
-                        else None
-                    )
-                    cf_profile = (
-                        str(command_params.get("profile")) if "profile" in command_params else ""
-                    )
-                    cf_rename = (
-                        bool(command_params.get("rename")) if "rename" in command_params else True
-                    )
-                    cf_recursive = (
-                        bool(command_params.get("recursive"))
-                        if "recursive" in command_params
-                        else False
-                    )
-                    cf_index = int(command_params["index"]) if "index" in command_params else 1
-
-    if not input_paths and not command_inputs:
-        raise click.BadParameter("At least one input path must be provided.")
+                file_input_paths.extend(
+                    [Path(path) for path in file_contents if Path(path).exists()]
+                )
+        if output_dir is None:
+            output_dir = Path.cwd()
+        if not input_paths and not file_input_paths:
+            raise click.BadParameter("At least one input path must be provided.")
     redact_images(
-        input_paths or command_inputs,
+        input_paths or command_inputs or file_input_paths,
         output_dir or command_output,
         override_rules=params["override_rules"] or cf_override_rules,
         rename=rename or cf_rename,
@@ -262,6 +273,12 @@ def run(
     help="File containing redaction command. "
     "[INPUT_PATH] must be provided as an argument or in the command file.",
 )
+@click.option(
+    "-f",
+    "--file-list",
+    type=click.Path(exists=True, readable=True, path_type=Path),
+    help="File containing list of input paths.",
+)
 @click.pass_context
 def plan(
     ctx,
@@ -273,6 +290,7 @@ def plan(
     verbose,
     log_file,
     command_file: Path,
+    file_list: Path,
 ) -> None:
     """Print the redaction plan for images."""
     params = _check_parent_params(ctx, profile, override_rules, recursive, quiet, verbose, log_file)
@@ -286,36 +304,48 @@ def plan(
     command_inputs: list[Path] = []
     if command_file:
         if command_file.suffix not in [".yaml", ".yml"]:
-            with command_file.open() as f:
-                command_inputs = [
-                    Path(line) for line in f.read().splitlines() if Path(line).exists()
-                ]
-        else:
-            with command_file.open() as f:
-                command_params = yaml.safe_load(f)
-                try:
-                    CommandFile.model_validate(command_params)
-                except ValidationError:
-                    click.echo(
-                        "Command file does not match the expected format."
-                        "Treating as list of input paths."
-                    )
-                    command_inputs.extend(
-                        [Path(path) for path in command_params if Path(path).exists()]
-                    )
-                else:
-                    command_inputs.extend(
-                        [
-                            Path(path)
-                            for path in command_params["input_paths"]
-                            if Path(path).exists()
-                        ]
-                    )
+            click.echo(
+                "Command file does not match the expected format. \n"
+                "Please edit the file to match the expected format \n"
+                "or use the --file-list option if your file is in list form."
+            )
+            exit(1)
 
-    if not input_paths and not command_inputs:
-        raise click.BadParameter("At least one input path must be provided.")
+        with command_file.open() as f:
+            command_params = yaml.safe_load(f)
+            try:
+                CommandFile.model_validate(command_params)
+            except ValidationError:
+                click.echo(
+                    "Command file does not match the expected format. \n"
+                    "Please edit the file to match the expected format \n"
+                    "or use the --file-list option if your file is in list form."
+                )
+
+            else:
+                command_inputs.extend(
+                    [Path(path) for path in command_params["input_paths"] if Path(path).exists()]
+                )
+        if not input_paths and not command_inputs:
+            raise click.BadParameter("At least one input path must be provided.")
+    if file_list:
+        file_input_paths = []
+        if file_list.suffix not in [".yaml", ".yml"]:
+            with file_list.open() as f:
+                file_input_paths.extend(
+                    [Path(line) for line in f.read().splitlines() if Path(line).exists()]
+                )
+        else:
+            with file_list.open() as f:
+                file_contents = yaml.safe_load(f)
+                file_input_paths.extend(
+                    [Path(path) for path in file_contents if Path(path).exists()]
+                )
+        if not input_paths and not file_input_paths:
+            raise click.BadParameter("At least one input path must be provided.")
+
     show_redaction_plan(
-        input_paths or command_inputs,
+        input_paths or command_inputs or file_input_paths,
         override_rules=(
             params["override_rules"] or command_params.get("override_rules")
             if "override_rules" in command_params
