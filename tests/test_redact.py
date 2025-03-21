@@ -38,24 +38,27 @@ def strict_rule_set():
     params=[PurePath("svs"), PurePath("svs") / "test_svs_image_blank.svs"],
     ids=["input_dir", "input_file"],
 )
-def svs_input_path(test_image_svs, data_dir, request) -> Path:
-    return data_dir / "input" / request.param
+def svs_input_paths(test_image_svs, data_dir, request) -> list[Path]:
+    path_list = [data_dir / "input" / request.param]
+    return path_list
 
 
 @pytest.fixture(
     params=[PurePath("dcm"), PurePath("dcm") / "test_dcm_image.dcm"],
     ids=["input_dir", "input_file"],
 )
-def dcm_input_path(data_dir, test_image_dcm, request) -> Path:
-    return data_dir / "input" / request.param
+def dcm_input_path(data_dir, test_image_dcm, request) -> list[Path]:
+    path_list = [data_dir / "input" / request.param]
+    return path_list
 
 
 @pytest.fixture(
     params=[PurePath("tiff"), PurePath("tiff") / "test_image.tif"],
     ids=["input_dir", "input_file"],
 )
-def tiff_input_path(data_dir, test_image_tiff, request) -> Path:
-    return data_dir / "input" / request.param
+def tiff_input_path(data_dir, test_image_tiff, request) -> list[Path]:
+    path_list = [data_dir / "input" / request.param]
+    return path_list
 
 
 @freeze_time("2023-05-12 12:12:53")
@@ -69,8 +72,8 @@ def test_create_redact_dir_and_manifest(tmp_path):
 
 
 @freeze_time("2023-05-12 12:12:53")
-def test_redact_svs(svs_input_path, tmp_path, override_rule_set):
-    redact.redact_images(svs_input_path, tmp_path, override_rule_set)
+def test_redact_svs(svs_input_paths, tmp_path, override_rule_set):
+    redact.redact_images(svs_input_paths, tmp_path, override_rule_set)
 
     output_file = tmp_path / "Redacted_2023-05-12_12-12-53" / "my_study_slide_1.svs"
     svs_output_file_bytes = output_file.read_bytes()
@@ -88,18 +91,19 @@ def test_redact_svs_no_extension(mocker, test_image_svs_no_extension, tmp_path):
     assert spy.call_count == 1
 
 
-def test_plan_svs(caplog, svs_input_path, override_rule_set):
+def test_plan_svs(caplog, svs_input_paths, override_rule_set):
     logger.setLevel(logging.INFO)
-    redact.show_redaction_plan(svs_input_path, override_rule_set)
+    redact.show_redaction_plan(svs_input_paths, override_rule_set)
 
     # Behavior for directories: skip printing full plans
     # Behavior for single image file: print full plan
-    if svs_input_path.is_dir():
-        assert "Aperio (.svs) Metadata Redaction Plan" not in caplog.text
-        assert "ICC Profile: delete" not in caplog.text
-    else:
-        assert "Aperio (.svs) Metadata Redaction Plan" in caplog.text
-        assert "ICC Profile: delete" in caplog.text
+    for svs_input_path in svs_input_paths:
+        if svs_input_path.is_dir() and len(list(svs_input_path.iterdir())) > 1:
+            assert "Aperio (.svs) Metadata Redaction Plan" not in caplog.text
+            assert "ICC Profile: delete" not in caplog.text
+        else:
+            assert "Aperio (.svs) Metadata Redaction Plan" in caplog.text
+            assert "ICC Profile: delete" in caplog.text
 
 
 def test_associated_image_key_no_description(data_dir, base_rule_set):
@@ -130,7 +134,9 @@ def test_associated_image_key_no_description(data_dir, base_rule_set):
 
 @freeze_time("2023-05-12 12:12:53")
 def test_remove_orphaned_metadata(secret_metadata_image, tmp_path, override_rule_set):
-    input_bytes = secret_metadata_image.read_bytes()
+    input_bytes = b""
+    for image in secret_metadata_image:
+        input_bytes = image.read_bytes()
 
     redact.redact_images(secret_metadata_image, tmp_path, override_rule_set)
 
@@ -161,8 +167,8 @@ def test_plan_dcm(caplog, test_image_dcm):
 
 @freeze_time("2023-05-12 12:12:53")
 @pytest.mark.timeout(5)
-def test_strict(svs_input_path, tmp_path) -> None:
-    redact.redact_images(svs_input_path, tmp_path, profile=ProfileChoice.Strict.value)
+def test_strict(svs_input_paths, tmp_path) -> None:
+    redact.redact_images(svs_input_paths, tmp_path, profile=ProfileChoice.Strict.value)
     output_file = tmp_path / "Redacted_2023-05-12_12-12-53" / "study_slide_1.svs"
     output_file_bytes = output_file.read_bytes()
     assert b"Aperio" not in output_file_bytes
@@ -171,8 +177,8 @@ def test_strict(svs_input_path, tmp_path) -> None:
 
 @freeze_time("2023-05-12 12:12:53")
 @pytest.mark.timeout(5)
-def test_override_with_strict_flag(svs_input_path, tmp_path, strict_rule_set) -> None:
-    redact.redact_images(svs_input_path, tmp_path, override_rules=strict_rule_set)
+def test_override_with_strict_flag(svs_input_paths, tmp_path, strict_rule_set) -> None:
+    redact.redact_images(svs_input_paths, tmp_path, override_rules=strict_rule_set)
     output_file = tmp_path / "Redacted_2023-05-12_12-12-53" / "study_slide_1.svs"
     output_file_bytes = output_file.read_bytes()
     assert b"Aperio" not in output_file_bytes
@@ -226,8 +232,8 @@ def test_dates_dcm(dcm_input_path, tmp_path) -> None:
 
 @freeze_time("2023-05-12 12:12:53")
 @pytest.mark.timeout(5)
-def test_dates_svs(svs_input_path, tmp_path) -> None:
-    redact.redact_images(svs_input_path, tmp_path, profile=ProfileChoice.Dates.value)
+def test_dates_svs(svs_input_paths, tmp_path) -> None:
+    redact.redact_images(svs_input_paths, tmp_path, profile=ProfileChoice.Dates.value)
     output_file = tmp_path / "Redacted_2023-05-12_12-12-53" / "study_slide_1.svs"
     output_file_bytes = output_file.read_bytes()
     # DAte set to January 1
