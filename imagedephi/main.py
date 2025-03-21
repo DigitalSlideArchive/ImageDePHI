@@ -27,6 +27,11 @@ from imagedephi.utils.os import launched_from_windows_explorer
 
 shutdown_event = asyncio.Event()
 
+format_message = (
+    "Command file does not match the expected format. Please edit the file to match the expected "
+    "format or use the --file-list option if your file is in list form."
+)
+
 
 _global_options = [
     click.option(
@@ -191,11 +196,7 @@ def run(
     cf_index: int = 1
     if command_file:
         if command_file.suffix not in [".yaml", ".yml"]:
-            click.echo(
-                "Command file does not match the expected format. \n"
-                "Please edit the file to match the expected format \n"
-                "or use the --file-list option if your file is in list form."
-            )
+            click.echo(click.wrap_text(format_message))
             exit(1)
 
         with command_file.open() as f:
@@ -204,12 +205,7 @@ def run(
             CommandFile.model_validate(file_contents)
 
         except ValidationError:
-            click.echo(
-                "Command file does not match the expected format. \n"
-                "Please edit the file to match the expected format \n"
-                "or use the --file-list option if your file is in list form."
-            )
-
+            click.echo(click.wrap_text(format_message))
         else:
             command_inputs.extend(
                 [Path(path) for path in file_contents["input_paths"] if Path(path).exists()]
@@ -304,11 +300,7 @@ def plan(
     command_inputs: list[Path] = []
     if command_file:
         if command_file.suffix not in [".yaml", ".yml"]:
-            click.echo(
-                "Command file does not match the expected format. \n"
-                "Please edit the file to match the expected format \n"
-                "or use the --file-list option if your file is in list form."
-            )
+            click.echo(click.wrap_text(format_message))
             exit(1)
 
         with command_file.open() as f:
@@ -316,12 +308,7 @@ def plan(
             try:
                 CommandFile.model_validate(command_params)
             except ValidationError:
-                click.echo(
-                    "Command file does not match the expected format. \n"
-                    "Please edit the file to match the expected format \n"
-                    "or use the --file-list option if your file is in list form."
-                )
-
+                click.echo(click.wrap_text(format_message))
             else:
                 command_inputs.extend(
                     [Path(path) for path in command_params["input_paths"] if Path(path).exists()]
