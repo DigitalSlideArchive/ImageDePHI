@@ -18,7 +18,7 @@ jobs:
           - macos-14
           - windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           lfs: true
           # Tags are needed to compute the current version number
