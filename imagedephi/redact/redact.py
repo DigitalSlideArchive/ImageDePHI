@@ -334,7 +334,6 @@ def _sort_data(data):
 
     Sort tags within each image based on the action and tag name.
     """
-    global tags_used
     sorted_data = {}
     # List of tags that can't be edited and should be excluded from the redaction plan
     excluded_tags = [
@@ -394,7 +393,6 @@ def show_redaction_plan(
     global tags_used
 
     def _create_redaction_plan_report():
-        global redaction_plan_report
         global missing_rules
         missing_rules = False
         global unprocessable_image_messages
