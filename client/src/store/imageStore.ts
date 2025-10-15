@@ -14,28 +14,31 @@ export const useRedactionPlan = reactive({
   },
   async getThumbnail(imagedict: Record<string, Record<string, string>>) {
     Object.keys(imagedict).forEach(async (image) => {
-      const response = await getImages(
-        this.currentDirectory + "/" + image,
-        "thumbnail",
-      );
-      if (response.status >= 400) {
-        this.imageRedactionPlan.data[image].thumbnail =
-          "/thumbnailPlaceholder.svg";
-        return;
-      }
-      if (response.body) {
-        const reader = response.body.getReader();
-        const chunks = [];
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          chunks.push(value);
+      const keys = ["thumbnail", "label", "macro"];
+      for (let kidx=0; kidx < keys.length; kidx += 1) {
+        const key = keys[kidx];
+        const response = await getImages(
+          this.currentDirectory + "/" + image,
+          key,
+        );
+        if (response.status >= 400) {
+          this.imageRedactionPlan.data[image][key] = key === "thumbnail" ? "/thumbnailPlaceholder.svg" : "/associatedPlaceholder.svg";
+          return;
         }
-        const blob = new Blob(chunks);
-        const url = URL.createObjectURL(blob);
-        this.imageRedactionPlan.data[image].thumbnail = url;
-      }
+        if (response.body) {
+          const reader = response.body.getReader();
+          const chunks = [];
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            chunks.push(value);
+          }
+          const blob = new Blob(chunks);
+          const url = URL.createObjectURL(blob);
+          this.imageRedactionPlan.data[image][key]= url;
+        }
+      };
     });
   },
 
