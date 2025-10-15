@@ -22,6 +22,8 @@ defineProps({
       <tr class="text-base bg-gray-600">
         <th class="bg-neutral text-white py-5 px-6">Image File Name</th>
         <th class="bg-gray-600 text-white py-5 px-10">Image</th>
+        <th class="bg-gray-600 text-white py-5 px-10">Label</th>
+        <th class="bg-gray-600 text-white py-5 px-10">Macro</th>
         <th class="bg-gray-600 text-white">Redaction Status</th>
         <th
           v-if="Object.keys(imageRedactionPlan.data).includes('missing_tags')"
@@ -43,6 +45,12 @@ defineProps({
         <th>{{ index }}</th>
         <td>
           <img :src="image.thumbnail" />
+        </td>
+        <td>
+          <img :src="image.label" />
+        </td>
+        <td>
+          <img :src="image.macro" />
         </td>
         <td>
           <div
@@ -117,5 +125,8 @@ tbody th:first-child {
   left: 0;
   z-index: 1;
   background-color: #ffffff;
+}
+td img {
+  min-width: 160px;
 }
 </style>
