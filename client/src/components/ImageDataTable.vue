@@ -43,13 +43,13 @@ defineProps({
     <tbody class="text-base bg-base-100">
       <tr v-for="(image, index) in imageRedactionPlan.data" :key="index">
         <th>{{ index }}</th>
-        <td>
+        <td class="imagebox">
           <img :src="image.thumbnail" />
         </td>
-        <td>
+        <td class="imagebox">
           <img :src="image.label" />
         </td>
-        <td>
+        <td class="imagebox">
           <img :src="image.macro" />
         </td>
         <td>
@@ -126,7 +126,15 @@ tbody th:first-child {
   z-index: 1;
   background-color: #ffffff;
 }
-td img {
+td.imagebox {
   min-width: 160px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+td.imagebox img {
+  max-width: 100%;
+  height: auto;
+  display: inline-block;
 }
 </style>
