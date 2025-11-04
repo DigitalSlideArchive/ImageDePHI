@@ -391,10 +391,11 @@ def show_redaction_plan(
         logger.setLevel(logging.DEBUG)
 
     global tags_used
+    global missing_rules
+    missing_rules = False
 
     def _create_redaction_plan_report():
         global missing_rules
-        missing_rules = False
         global unprocessable_image_messages
         unprocessable_image_messages = []
         with logging_redirect_tqdm(loggers=[logger]):
@@ -422,8 +423,8 @@ def show_redaction_plan(
                     continue
                 logger.info(f"Redaction plan for {image_path.name}:")
                 redaction_plan_report.update(redaction_plan.report_plan())  # type: ignore
-            if not redaction_plan.is_comprehensive():
-                missing_rules = True
+                if not redaction_plan.is_comprehensive():
+                    missing_rules = True
 
     if not update:
         global redaction_plan_report
