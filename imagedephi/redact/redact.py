@@ -370,7 +370,8 @@ def _sort_data(data):
 def show_redaction_plan(
     input_paths: list[Path],
     override_rules: Path | None = None,
-    recursive=False,
+    recursive: bool = False,
+    require_all: bool = False,
     profile="",
     limit: int | None = None,
     offset: int | None = None,
@@ -425,6 +426,8 @@ def show_redaction_plan(
                 redaction_plan_report.update(redaction_plan.report_plan())  # type: ignore
                 if not redaction_plan.is_comprehensive():
                     missing_rules = True
+                    if require_all:
+                        break
 
     if not update:
         global redaction_plan_report

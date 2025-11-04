@@ -70,6 +70,14 @@ _global_options = [
     click.option(
         "-r", "--recursive", is_flag=True, help="Apply the command to images in subdirectories"
     ),
+    click.option(
+        "-a",
+        "--require-all",
+        "--all",
+        is_flag=True,
+        help="Return a failure code if not all images can be redacted; do not"
+        " redact any images in this case.",
+    ),
 ]
 
 
@@ -79,7 +87,9 @@ def global_options(func):
     return func
 
 
-def _check_parent_params(ctx, profile, override_rules, recursive, quiet, verbose, log_file):
+def _check_parent_params(
+    ctx, profile, override_rules, recursive, require_all, quiet, verbose, log_file
+):
     params = {
         "override_rules": (
             ctx.parent.params["override_rules"]
@@ -91,6 +101,9 @@ def _check_parent_params(ctx, profile, override_rules, recursive, quiet, verbose
         ),
         "recursive": (
             ctx.parent.params["recursive"] if ctx.parent.params["recursive"] else recursive
+        ),
+        "require_all": (
+            ctx.parent.params["require_all"] if ctx.parent.params["require_all"] else require_all
         ),
         "quiet": ctx.parent.params["quiet"] if ctx.parent.params["quiet"] else quiet,
         "verbose": ctx.parent.params["verbose"] if ctx.parent.params["verbose"] else verbose,
@@ -129,6 +142,7 @@ def imagedephi(
     override_rules: Path | None,
     profile: str,
     recursive: bool,
+    require_all: bool,
 ) -> None:
     """Redact microscopy whole slide images."""
     if verbose or quiet or log_file:
@@ -173,6 +187,7 @@ def run(
     override_rules: Path | None,
     profile: str,
     recursive: bool,
+    require_all: bool,
     rename: bool,
     quiet,
     verbose,
@@ -182,7 +197,9 @@ def run(
     file_list: Path,
 ):
     """Perform the redaction of images."""
-    params = _check_parent_params(ctx, profile, override_rules, recursive, quiet, verbose, log_file)
+    params = _check_parent_params(
+        ctx, profile, override_rules, recursive, require_all, quiet, verbose, log_file
+    )
     if params["verbose"] or params["quiet"] or params["log_file"]:
         set_logging_config(params["verbose"], params["quiet"], params["log_file"])
     file_contents = {}
@@ -193,6 +210,7 @@ def run(
     # cf_rename will only be checked if rename is false so default should be false.
     cf_rename: bool = False
     cf_recursive: bool = False
+    cf_require_all: bool = False
     cf_index: int = 1
     if command_file:
         if command_file.suffix not in [".yaml", ".yml"]:
@@ -221,6 +239,9 @@ def run(
             cf_recursive = (
                 bool(file_contents.get("recursive")) if "recursive" in file_contents else False
             )
+            cf_require_all = (
+                bool(file_contents.get("require_all")) if "require_all" in file_contents else False
+            )
             cf_index = int(file_contents["index"]) if "index" in file_contents else 1
         if not input_paths and not command_inputs:
             raise click.BadParameter("At least one input path must be provided.")
@@ -246,6 +267,16 @@ def run(
             output_dir = Path.cwd()
         if not input_paths and not file_input_paths:
             raise click.BadParameter("At least one input path must be provided.")
+    if params["require_all"] or cf_require_all:
+        plan = show_redaction_plan(
+            input_paths or command_inputs or file_input_paths,
+            override_rules=params["override_rules"] or cf_override_rules,
+            recursive=bool(params["recursive"] or cf_recursive),
+            profile=params["profile"] or cf_profile,
+            require_all=True,
+        )
+        if plan.missing_rules:  # type: ignore
+            sys.exit(1)
     redact_images(
         input_paths or command_inputs or file_input_paths,
         output_dir or command_output,
@@ -282,6 +313,7 @@ def plan(
     profile: str,
     override_rules: Path | None,
     recursive: bool,
+    require_all: bool,
     quiet,
     verbose,
     log_file,
@@ -289,7 +321,9 @@ def plan(
     file_list: Path,
 ) -> None:
     """Print the redaction plan for images."""
-    params = _check_parent_params(ctx, profile, override_rules, recursive, quiet, verbose, log_file)
+    params = _check_parent_params(
+        ctx, profile, override_rules, recursive, require_all, quiet, verbose, log_file
+    )
 
     # Even if the user doesn't use the verbose flag, ensure logging level is set to
     # show info output of this command.
@@ -331,14 +365,14 @@ def plan(
         if not input_paths and not file_input_paths:
             raise click.BadParameter("At least one input path must be provided.")
 
-    show_redaction_plan(
+    plan = show_redaction_plan(
         input_paths or command_inputs or file_input_paths,
         override_rules=(
             params["override_rules"] or command_params.get("override_rules")
             if "override_rules" in command_params
             else None
         ),
-        recursive=(
+        recursive=bool(
             params["recursive"] or command_params.get("recursive")
             if "recursive" in command_params
             else False
@@ -349,6 +383,8 @@ def plan(
             else None
         ),
     )
+    if require_all and plan.missing_rules:  # type: ignore
+        sys.exit(1)
 
 
 @imagedephi.command
