@@ -473,8 +473,8 @@ def show_redaction_plan(
                 )
             if unprocessable_image_messages:
                 logger.info(
-                    f"""{len(unprocessable_image_messages)}
-                    file(s) could not be processed by ImageDePHI."""
+                    f"{len(unprocessable_image_messages)} file(s) could not "
+                    "be processed by ImageDePHI."
                 )
 
     # Report exceptions outside of the directory level report
