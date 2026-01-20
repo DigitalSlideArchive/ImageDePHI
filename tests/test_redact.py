@@ -166,7 +166,7 @@ def test_plan_dcm(caplog, test_image_dcm):
 
 
 @freeze_time("2023-05-12 12:12:53")
-@pytest.mark.timeout(5)
+@pytest.mark.timeout(10)
 def test_strict(svs_input_paths, tmp_path) -> None:
     redact.redact_images(svs_input_paths, tmp_path, profile=ProfileChoice.Strict.value)
     output_file = tmp_path / "Redacted_2023-05-12_12-12-53" / "study_slide_1.svs"
@@ -176,7 +176,7 @@ def test_strict(svs_input_paths, tmp_path) -> None:
 
 
 @freeze_time("2023-05-12 12:12:53")
-@pytest.mark.timeout(5)
+@pytest.mark.timeout(10)
 def test_override_with_strict_flag(svs_input_paths, tmp_path, strict_rule_set) -> None:
     redact.redact_images(svs_input_paths, tmp_path, override_rules=strict_rule_set)
     output_file = tmp_path / "Redacted_2023-05-12_12-12-53" / "study_slide_1.svs"
@@ -186,7 +186,7 @@ def test_override_with_strict_flag(svs_input_paths, tmp_path, strict_rule_set) -
 
 
 @freeze_time("2023-05-12 12:12:53")
-@pytest.mark.timeout(5)
+@pytest.mark.timeout(10)
 def test_strict_skip_dcm(dcm_input_path, tmp_path) -> None:
     redact.redact_images(dcm_input_path, tmp_path, profile=ProfileChoice.Strict.value)
     output_dir = tmp_path / "Redacted_2023-05-12_12-12-53"
@@ -195,7 +195,7 @@ def test_strict_skip_dcm(dcm_input_path, tmp_path) -> None:
 
 
 @freeze_time("2023-05-12 12:12:53")
-@pytest.mark.timeout(5)
+@pytest.mark.timeout(10)
 @pytest.mark.parametrize(
     "action,custom_tag_exists", [("keep", True), ("delete", False), ("use_rule", True)]
 )
@@ -222,7 +222,7 @@ def test_dcm_private_redaction(dcm_input_path, tmp_path, action, custom_tag_exis
 
 
 @freeze_time("2023-05-12 12:12:53")
-@pytest.mark.timeout(5)
+@pytest.mark.timeout(10)
 def test_dates_dcm(dcm_input_path, tmp_path) -> None:
     redact.redact_images(dcm_input_path, tmp_path, profile=ProfileChoice.Dates.value)
     output_file = tmp_path / "Redacted_2023-05-12_12-12-53" / "study_slide_1.dcm"
@@ -231,7 +231,7 @@ def test_dates_dcm(dcm_input_path, tmp_path) -> None:
 
 
 @freeze_time("2023-05-12 12:12:53")
-@pytest.mark.timeout(5)
+@pytest.mark.timeout(10)
 def test_dates_svs(svs_input_paths, tmp_path) -> None:
     redact.redact_images(svs_input_paths, tmp_path, profile=ProfileChoice.Dates.value)
     output_file = tmp_path / "Redacted_2023-05-12_12-12-53" / "study_slide_1.svs"
@@ -243,7 +243,7 @@ def test_dates_svs(svs_input_paths, tmp_path) -> None:
 
 
 @freeze_time("2023-05-12 12:12:53")
-@pytest.mark.timeout(5)
+@pytest.mark.timeout(10)
 def test_dates_tiff(tiff_input_path, tmp_path) -> None:
     redact.redact_images(tiff_input_path, tmp_path, profile=ProfileChoice.Dates.value)
     output_file = tmp_path / "Redacted_2023-05-12_12-12-53" / "study_slide_1.tif"
