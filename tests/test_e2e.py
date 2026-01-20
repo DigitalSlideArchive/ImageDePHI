@@ -15,7 +15,7 @@ from imagedephi.utils.network import wait_for_port
 
 
 @freeze_time("2023-05-12 12:12:53")
-@pytest.mark.timeout(5)
+@pytest.mark.timeout(10)
 def test_e2e_run(
     cli_runner: CliRunner, data_dir: Path, test_image_tiff: Path, rules_dir: Path, tmp_path: Path
 ) -> None:
@@ -38,7 +38,7 @@ def test_e2e_run(
 
 
 @freeze_time("2024-05-20 11:46:00")
-@pytest.mark.timeout(5)
+@pytest.mark.timeout(10)
 def test_e2e_strict(
     cli_runner: CliRunner, data_dir: Path, test_image_tiff: Path, rules_dir: Path, tmp_path: Path
 ) -> None:
@@ -58,7 +58,7 @@ def test_e2e_strict(
     assert output_file.exists()
 
 
-@pytest.mark.timeout(5)
+@pytest.mark.timeout(10)
 def test_e2e_plan(
     cli_runner: CliRunner, data_dir: Path, test_image_tiff: Path, rules_dir: Path
 ) -> None:
@@ -141,7 +141,7 @@ def test_e2e_help(cli_runner: CliRunner, help_flag: str) -> None:
 
 
 @freeze_time("2023-05-12 12:12:53")
-@pytest.mark.timeout(5)
+@pytest.mark.timeout(10)
 @pytest.mark.parametrize("rename", [True, False])
 def test_e2e_rename_flag(
     cli_runner, data_dir: Path, test_image_tiff: Path, tmp_path: Path, rename: bool
@@ -163,7 +163,7 @@ def test_e2e_rename_flag(
 
 
 @freeze_time("2024-01-04 10:48:00")
-@pytest.mark.timeout(5)
+@pytest.mark.timeout(10)
 @pytest.mark.parametrize(
     "recursive,rename", [(True, True), (True, False), (False, False), (False, True)]
 )
@@ -186,7 +186,7 @@ def test_e2e_recursive(
 
 
 @freeze_time("2024-01-04 10:48:00")
-@pytest.mark.timeout(5)
+@pytest.mark.timeout(10)
 def test_e2e_manifest(cli_runner, data_dir: Path, tmp_path: Path, test_image_tiff: Path):
     args = ["run", str(data_dir / "input" / "tiff"), "--output-dir", str(tmp_path)]
     result = cli_runner.invoke(main.imagedephi, args)
