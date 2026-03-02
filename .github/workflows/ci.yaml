@@ -51,7 +51,7 @@ jobs:
         run: |
           dist/imagedephi --help
       - name: Upload binary artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: imagedephi-${{ matrix.os }}-binary
           path: |
