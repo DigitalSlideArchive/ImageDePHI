@@ -9,7 +9,7 @@ import importlib.resources
 import logging
 from pathlib import Path
 from shutil import copy2
-from typing import TYPE_CHECKING, NamedTuple, TypeVar
+from typing import TYPE_CHECKING, Any, Dict, NamedTuple, TypeVar
 
 import tifftools
 import tifftools.constants
@@ -29,8 +29,8 @@ from .tiff import UnsupportedFileTypeError
 if TYPE_CHECKING:
     from .redaction_plan import TagRedactionPlan
 
-tags_used = OrderedDict()
-redaction_plan_report = {}
+tags_used: OrderedDict[str, dict[str, Any]] = OrderedDict()
+redaction_plan_report: Dict[str, Dict[str, Any]] = {}
 unprocessable_image_messages: list[str] = []
 
 T = TypeVar("T")
