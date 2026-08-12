@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 
 import { redactImages } from "./api/rest";
 import { selectedDirectories } from "./store/directoryStore";
@@ -7,6 +7,7 @@ import { useRedactionPlan, updateTableData } from "./store/imageStore";
 import { redactionStateFlags } from "./store/redactionStore";
 
 import MenuSteps from "./components/MenuSteps.vue";
+import StepHeader from "./components/StepHeader.vue";
 import FileBrowser from "./components/FileBrowser.vue";
 import ImageDataDisplay from "./components/ImageDataDisplay.vue";
 
@@ -15,6 +16,37 @@ const outputModal = ref(null);
 const rulesetModal = ref(null);
 const redactionModal = ref();
 const missingRulesModal = ref();
+
+// Export options state with localStorage persistence
+const loadExportOptions = () => {
+  try {
+    const saved = localStorage.getItem("imageDePhiExportOptions");
+    if (saved) {
+      return JSON.parse(saved);
+    }
+  } catch (e) {
+    // Ignore parse errors
+  }
+  return null;
+};
+
+const saveExportOptions = (options: Record<string, unknown>) => {
+  try {
+    localStorage.setItem("imageDePhiExportOptions", JSON.stringify(options));
+  } catch (e) {
+    // Ignore storage errors
+  }
+};
+
+const savedOptions = loadExportOptions();
+const exportOptions = ref({
+  rename: savedOptions?.rename ?? true,
+  exportAssociated: savedOptions?.exportAssociated ?? false,
+});
+
+watch(exportOptions, (newVal) => {
+  saveExportOptions(newVal);
+}, { deep: true });
 
 const progress = ref({
   count: 0,
@@ -60,6 +92,8 @@ const redact_images = async () => {
     selectedDirectories.value.inputDirectory,
     selectedDirectories.value.outputDirectory,
     selectedDirectories.value.rulesetDirectory,
+    exportOptions.value.rename,
+    exportOptions.value.exportAssociated,
   );
   if (response.status === 200) {
     useRedactionPlan.updateImageData({
@@ -132,7 +166,7 @@ onMounted(() => {
           <MenuSteps
             :step-number="1"
             step-title="Input Directory"
-            help-text="Location of the images you’d like to process."
+            help-text="Location of the images you'd like to process."
             :input-modal="inputModal || undefined"
           />
           <MenuSteps
@@ -147,6 +181,25 @@ onMounted(() => {
             help-text="Custom ruleset to be used for redaction in addition to the baserules."
             :ruleset-modal="rulesetModal || undefined"
           />
+          <StepHeader step-number="4" title="Export Options" help-text="Choose how to handle output files." />
+          <div class="self-stretch px-5 py-3 bg-white border-b border-neutral-100 flex-col justify-start flex gap-2">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                class="checkbox checkbox-accent"
+                v-model="exportOptions.rename"
+              />
+              <span class="text-sm text-gray-700">Rename files</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                class="checkbox checkbox-accent"
+                v-model="exportOptions.exportAssociated"
+              />
+              <span class="text-sm text-gray-700">Export associated images</span>
+            </label>
+          </div>
           <FileBrowser
             ref="inputModal"
             :modal-id="'inputDirectory'"
@@ -172,6 +225,7 @@ onMounted(() => {
               :class="`${!selectedDirectories.inputDirectory || !selectedDirectories.outputDirectory ? 'btn btn-block bg-accent text-white uppercase rounded-lg tooltip' : 'btn btn-block btn-accent text-white uppercase rounded-lg'}`"
               data-tip="Please select input and output directories"
               @click="canRedact()"
+              :disabled="!selectedDirectories.inputDirectory || !selectedDirectories.outputDirectory"
             >
               De-phi Images
             </button>
