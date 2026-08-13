@@ -35,9 +35,11 @@ export async function redactImages(
   inputDirectory: string,
   outputDirectory: string,
   rules?: string,
+  rename?: boolean,
+  exportAssociated?: boolean,
 ) {
   const response = await fetch(
-    `${basePath}/redact/?input_directory=${inputDirectory}&output_directory=${outputDirectory}&rules_path=${rules}`,
+    `${basePath}/redact/?input_directory=${inputDirectory}&output_directory=${outputDirectory}&rules_path=${rules}&rename=${rename !== false}&export_associated=${!!exportAssociated}`,
     {
       method: "POST",
       mode: "cors",
