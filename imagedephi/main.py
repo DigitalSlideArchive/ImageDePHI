@@ -5,6 +5,7 @@ import csv
 import importlib.resources
 import logging
 from pathlib import Path
+import shutil
 import sys
 import webbrowser
 
@@ -21,6 +22,7 @@ from imagedephi.command_file import CommandFile
 from imagedephi.gui.app import app
 from imagedephi.redact import ProfileChoice, redact_images, show_redaction_plan
 from imagedephi.utils.cli import FallthroughGroup, run_coroutine
+from imagedephi.utils.directory import iter_image_dirs
 from imagedephi.utils.logger import logger
 from imagedephi.utils.network import unused_tcp_port, wait_for_port
 from imagedephi.utils.os import launched_from_windows_explorer
@@ -79,6 +81,66 @@ _global_options = [
         " redact any images in this case.",
     ),
 ]
+
+
+def _check_disk_space(
+    input_paths: list[Path],
+    output_dir: Path | None,
+    recursive: bool,
+    min_available_gb: float,
+) -> bool:
+    """
+    Refuse to redact if available disk space is less than buffer.
+
+    Uses total input size of all files as the estimated space needed.
+    Works cross-platform using standard library `shutil`.
+    """
+    if not input_paths:
+        return True
+    total_input_size = 0
+    count = 0
+    for image_path in iter_image_dirs(input_paths, recursive):
+        try:
+            total_input_size += image_path.stat().st_size
+            count += 1
+        except OSError:
+            logger.warning(
+                f"Could not stat {image_path}, skipping. Space calculation may be inaccurate."
+            )
+    if count == 0:
+        return True
+    buffer_bytes = min_available_gb * 1_024**3
+    minimum_required = total_input_size + buffer_bytes
+    check_path = Path.cwd()
+    if output_dir is not None:
+        if output_dir.exists():
+            check_path = output_dir
+        else:
+            for parent in output_dir.parents:
+                if parent.exists():
+                    check_path = parent
+                    break
+    try:
+        usage = shutil.disk_usage(check_path)
+        available_bytes = usage.free
+    except Exception as e:
+        logger.error(f"Could not determine disk space availability: {e}")
+        # Let it through
+        return True
+    if available_bytes < minimum_required:
+        click.echo(
+            click.style(
+                f"Insufficient disk space for redaction.\n"
+                f"Available: {available_bytes / (1024**3):.2f} GB\n"
+                f"Required: {(total_input_size + buffer_bytes) / (1024**3):.2f} GB\n"
+                f"Input size: {total_input_size / (1024**3):.2f} GB\n"
+                f"Buffer required: {min_available_gb} GB",
+                fg="red",
+                bg="white",
+            )
+        )
+        return False
+    return True
 
 
 def global_options(func):
@@ -182,6 +244,12 @@ def imagedephi(
 @click.option(
     "-e", "--export-associated", is_flag=True, help="Export label, macro, and thumbnail images."
 )
+@click.option(
+    "--min-available-space",
+    type=float,
+    default=10.0,
+    help="Minimum free disk space (in GB) required on output drive before redaction.",
+)
 @click.pass_context
 def run(
     ctx,
@@ -199,6 +267,7 @@ def run(
     index,
     command_file: Path,
     file_list: Path,
+    min_available_space: float,
 ):
     """Perform the redaction of images."""
     params = _check_parent_params(
@@ -277,6 +346,17 @@ def run(
             output_dir = Path.cwd()
         if not input_paths and not file_input_paths:
             raise click.BadParameter("At least one input path must be provided.")
+    # Resolve all inputs into a single list and check disk usage
+    target_paths = input_paths or command_inputs or file_input_paths
+    if not target_paths:
+        raise click.BadParameter("At least one input path must be provided.")
+
+    is_recursive = bool(params["recursive"] or cf_recursive)
+    effective_output_dir = output_dir or command_output
+
+    if not _check_disk_space(target_paths, effective_output_dir, is_recursive, min_available_space):
+        sys.exit(1)
+
     if params["require_all"] or cf_require_all:
         plan = show_redaction_plan(
             input_paths or command_inputs or file_input_paths,
