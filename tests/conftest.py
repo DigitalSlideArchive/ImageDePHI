@@ -70,3 +70,14 @@ def rules_dir() -> Path:
 @pytest.fixture
 def cli_runner() -> CliRunner:
     return CliRunner()
+
+
+@pytest.fixture(autouse=True)
+def mock_disk_space(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Ensure CLI tests don't fail due to disk space checks."""
+
+    class UsageMock:
+        def __init__(self) -> None:
+            self.free = 500 * (1024**3)
+
+    monkeypatch.setattr("imagedephi.main.shutil.disk_usage", lambda *args, **kwargs: UsageMock())
