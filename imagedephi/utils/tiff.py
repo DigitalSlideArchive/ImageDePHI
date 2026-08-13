@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 import tifftools
 
-from imagedephi.gui.utils.image import IMAGE_DEPHI_MAX_IMAGE_PIXELS
+from imagedephi.utils.constants import IMAGE_DEPHI_MAX_IMAGE_PIXELS
 
 if TYPE_CHECKING:
     from tifftools.tifftools import IFD

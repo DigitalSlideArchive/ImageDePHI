@@ -179,6 +179,9 @@ def imagedephi(
     type=click.Path(exists=True, file_okay=False, readable=True, writable=True, path_type=Path),
 )
 @click.option("--rename/--skip-rename", default=True)
+@click.option(
+    "-e", "--export-associated", is_flag=True, help="Export label, macro, and thumbnail images."
+)
 @click.pass_context
 def run(
     ctx,
@@ -189,6 +192,7 @@ def run(
     recursive: bool,
     require_all: bool,
     rename: bool,
+    export_associated: bool,
     quiet,
     verbose,
     log_file,
@@ -209,6 +213,7 @@ def run(
     cf_profile: str = ""
     # cf_rename will only be checked if rename is false so default should be false.
     cf_rename: bool = False
+    cf_export_associated: bool = False
     cf_recursive: bool = False
     cf_require_all: bool = False
     cf_index: int = 1
@@ -236,6 +241,11 @@ def run(
             )
             cf_profile = str(file_contents.get("profile")) if "profile" in file_contents else ""
             cf_rename = bool(file_contents.get("rename")) if "rename" in file_contents else True
+            cf_export_associated = (
+                bool(file_contents.get("export_associated"))
+                if "export_associated" in file_contents
+                else False
+            )
             cf_recursive = (
                 bool(file_contents.get("recursive")) if "recursive" in file_contents else False
             )
@@ -282,6 +292,7 @@ def run(
         output_dir or command_output,
         override_rules=params["override_rules"] or cf_override_rules,
         rename=rename or cf_rename,
+        export_associated=export_associated or cf_export_associated,
         recursive=params["recursive"] or cf_recursive,
         profile=params["profile"] or cf_profile,
         index=index or cf_index,

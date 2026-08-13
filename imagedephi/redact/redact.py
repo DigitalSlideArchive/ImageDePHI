@@ -6,21 +6,31 @@ from csv import DictWriter
 import datetime
 from enum import Enum
 import importlib.resources
+from io import BytesIO
 import logging
 from pathlib import Path
 from shutil import copy2
 from typing import TYPE_CHECKING, Any, Dict, NamedTuple, TypeVar
 
+from PIL import Image, ImageDraw, ImageFont
 import tifftools
 import tifftools.constants
 from tqdm import tqdm
 from tqdm.contrib.logging import logging_redirect_tqdm
 import yaml
 
-from imagedephi.rules import Ruleset
-from imagedephi.utils.image import get_file_format_from_path
+from imagedephi.rules import FileFormat, Ruleset
+from imagedephi.utils.dicom import file_is_same_series_as
+from imagedephi.utils.directory import iter_image_dirs
+from imagedephi.utils.image import (
+    get_file_format_from_path,
+    get_image_bytes_from_dicom,
+    get_image_bytes_from_ifd,
+    get_image_bytes_from_tiff,
+)
 from imagedephi.utils.logger import logger
 from imagedephi.utils.progress_log import push_progress
+from imagedephi.utils.tiff import get_associated_image_svs, get_ifd_for_thumbnail
 
 from .build_redaction_plan import build_redaction_plan
 from .svs import MalformedAperioFileError
@@ -28,6 +38,8 @@ from .tiff import UnsupportedFileTypeError
 
 if TYPE_CHECKING:
     from .redaction_plan import TagRedactionPlan
+
+MAX_ASSOCIATED_OUTPUT_SIZE = 500
 
 tags_used: OrderedDict[str, dict[str, Any]] = OrderedDict()
 redaction_plan_report: Dict[str, Dict[str, Any]] = {}
@@ -77,29 +89,6 @@ def get_base_rules(profile: str = "") -> Ruleset:
         return base_rule_set
 
 
-def iter_image_dirs(paths: list[Path], recursive: bool = False) -> Generator[Path, None, None]:
-    for path in paths:
-        if path.is_file():
-            yield from iter_image_files(path)
-        elif path.is_dir() and recursive:
-            yield from iter_image_dirs(sorted(path.iterdir()), recursive)
-        elif path.is_dir() and not recursive:
-            for child in path.iterdir():
-                if child.is_file():
-                    yield from iter_image_files(child)
-
-
-def iter_image_files(path: Path) -> Generator[Path, None, None]:
-    file_format = None
-    try:
-        file_format = get_file_format_from_path(path)
-    except PermissionError:
-        # Don't attempt to redact inaccessible files
-        pass
-    if file_format:
-        yield path
-
-
 def generator_to_list_with_progress(
     generator: Generator[T, None, None], progress_bar_desc="Working..."
 ) -> list[T]:
@@ -109,25 +98,107 @@ def generator_to_list_with_progress(
     return result
 
 
-def create_redact_dir_and_manifest(base_output_dir: Path, time_stamp: str) -> tuple[Path, Path]:
+def create_redact_dir_and_manifest(
+    base_output_dir: Path, associated: bool, time_stamp: str
+) -> tuple[Path, Path, Path]:
     """
-    Given a directory, create and return a sub-directory within it.
+    Create output directories and manifest file.
 
     `identifier` should be a unique string for the new directory. If no value
     is supplied, a timestamp is used.
     """
     redact_dir = base_output_dir / f"Redacted_{time_stamp}"
+    associated_dir = base_output_dir / f"Associated_{time_stamp}"
     manifest_file = base_output_dir / f"Redacted_{time_stamp}_manifest.csv"
 
     try:
         redact_dir.mkdir(parents=True)
+        if associated:
+            associated_dir.mkdir()
         manifest_file.touch()
     except PermissionError:
         logger.error("Cannnot create an output directory, permission error.")
         raise
     else:
         logger.info(f"Created redaction folder: {redact_dir}")
-        return redact_dir, manifest_file
+        return redact_dir, associated_dir, manifest_file
+
+
+def missing_image(
+    text: list[str],
+    size: tuple[int, int] = (300, 300),
+    background: tuple[int, int, int] = (0, 0, 0),
+    foreground: tuple[int, int, int] = (255, 255, 255),
+    fontsize: int = 40,
+) -> BytesIO:
+    """Return a text images as a placeholder for missing associated images."""
+    img = Image.new("RGB", size, color=background)
+    draw = ImageDraw.Draw(img)
+    font = ImageFont.load_default(fontsize)
+    draw.multiline_text(
+        (size[0] // 2, size[1] // 2),
+        "\n".join(text),
+        anchor="mm",
+        font=font,
+        fill=foreground,
+    )
+    jpeg_buffer = BytesIO()
+    img.save(jpeg_buffer, "JPEG")
+    jpeg_buffer.seek(0)
+    return jpeg_buffer
+
+
+def get_associated_outputs(
+    file_name: str = "",
+    max_height=MAX_ASSOCIATED_OUTPUT_SIZE,
+    max_width=MAX_ASSOCIATED_OUTPUT_SIZE,
+) -> dict[str, BytesIO]:
+    """Return encoded JPEGs from the associated images contained in `file_name`."""
+    image_type = get_file_format_from_path(Path(file_name))
+    if image_type == FileFormat.SVS or image_type == FileFormat.TIFF:
+        if ifd := get_associated_image_svs(Path(file_name), "label"):
+            try:
+                label = get_image_bytes_from_ifd(ifd, file_name, max_height, max_width)
+            except Exception:
+                label = missing_image(text=["label", "missing"])
+        else:
+            label = missing_image(text=["label", "missing"])
+        ifd = get_ifd_for_thumbnail(Path(file_name), int(max_width), int(max_height))
+        if not ifd:
+            try:
+                thumbnail = get_image_bytes_from_tiff(file_name, max_width, max_height)
+            except Exception:
+                thumbnail = missing_image(text=["thumbnail", "missing"])
+        else:
+            try:
+                thumbnail = get_image_bytes_from_ifd(ifd, file_name, max_width, max_height)
+            except Exception:
+                thumbnail = missing_image(text=["thumbnail", "missing"])
+        if ifd := get_associated_image_svs(Path(file_name), "macro"):
+            try:
+                macro = get_image_bytes_from_ifd(ifd, file_name, max_height, max_width)
+            except Exception:
+                macro = missing_image(text=["macro", "missing"])
+        else:
+            macro = missing_image(text=["macro", "missing"])
+        return dict(label=label, thumbnail=thumbnail, macro=macro)
+    elif image_type == FileFormat.DICOM:
+        path = Path(file_name)
+        related_files = [
+            child
+            for child in path.parent.iterdir()
+            if child != path and file_is_same_series_as(path, child)
+        ]
+        try:
+            label = get_image_bytes_from_dicom(related_files, "label", max_width, max_height)
+        except Exception:
+            label = missing_image(text=["label", "missing"])
+        try:
+            overview = get_image_bytes_from_dicom(related_files, "overview", max_width, max_height)
+        except Exception:
+            overview = missing_image(text=["overview", "missing"])
+        return dict(label=label, thumbnail=overview)
+    return dict()
 
 
 def redact_images(
@@ -138,6 +209,7 @@ def redact_images(
     profile: str = "",
     overwrite: bool = False,
     recursive: bool = False,
+    export_associated: bool = False,
     index: int = 1,
 ) -> None:
 
@@ -168,7 +240,9 @@ def redact_images(
     failed_images: dict[
         str, list[dict[str, dict[str, int | str | list[str] | TagRedactionPlan]]]
     ] = {"failed_images": []}
-    redact_dir, manifest_file = create_redact_dir_and_manifest(output_dir, time_stamp)
+    redact_dir, associated_dir, manifest_file = create_redact_dir_and_manifest(
+        output_dir, export_associated, time_stamp
+    )
     failed_dir = output_dir / f"Failed_{time_stamp}"
     failed_manifest_file = (
         output_dir / f"Failed_{time_stamp}" / f"Failed_{time_stamp}_manifest.yaml"
@@ -249,6 +323,7 @@ def redact_images(
                 )
 
             else:
+                associated_jpegs = get_associated_outputs(image_file) if export_associated else {}
                 redaction_plan.execute_plan()
                 output_parent_dir = redact_dir
                 if recursive:
@@ -258,7 +333,6 @@ def redact_images(
                         if ancestor in input_paths:
                             parent_index = input_paths.index(ancestor)
                             break
-
                     output_parent_dir = Path(
                         str(image_file).replace(str(input_paths[parent_index]), str(redact_dir), 1)
                     ).parent
@@ -282,6 +356,13 @@ def redact_images(
                         "detail": "redacted successfully",
                     }
                 )
+                for image, jpeg in associated_jpegs.items():  # write associated images to disk
+                    associated_parent_dir = Path(
+                        str(output_path).replace(str(redact_dir), str(associated_dir / image), 1)
+                    ).parent
+                    associated_parent_dir.mkdir(parents=True, exist_ok=True)
+                    associated_path = associated_parent_dir / f"{output_path.name}.{image}.jpg"
+                    associated_path.write_bytes(jpeg.getbuffer())
                 if output_file_counter == output_file_max:
                     logger.info("Redactions completed")
                     if failed_img_counter:

@@ -64,11 +64,20 @@ def tiff_input_path(data_dir, test_image_tiff, request) -> list[Path]:
 @freeze_time("2023-05-12 12:12:53")
 def test_create_redact_dir_and_manifest(tmp_path):
     time_stamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    output_dir, manifest = create_redact_dir_and_manifest(tmp_path / "fake", time_stamp)
+    output_dir, associated_dir, manifest = create_redact_dir_and_manifest(
+        tmp_path / "fake", False, time_stamp
+    )
     assert output_dir.exists()
     assert output_dir.name == "Redacted_2023-05-12_12-12-53"
+    assert not associated_dir.exists()
     assert manifest.exists()
     assert manifest.name == "Redacted_2023-05-12_12-12-53_manifest.csv"
+    output_dir.rmdir()
+    output_dir, associated_dir, manifest = create_redact_dir_and_manifest(
+        tmp_path / "fake", True, time_stamp
+    )
+    assert associated_dir.exists()
+    assert associated_dir.name == "Associated_2023-05-12_12-12-53"
 
 
 @freeze_time("2023-05-12 12:12:53")

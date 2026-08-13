@@ -1,24 +1,25 @@
 from __future__ import annotations
 
 import asyncio
+import os
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional
 import urllib.parse
 
 from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 
-from imagedephi.gui.utils.constants import MAX_ASSOCIATED_IMAGE_SIZE
-from imagedephi.gui.utils.directory import DirectoryData
-from imagedephi.gui.utils.image import (
-    get_image_response_dicom,
-    get_image_response_from_ifd,
-    get_image_response_from_tiff,
-)
 from imagedephi.redact import redact_images, show_redaction_plan
 from imagedephi.rules import FileFormat
+from imagedephi.utils.constants import MAX_ASSOCIATED_IMAGE_SIZE
 from imagedephi.utils.dicom import file_is_same_series_as
-from imagedephi.utils.image import get_file_format_from_path
+from imagedephi.utils.directory import iter_image_dirs
+from imagedephi.utils.image import (
+    get_file_format_from_path,
+    get_image_bytes_from_dicom,
+    get_image_bytes_from_ifd,
+    get_image_bytes_from_tiff,
+)
 from imagedephi.utils.progress_log import get_next_progress_message
 from imagedephi.utils.tiff import get_associated_image_svs, get_ifd_for_thumbnail, get_is_svs
 
@@ -26,6 +27,41 @@ if TYPE_CHECKING:
     from tifftools.tifftools import IFD
 
 router = APIRouter()
+
+
+def _iter_yaml_files(directory: Path):
+    for child in directory.iterdir():
+        if child.is_file() and child.suffix == ".yaml":
+            yield child
+
+
+class DirectoryData:
+    directory: Path
+    ancestors: list[dict[str, str | Path]]
+    child_directories: list[dict[str, str | Path]]
+    child_images: list[dict[str, str | Path]]
+    child_yaml_files: list[dict[str, str | Path]]
+
+    def __init__(self, directory: Path):
+        self.directory = directory
+
+        self.ancestors = [
+            {"name": ancestor.name, "path": ancestor} for ancestor in reversed(directory.parents)
+        ]
+        self.ancestors.append({"name": directory.name, "path": directory})
+
+        self.child_directories = [
+            {"name": child.name, "path": child}
+            for child in directory.iterdir()
+            if child.is_dir() and os.access(child, os.R_OK)
+        ]
+
+        self.child_images = [
+            {"name": image.name, "path": image} for image in list(iter_image_dirs([directory]))
+        ]
+        self.child_yaml_files = [
+            {"name": yaml_file.name, "path": yaml_file} for yaml_file in _iter_yaml_files(directory)
+        ]
 
 
 @router.get("/directory/")
@@ -77,7 +113,8 @@ def get_associated_image(
                 try:
                     # If the image is not tiled, no appropriate IFD was found. In this case
                     # attempt to get a thumbnail using the entire image.
-                    return get_image_response_from_tiff(file_name, max_width, max_height)
+                    jpeg_buffer = get_image_bytes_from_tiff(file_name, max_width, max_height)
+                    return StreamingResponse(jpeg_buffer, media_type="image/jpeg")
                 except Exception as e:
                     raise HTTPException(
                         status_code=422,  # unprocessable content
@@ -85,7 +122,8 @@ def get_associated_image(
                     )
             else:
                 try:
-                    return get_image_response_from_ifd(ifd, file_name, max_width, max_height)
+                    jpeg_buffer = get_image_bytes_from_ifd(ifd, file_name, max_width, max_height)
+                    return StreamingResponse(jpeg_buffer, media_type="image/jpeg")
                 except Exception as e:
                     raise HTTPException(
                         status_code=422,  # unprocessable content
@@ -104,7 +142,7 @@ def get_associated_image(
                 status_code=404, detail=f"No {image_key} image found for {file_name}"
             )
         try:
-            return get_image_response_from_ifd(ifd, file_name, max_height, max_width)
+            return get_image_bytes_from_ifd(ifd, file_name, max_height, max_width)
         except Exception as e:
             raise HTTPException(
                 status_code=422,  # unprocessable content
@@ -117,9 +155,9 @@ def get_associated_image(
             for child in path.parent.iterdir()
             if child != path and file_is_same_series_as(path, child)
         ]
-        image_response = get_image_response_dicom(related_files, image_key, max_width, max_height)
+        image_response = get_image_bytes_from_dicom(related_files, image_key, max_width, max_height)
         if image_response:
-            return image_response
+            return StreamingResponse(image_response, media_type="image/jpeg")
         raise HTTPException(
             status_code=404, detail=f"Could not retrieve {image_key} image for {file_name}"
         )
@@ -158,6 +196,8 @@ def redact(
     input_directory: str,  # noqa: B008
     output_directory: str,  # noqa: B008
     rules_path: Optional[str] = None,
+    rename: bool = True,
+    export_associated: bool = False,
 ):
     input_path = Path(input_directory)
     output_path = Path(output_directory)
@@ -170,9 +210,20 @@ def redact(
         print("Rules file not found")
     # TODO: Add support for multiple input directories in the UI
     if rules_path:
-        redact_images([input_path], output_path, override_rules=Path(rules_path))
+        redact_images(
+            [input_path],
+            output_path,
+            override_rules=Path(rules_path),
+            rename=rename,
+            export_associated=export_associated,
+        )
     else:
-        redact_images([input_path], output_path)
+        redact_images(
+            [input_path],
+            output_path,
+            rename=rename,
+            export_associated=export_associated,
+        )
 
 
 @router.websocket("/ws")

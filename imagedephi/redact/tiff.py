@@ -284,7 +284,7 @@ class TiffRedactionPlan(RedactionPlan):
                     == tifftools.constants.Datatype.UNDEFINED.value
                 ):
                     encoded_value: dict[str, str | int] = {
-                        "value": f"0x{binascii.hexlify(ifd['tags'][tag.value]['data'] ).decode('utf-8')}",  # type: ignore # noqa: E501
+                        "value": f"0x{binascii.hexlify(ifd['tags'][tag.value]['data']).decode('utf-8')}",  # type: ignore # noqa: E501
                         "bytes": len(ifd["tags"][tag.value]["data"]),
                     }
                     report[self.image_path.name][rule.key_name] = {
