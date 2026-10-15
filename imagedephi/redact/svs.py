@@ -46,7 +46,13 @@ class SvsDescription:
 
         self.metadata = {}
         for metadata_component in description_components[1:]:
-            key, value = [token.strip() for token in metadata_component.split("=")]
+            if not metadata_component.strip():
+                continue
+            if "=" not in metadata_component:
+                raise MalformedAperioFileError(
+                    f"Unparseable Aperio ImageDescription component: {metadata_component!r}"
+                )
+            key, value = [token.strip() for token in metadata_component.split("=", 1)]
             self.metadata[key] = self.try_get_numeric_value(value)
 
     def __str__(self) -> str:
@@ -205,9 +211,10 @@ class SvsRedactionPlan(TiffRedactionPlan):
                     "The following keys were found in Aperio ImageDescription strings "
                     "and could not be redacted given the current set of rules."
                 )
-                if report:
+                if report is not None:
                     report[self.image_path.name]["comprehensive"] = False
-                for key in self.no_match_description_keys:
+                    report[self.image_path.name]["missing_description_keys"] = []
+                for key in sorted(self.no_match_description_keys):
                     logger.error(f"Missing key (Aperio ImageDescription): {key}")
                     if report is not None:
                         report[self.image_path.name]["missing_description_keys"].append(key)
@@ -228,6 +235,9 @@ class SvsRedactionPlan(TiffRedactionPlan):
             if tag.value == tifftools.constants.Tag["ImageDescription"] and not self.strict:
                 image_description = SvsDescription(str(ifd["tags"][tag.value]["data"]))
                 for key_name, _data in image_description.metadata.items():
+                    if key_name in self.no_match_description_keys:
+                        # Reported by report_missing_rules
+                        continue
                     rule = self.description_redaction_steps[key_name]
                     operation = self.determine_redaction_operation(rule, image_description)
                     logger.debug(f"SVS Image Description - {key_name}: {operation}")
