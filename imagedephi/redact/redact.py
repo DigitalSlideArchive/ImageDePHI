@@ -306,13 +306,17 @@ def redact_images(
                     # Using copy2 preserves metadata
                     # https://docs.python.org/3/library/shutil.html#shutil.copy2
                     copy2(image_file, failed_img)
-                img_dict = {
-                    image_file.name: {
-                        "missing_tags": redaction_plan.report_plan()[image_file.name].get(
-                            "missing_tags", []
-                        )
-                    }
-                }
+                try:
+                    failed_report = redaction_plan.report_plan()[image_file.name]
+                except Exception as e:
+                    logger.error(f"Could not report redaction plan for {image_file.name}: {e}")
+                    failed_report = {}
+                failure_details: dict = {"missing_tags": failed_report.get("missing_tags", [])}
+                if "missing_description_keys" in failed_report:
+                    failure_details["missing_description_keys"] = failed_report[
+                        "missing_description_keys"
+                    ]
+                img_dict = {image_file.name: failure_details}
                 failed_images["failed_images"].append(img_dict)
                 run_summary.append(
                     {
@@ -363,33 +367,31 @@ def redact_images(
                     associated_parent_dir.mkdir(parents=True, exist_ok=True)
                     associated_path = associated_parent_dir / f"{output_path.name}.{image}.jpg"
                     associated_path.write_bytes(jpeg.getbuffer())
-                if output_file_counter == output_file_max:
-                    logger.info("Redactions completed")
-                    if failed_img_counter:
-                        # Ensure that the logged index is the correct starting point
-                        with open(failed_manifest_file, "a") as manifest:
-                            yaml.dump(
-                                failed_images,
-                                manifest,
-                                explicit_start=True,
-                                default_flow_style=False,
-                            )
-                            manifest.write("failed_images_count: " + str(failed_img_counter) + "\n")
-                            index += 1
-
-                            yaml_command = f"""command: imagedephi run {failed_dir} --output-dir {redact_dir.parent} --index {index}"""  # noqa
-                            options = [
-                                f" --override-rules {override_rules}" if override_rules else "",
-                                " --overwrite" if overwrite else "",
-                                f" --profile {profile}" if profile != "default" else "",
-                                " --recursive" if recursive else "",
-                                " --skip-rename" if not rename else "",
-                            ]
-                            yaml_command += " ".join(filter(None, options))
-                            command = yaml.safe_load(yaml_command)
-                            yaml.dump(command, manifest, width=float("inf"))
                 index += 1
             output_file_counter += 1
+        logger.info("Redactions completed")
+        if failed_img_counter:
+            # index is now the next unused output index
+            with open(failed_manifest_file, "a") as manifest:
+                yaml.dump(
+                    failed_images,
+                    manifest,
+                    explicit_start=True,
+                    default_flow_style=False,
+                )
+                manifest.write("failed_images_count: " + str(failed_img_counter) + "\n")
+
+                yaml_command = f"""command: imagedephi run {failed_dir} --output-dir {redact_dir.parent} --index {index}"""  # noqa
+                options = [
+                    f" --override-rules {override_rules}" if override_rules else "",
+                    " --overwrite" if overwrite else "",
+                    f" --profile {profile}" if profile != "default" else "",
+                    " --recursive" if recursive else "",
+                    " --skip-rename" if not rename else "",
+                ]
+                yaml_command += " ".join(filter(None, options))
+                command = yaml.safe_load(yaml_command)
+                yaml.dump(command, manifest, width=float("inf"))
     logger.info(f"Writing manifest to {manifest_file}")
     with open(manifest_file, "w") as manifest:
         fieldnames = ["input_path", "output_path", "detail"]
@@ -504,7 +506,13 @@ def show_redaction_plan(
                     )
                     continue
                 logger.info(f"Redaction plan for {image_path.name}:")
-                redaction_plan_report.update(redaction_plan.report_plan())  # type: ignore
+                try:
+                    redaction_plan_report.update(redaction_plan.report_plan())  # type: ignore
+                except Exception as e:
+                    unprocessable_image_messages.append(
+                        f"{image_path} could not be reported. {e.args[0] if e.args else e}"
+                    )
+                    continue
                 if not redaction_plan.is_comprehensive():
                     missing_rules = True
                     if require_all:

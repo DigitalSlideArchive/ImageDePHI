@@ -247,7 +247,7 @@ class DicomRedactionPlan(RedactionPlan):
                     "Only 'delete' is supported for associated DICOM images at this time."
                 )
         for element, dataset in DicomRedactionPlan._iter_dicom_elements(self.dicom_data):
-            rule = self.metadata_redaction_steps[element.tag]
+            rule = self.metadata_redaction_steps.get(element.tag)
             if rule is not None:
                 self.apply(rule, element, dataset)
 

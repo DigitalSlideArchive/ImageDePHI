@@ -258,3 +258,47 @@ def test_dates_tiff(tiff_input_path, tmp_path) -> None:
     output_file = tmp_path / "Redacted_2023-05-12_12-12-53" / "study_slide_1.tif"
     output_file_bytes = output_file.read_bytes()
     assert b"2024:01:01 00:00:00" in output_file_bytes
+
+
+@pytest.fixture
+def svs_with_unknown_description_key(test_image_svs, tmp_path) -> Path:
+    import tifftools
+
+    info = tifftools.read_tiff(str(test_image_svs))
+    description_tag = tifftools.Tag.ImageDescription.value
+    description = info["ifds"][0]["tags"][description_tag]["data"]
+    if isinstance(description, bytes):
+        description = description.decode(errors="replace")
+    assert isinstance(description, str)
+    info["ifds"][0]["tags"][description_tag]["data"] = (
+        description + "|Unknown ImageDePHI Test Key = 1"
+    )
+    input_dir = tmp_path / "input"
+    input_dir.mkdir()
+    output_path = input_dir / "unknown_key.svs"
+    tifftools.write_tiff(info, output_path)
+    return output_path
+
+
+def test_plan_svs_unknown_description_key(caplog, svs_with_unknown_description_key):
+    logger.setLevel(logging.DEBUG)
+    result = redact.show_redaction_plan([svs_with_unknown_description_key], update=False)
+
+    assert "Missing key (Aperio ImageDescription): Unknown ImageDePHI Test Key" in caplog.text
+    assert not result.data[svs_with_unknown_description_key.name]["comprehensive"]
+    assert result.data[svs_with_unknown_description_key.name]["missing_description_keys"] == [
+        "Unknown ImageDePHI Test Key"
+    ]
+
+
+@freeze_time("2023-05-12 12:12:53")
+def test_redact_svs_unknown_description_key(svs_with_unknown_description_key, tmp_path):
+    output_dir = tmp_path / "output"
+    output_dir.mkdir()
+    redact.redact_images([svs_with_unknown_description_key], output_dir)
+
+    failed_dir = output_dir / "Failed_2023-05-12_12-12-53"
+    assert (failed_dir / svs_with_unknown_description_key.name).exists()
+    manifest = yaml.safe_load((failed_dir / "Failed_2023-05-12_12-12-53_manifest.yaml").read_text())
+    failure = manifest["failed_images"][0][svs_with_unknown_description_key.name]
+    assert failure["missing_description_keys"] == ["Unknown ImageDePHI Test Key"]
