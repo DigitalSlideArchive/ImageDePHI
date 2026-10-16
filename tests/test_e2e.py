@@ -85,7 +85,7 @@ def test_e2e_gui(
     port = unused_tcp_port
 
     gui = subprocess.Popen(
-        [sys.executable, "-m", "imagedephi", "gui", "--port", str(port)],
+        [sys.executable, "-m", "imagedephi", "gui", "--port", str(port), "--no-browser"],
     )
 
     asyncio.run(asyncio.wait_for(wait_for_port(port), timeout=2))

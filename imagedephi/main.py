@@ -486,8 +486,14 @@ def plan(
     show_default="random unused port",
     help="Local TCP port to run the GUI webserver on.",
 )
+@click.option(
+    "--no-browser",
+    is_flag=True,
+    default=False,
+    help="Do not open a web browser when the GUI starts.",
+)
 @run_coroutine
-async def gui(port: int) -> None:
+async def gui(port: int, no_browser: bool) -> None:
     """Launch a web-based GUI."""
     host = "127.0.0.1"
 
@@ -501,7 +507,10 @@ async def gui(port: int) -> None:
         await wait_for_port(port)
         url = f"http://{host}:{port}/"
         click.echo(f"Server is running at {url} .")
-        webbrowser.open(url)
+        if not no_browser:
+            # webbrowser.open can block for seconds (e.g. osascript on macOS);
+            # keep it off the event loop that is serving requests.
+            await asyncio.to_thread(webbrowser.open, url)
 
     async with asyncio.TaskGroup() as task_group:
         task_group.create_task(announce_ready())
