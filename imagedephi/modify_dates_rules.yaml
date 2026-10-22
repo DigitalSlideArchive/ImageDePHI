@@ -810,6 +810,8 @@ svs:
       action: keep
     CalibrationAverageRed:
       action: keep
+    Calibration Point Source:
+      action: keep
     ScannerType:
       action: delete
     SessionMode:
