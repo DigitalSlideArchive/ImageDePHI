@@ -722,7 +722,7 @@ svs:
     Exposure Scale:
       action: keep
     Extended Focus:
-      action: keep  
+      action: keep
     DisplayColor:
       action: keep
     SessonMode:
