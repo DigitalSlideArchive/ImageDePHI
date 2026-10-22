@@ -721,6 +721,8 @@ svs:
       action: keep
     Exposure Scale:
       action: keep
+    Extended Focus:
+      action: keep  
     DisplayColor:
       action: keep
     SessonMode:
@@ -809,6 +811,8 @@ svs:
     CalibrationAverageGreen:
       action: keep
     CalibrationAverageRed:
+      action: keep
+    Calibration Point Source:
       action: keep
     ScannerType:
       action: delete
