@@ -21,11 +21,11 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.7",
     "@eslint/js": "^10.0.1",
+    "@tailwindcss/vite": "^4.3.3",
     "@typescript-eslint/eslint-plugin": "^8.71.2",
     "@typescript-eslint/parser": "^8.71.2",
     "@vitejs/plugin-vue": "^6.0.10",
-    "autoprefixer": "^10.6.1",
-    "daisyui": "^4.12.24",
+    "daisyui": "^5.7.50",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-vue": "^10.11.1",
@@ -34,14 +34,14 @@
     "postcss": "^8.5.31",
     "prettier": "^3.9.10",
     "rimraf": "^6.1.2",
-    "tailwindcss": "^3.4.19",
+    "tailwindcss": "^4.3.3",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.71.2",
     "vite": "^8.3.4",
     "vue-eslint-parser": "^10.4.1",
     "vue-tsc": "^3.3.13"
   },
-  "packageManager": "yarn@4.10.3+sha512.c38cafb5c7bb273f3926d04e55e1d8c9dfa7d9c3ea1f36a4868fa028b9e5f72298f0b7f401ad5eb921749eb012eb1c3bb74bf7503df3ee43fd600d14a018266f",
+  "packageManager": "yarn@4.15.0+sha512.07ec708ac11e2eaa4ea2b04cfbb272812f7e74a753f1595eaef4486c663a98306a30cca3e6fc40f7a0b168dcfb3a2490b6a5e0501e20fb69cc36f563dd161c53",
   "dependenciesMeta": {
     "remixicon@3.7.0": {
       "unplugged": true

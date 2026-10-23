@@ -234,8 +234,8 @@ onMounted(() => {
       </div>
     </div>
     <dialog id="missingRulesModal" ref="missingRulesModal" class="modal">
-      <div class="modal-box max-w-100">
-        <div class="card max-w-100">
+      <div class="modal-box">
+        <div class="card">
           <div class="card-body">
             <h2 class="font-bold text-xl text-center">
               Missing Redaction Rules

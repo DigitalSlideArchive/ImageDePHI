@@ -1,3 +1,125 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss" source(none);
+@source "../index.html";
+@source "./**/*.{vue,js,ts}";
+
+@plugin "daisyui" {
+  themes: false;
+}
+
+@plugin "daisyui/theme" {
+  name: "light";
+  default: true;
+  color-scheme: light;
+
+  --color-primary: #5a387c;
+  --color-primary-content: oklch(88.2706% 0.022745 305.041);
+  --color-secondary: #00a6bf;
+  --color-secondary-content: oklch(98.71% 0.0106 342.55);
+  --color-accent: #ff6a6a;
+  --color-accent-content: oklch(14.2031% 0.036485 22.9075);
+  --color-neutral: #201c35;
+  --color-neutral-content: oklch(89.4994% 0.011585 252.096);
+  --color-base-100: #ffffff;
+  --color-base-200: oklch(96.1151% 0 0);
+  --color-base-300: oklch(92.4169% 0.00108 197.138);
+  --color-base-content: oklch(27.8078% 0.029596 256.848);
+  --color-info: #3abff8;
+  --color-info-content: oklch(15.1705% 0.027481 231.617);
+  --color-success: #36d399;
+  --color-success-content: oklch(15.4663% 0.030576 163.103);
+  --color-warning: #fbbd23;
+  --color-warning-content: oklch(16.6604% 0.032836 83.4243);
+  --color-error: #f87272;
+  --color-error-content: oklch(14.2439% 0.032979 22.1506);
+
+  --radius-selector: 0.5rem;
+  --radius-field: 0.5rem;
+  --radius-box: 1rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
+@theme {
+  --font-sans: Roboto, sans-serif;
+  --color-secondaryContent: #e8f2f3;
+}
+
+/*
+  Tailwind CSS v4 changed the default border color to currentColor; keep the
+  v3 default so borders look the same as before.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
+
+/*
+  Keep the daisyUI v4 appearance.  These are unlayered so they take precedence
+  over daisyUI v5 (which is in the utilities layer), as the higher specificity
+  daisyUI v4 rules did.
+*/
+.btn {
+  --size: 3rem;
+  gap: 0.5rem;
+  line-height: 1em;
+}
+.btn-sm {
+  --size: 2rem;
+  --fontsize: 0.875rem;
+}
+.btn-xs {
+  --size: 1.5rem;
+  --fontsize: 0.75rem;
+}
+.btn-ghost {
+  color: inherit;
+}
+.btn:disabled,
+.btn[disabled] {
+  border-color: transparent;
+  background-color: color-mix(in oklab, var(--color-neutral) 20%, transparent);
+  color: color-mix(in oklab, var(--color-base-content) 20%, transparent);
+}
+/* daisyUI v5 only shows a modal-box that is a direct child of the modal */
+.modal[open] .modal-box {
+  opacity: 1;
+  translate: 0;
+  scale: 1;
+}
+:root:has(.modal[open]) {
+  overflow: hidden;
+  scrollbar-gutter: stable;
+}
+.table-xs :not(thead, tfoot) tr {
+  font-size: 0.75rem;
+}
+.card-body {
+  padding: 2rem;
+  font-size: inherit;
+}
+.card-title {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+}
+.toast {
+  inset-inline: auto 0;
+  bottom: 0;
+  width: auto;
+  max-width: none;
+  min-width: fit-content;
+  padding: 1rem;
+  white-space: nowrap;
+}
+.alert {
+  padding: 1rem;
+  font-size: inherit;
+  line-height: inherit;
+}
