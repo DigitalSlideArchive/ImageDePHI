@@ -9,6 +9,25 @@ on:
   #  branches:
   #    - main
 jobs:
+  lint-client:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v7
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+      - name: Enable Corepack
+        run: |
+          corepack enable
+      - name: Install client dependencies
+        working-directory: client
+        run: |
+          yarn install --immutable
+      - name: Type check, lint, and check formatting
+        working-directory: client
+        run: |
+          yarn lint:ci
   test:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -33,7 +52,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v7
         with:
-          node-version: "20"
+          node-version: "22"
       - name: Enable Corepack
         run: |
           corepack enable
@@ -47,9 +66,9 @@ jobs:
       - name: Build binary
         run: |
           tox -e binary
-      - name: Test binary runs
+      - name: Test binary
         run: |
-          dist/imagedephi --help
+          tox -e test-binary
       - name: Upload binary artifact
         uses: actions/upload-artifact@v7
         with:
