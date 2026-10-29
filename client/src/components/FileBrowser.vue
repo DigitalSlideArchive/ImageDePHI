@@ -69,17 +69,17 @@ onBeforeUnmount(() => {
               class="btn btn-primary float-right text-white uppercase"
               type="button"
               @click="
-                $emit('update-image-list'),
-                  closeModal(),
-                  title !== 'Output Directory'
-                    ? updateTableData({
-                        directory: selectedDirectories.inputDirectory,
-                        rules: selectedDirectories.rulesetDirectory,
-                        limit: 50,
-                        offset: 0,
-                        update: false,
-                      })
-                    : ''
+                ($emit('update-image-list'),
+                closeModal(),
+                title !== 'Output Directory'
+                  ? updateTableData({
+                      directory: selectedDirectories.inputDirectory,
+                      rules: selectedDirectories.rulesetDirectory,
+                      limit: 50,
+                      offset: 0,
+                      update: false,
+                    })
+                  : '')
               "
             >
               Select
@@ -101,8 +101,8 @@ onBeforeUnmount(() => {
                   v-else
                   class="text-blue-700"
                   @click="
-                    updateDirectories(ancestor.path),
-                      updateSelectedDirectories(ancestor.path)
+                    (updateDirectories(ancestor.path),
+                    updateSelectedDirectories(ancestor.path))
                   "
                 >
                   {{ ancestor.name ? ancestor.name : "/" }}
@@ -134,8 +134,8 @@ onBeforeUnmount(() => {
               :key="child.path"
               class="hover:bg-base-300 cursor-default py-0.5"
               @click="
-                updateDirectories(child.path),
-                  updateSelectedDirectories(child.path)
+                (updateDirectories(child.path),
+                updateSelectedDirectories(child.path))
               "
             >
               <i class="ri-folder-3-fill text-neutral"></i>
@@ -179,17 +179,17 @@ onBeforeUnmount(() => {
     <form method="dialog" class="modal-backdrop w-screen h-screen absolute">
       <button
         @click="
-          $emit('update-image-list'),
-            closeModal(),
-            title !== 'Output Directory'
-              ? updateTableData({
-                  directory: selectedDirectories.inputDirectory,
-                  rules: selectedDirectories.rulesetDirectory,
-                  limit: 50,
-                  offset: 0,
-                  update: false,
-                })
-              : ''
+          ($emit('update-image-list'),
+          closeModal(),
+          title !== 'Output Directory'
+            ? updateTableData({
+                directory: selectedDirectories.inputDirectory,
+                rules: selectedDirectories.rulesetDirectory,
+                limit: 50,
+                offset: 0,
+                update: false,
+              })
+            : '')
         "
       >
         close

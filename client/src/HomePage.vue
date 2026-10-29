@@ -24,7 +24,7 @@ const loadExportOptions = () => {
     if (saved) {
       return JSON.parse(saved);
     }
-  } catch (e) {
+  } catch {
     // Ignore parse errors
   }
   return null;
@@ -33,7 +33,7 @@ const loadExportOptions = () => {
 const saveExportOptions = (options: Record<string, unknown>) => {
   try {
     localStorage.setItem("imageDePhiExportOptions", JSON.stringify(options));
-  } catch (e) {
+  } catch {
     // Ignore storage errors
   }
 };
@@ -44,9 +44,13 @@ const exportOptions = ref({
   exportAssociated: savedOptions?.exportAssociated ?? false,
 });
 
-watch(exportOptions, (newVal) => {
-  saveExportOptions(newVal);
-}, { deep: true });
+watch(
+  exportOptions,
+  (newVal) => {
+    saveExportOptions(newVal);
+  },
+  { deep: true },
+);
 
 const progress = ref({
   count: 0,
@@ -181,23 +185,31 @@ onMounted(() => {
             help-text="Custom ruleset to be used for redaction in addition to the baserules."
             :ruleset-modal="rulesetModal || undefined"
           />
-          <StepHeader step-number="4" title="Export Options" help-text="Choose how to handle output files." />
-          <div class="self-stretch px-5 py-3 bg-white border-b border-neutral-100 flex-col justify-start flex gap-2">
+          <StepHeader
+            :step-number="4"
+            title="Export Options"
+            help-text="Choose how to handle output files."
+          />
+          <div
+            class="self-stretch px-5 py-3 bg-white border-b border-neutral-100 flex-col justify-start flex gap-2"
+          >
             <label class="flex items-center gap-2 cursor-pointer">
               <input
+                v-model="exportOptions.rename"
                 type="checkbox"
                 class="checkbox checkbox-accent"
-                v-model="exportOptions.rename"
               />
               <span class="text-sm text-gray-700">Rename files</span>
             </label>
             <label class="flex items-center gap-2 cursor-pointer">
               <input
+                v-model="exportOptions.exportAssociated"
                 type="checkbox"
                 class="checkbox checkbox-accent"
-                v-model="exportOptions.exportAssociated"
               />
-              <span class="text-sm text-gray-700">Export associated images</span>
+              <span class="text-sm text-gray-700"
+                >Export associated images</span
+              >
             </label>
           </div>
           <FileBrowser
@@ -205,8 +217,8 @@ onMounted(() => {
             :modal-id="'inputDirectory'"
             :title="'Input Directory'"
             @update-image-list="
-              (redactionStateFlags.showImageTable = true),
-                (redactionStateFlags.redactionComplete = false)
+              ((redactionStateFlags.showImageTable = true),
+              (redactionStateFlags.redactionComplete = false))
             "
           />
           <FileBrowser
@@ -224,8 +236,11 @@ onMounted(() => {
               type="submit"
               :class="`${!selectedDirectories.inputDirectory || !selectedDirectories.outputDirectory ? 'btn btn-block bg-accent text-white uppercase rounded-lg tooltip' : 'btn btn-block btn-accent text-white uppercase rounded-lg'}`"
               data-tip="Please select input and output directories"
+              :disabled="
+                !selectedDirectories.inputDirectory ||
+                !selectedDirectories.outputDirectory
+              "
               @click="canRedact()"
-              :disabled="!selectedDirectories.inputDirectory || !selectedDirectories.outputDirectory"
             >
               De-phi Images
             </button>
