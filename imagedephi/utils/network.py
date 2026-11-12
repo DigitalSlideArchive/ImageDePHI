@@ -7,8 +7,10 @@ async def wait_for_port(port: int, host: str = "127.0.0.1") -> None:
     while True:
         try:
             _, writer = await asyncio.open_connection(host, port)
-        except ConnectionRefusedError:
-            pass
+        except OSError:
+            # Not listening yet. Usually ECONNREFUSED, but macOS can report
+            # EINVAL for a connect to a localhost port with no listener.
+            await asyncio.sleep(0.05)
         else:
             writer.close()
             await writer.wait_closed()
