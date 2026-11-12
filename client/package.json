@@ -16,12 +16,12 @@
   },
   "dependencies": {
     "remixicon": "^4.8.0",
-    "vue": "^3.5.44"
+    "vue": "^3.5.45"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.7",
     "@eslint/js": "^10.0.1",
-    "@tailwindcss/vite": "^4.3.3",
+    "@tailwindcss/vite": "^4.3.5",
     "@typescript-eslint/eslint-plugin": "^8.72.1",
     "@typescript-eslint/parser": "^8.72.1",
     "@vitejs/plugin-vue": "^6.0.10",
@@ -33,12 +33,12 @@
     "npm-run-all": "^4.1.5",
     "postcss": "^8.5.32",
     "prettier": "^3.9.10",
-    "rimraf": "^6.1.2",
-    "tailwindcss": "^4.3.3",
+    "rimraf": "^6.1.4",
+    "tailwindcss": "^4.3.5",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.72.1",
-    "vite": "^8.3.5",
-    "vue-eslint-parser": "^10.4.1",
+    "vite": "^8.3.6",
+    "vue-eslint-parser": "^10.4.2",
     "vue-tsc": "^3.3.14"
   },
   "packageManager": "yarn@4.15.0+sha512.07ec708ac11e2eaa4ea2b04cfbb272812f7e74a753f1595eaef4486c663a98306a30cca3e6fc40f7a0b168dcfb3a2490b6a5e0501e20fb69cc36f563dd161c53",
