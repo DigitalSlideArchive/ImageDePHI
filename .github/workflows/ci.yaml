@@ -18,7 +18,7 @@ jobs:
         os:
           # Use an older Linux: https://pyinstaller.org/en/stable/usage.html#making-gnu-linux-apps-forward-compatible
           - ubuntu-22.04
-          - macos-14
+          - macos-15
           - windows-latest
     steps:
       - uses: actions/checkout@v7
