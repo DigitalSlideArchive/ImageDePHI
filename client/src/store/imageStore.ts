@@ -15,14 +15,17 @@ export const useRedactionPlan = reactive({
   async getThumbnail(imagedict: Record<string, Record<string, string>>) {
     Object.keys(imagedict).forEach(async (image) => {
       const keys = ["thumbnail", "label", "macro"];
-      for (let kidx=0; kidx < keys.length; kidx += 1) {
+      for (let kidx = 0; kidx < keys.length; kidx += 1) {
         const key = keys[kidx];
         const response = await getImages(
           this.currentDirectory + "/" + image,
           key,
         );
         if (response.status >= 400) {
-          this.imageRedactionPlan.data[image][key] = key === "thumbnail" ? "/thumbnailPlaceholder.svg" : "/associatedPlaceholder.svg";
+          this.imageRedactionPlan.data[image][key] =
+            key === "thumbnail"
+              ? "/thumbnailPlaceholder.svg"
+              : "/associatedPlaceholder.svg";
           return;
         }
         if (response.body) {
@@ -36,9 +39,9 @@ export const useRedactionPlan = reactive({
           }
           const blob = new Blob(chunks);
           const url = URL.createObjectURL(blob);
-          this.imageRedactionPlan.data[image][key]= url;
+          this.imageRedactionPlan.data[image][key] = url;
         }
-      };
+      }
     });
   },
 

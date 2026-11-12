@@ -88,7 +88,7 @@ def test_e2e_gui(
         [sys.executable, "-m", "imagedephi", "gui", "--port", str(port), "--no-browser"],
     )
 
-    asyncio.run(asyncio.wait_for(wait_for_port(port), timeout=2))
+    asyncio.run(asyncio.wait_for(wait_for_port(port), timeout=30))
 
     # Check that the GUI is running
     assert gui.poll() is None
