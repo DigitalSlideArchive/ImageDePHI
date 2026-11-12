@@ -13,6 +13,15 @@ registry = {
 }
 
 
+def pytest_addoption(parser: pytest.Parser) -> None:
+    parser.addoption(
+        "--binary",
+        type=Path,
+        default=None,
+        help="Path to a built imagedephi binary; tests in test_binary.py are skipped without it.",
+    )
+
+
 def retrieve_file(file_name: str, output_path: Path) -> Path:
     algo, hash_value = registry[file_name].split(":")
     h = registry[file_name]
